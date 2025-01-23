@@ -2,7 +2,7 @@ import express, { Request, Response } from 'express';
 import jwt from "jsonwebtoken";
 import { JWT_SECRET } from '@repo/backend-common/config';
 import { middleware } from './middleware';
-import { CreateUserSchema } from "@repo/common/types";
+import { CreateRoomSchema, CreateUserSchema, SigninSchema } from "@repo/common/types";
 import { prismaClient } from '@repo/db/client';
 
 const app = express();
@@ -36,26 +36,55 @@ app.post('/signup', async(req: Request, res: Response) => {
     }
 })
 
-app.post('/signin', (req, res)=> {
-    const data = CreateUserSchema.safeParse(req.body);
-    if (!data.success) {
+app.post('/signin', async (req, res)=> {
+    const parsedData = SigninSchema.safeParse(req.body);
+    if (!parsedData.success) {
         res.json({
             message: "Incorrect inputs"
         })
         return;
     }
 
-    const userId = 1;
+    const user = await prisma.user.findFirst({
+        where: {
+            email: parsedData.data.username,
+            password: parsedData.data.password
+        }
+    })
+
+    if ( !user ){
+        res.json({
+            message: "notauthrized"
+        })
+        return;
+    }
+   
     const token = jwt.sign({
-        userId
-    }, JWT_SECRET)
+        userId: user?.id
+    }, JWT_SECRET);
 
     res.json({
         token
     })
 })
 
-app.post('/room', middleware,  (req, res) => {
+app.post('/room', middleware,  async(req, res) => {
+    const parsedData = CreateRoomSchema.safeParse(req.body);
+    if( !parsedData.success ){
+        res.json({
+            message: "Incorrect inputs"
+        })
+        return;
+    }
+    //@ts-ignore
+    const userId = req.userId;
+  
+    await prismaClient.room.create({
+        data: {
+            slug: parsedData.data.name,
+            adminId: userId
+        }
+    })
 
     res.json({
         roomId: "1223"
