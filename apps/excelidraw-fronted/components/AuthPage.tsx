@@ -1,6 +1,7 @@
 "use client"
 import React from 'react';
 import { Mail, Lock, ArrowRight } from 'lucide-react';
+import Link from 'next/link';
 
 export function AuthPage({ isSignin }: { isSignin: boolean }) {
   return (
@@ -40,9 +41,9 @@ export function AuthPage({ isSignin }: { isSignin: boolean }) {
 
         <p className="mt-4 text-center text-gray-400">
           {isSignin ? "Don't have an account? " : "Already have an account? "}
-          <a href="#" className="text-blue-400 hover:text-blue-300 transition-colors">
+          <Link  href={isSignin ? "/signup" : "/signin"}  className="text-blue-400 hover:text-blue-300 transition-colors">
             {isSignin ? 'Sign up' : 'Sign in'}
-          </a>
+          </Link>
         </p>
       </div>
     </div>

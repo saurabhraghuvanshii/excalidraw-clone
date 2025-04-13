@@ -1,6 +1,7 @@
 import React from "react";
 import { Button } from "@repo/ui/button"
 import { Card } from "@repo/ui/card";
+import Link from "next/link";
 import { Pencil, Share2, Users2, Sparkles, Github, Download, Moon, ExternalLink } from "lucide-react";
 
 const Index = () => {
@@ -20,17 +21,21 @@ const Index = () => {
               No sign-up required.
             </p>
             <div className="mt-10 flex flex-wrap items-center justify-center gap-6">
+                <Link href={"/signin"} >
               <Button 
                 className="h-12 px-6 bg-gradient-to-r from-[#8B5CF6] to-[#7E69AB] hover:from-[#9b87f5] hover:to-[#8B5CF6] border-none shadow-lg shadow-purple-900/20 text-white"
               >
                 Sign in
               </Button>
+              </Link>
+              <Link href={"/signup"}>
               <Button 
                 variant="outline" 
                 className="h-12 px-6 bg-transparent border-[#9b87f5] text-[#D6BCFA] hover:bg-[#9b87f5]/10 hover:text-white transition-all"
               >
                 Sign up
               </Button>
+              </Link>
             </div>
           </div>
         </div>
