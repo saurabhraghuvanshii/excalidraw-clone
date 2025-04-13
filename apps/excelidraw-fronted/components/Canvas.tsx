@@ -1,4 +1,3 @@
-import { initDraw } from "@/draw";
 import { useEffect, useRef, useState } from "react";
 import { IconButton } from "./IconButton";
 import { Circle, Pencil, RectangleHorizontalIcon } from "lucide-react";
@@ -33,7 +32,7 @@ export function Canvas({
         }
 
 
-    }, [canvasRef]);
+    }, [canvasRef, roomId, socket]);
 
     return <div style={{
         height: "100vh",

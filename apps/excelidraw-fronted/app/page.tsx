@@ -24,7 +24,6 @@ const Index = () => {
                 className="h-12 px-6 bg-gradient-to-r from-[#8B5CF6] to-[#7E69AB] hover:from-[#9b87f5] hover:to-[#8B5CF6] border-none shadow-lg shadow-purple-900/20 text-white"
               >
                 Sign in
-                <Pencil className="ml-2 h-4 w-4" />
               </Button>
               <Button 
                 variant="outline" 
@@ -64,7 +63,7 @@ const Index = () => {
                 <h3 className="text-xl font-semibold text-gray-100">Multiplayer Editing</h3>
               </div>
               <p className="mt-4 text-gray-300">
-                Multiple users can edit the same canvas simultaneously. See who's drawing what in real-time.
+                Multiple users can edit the same canvas simultaneously. See who&#39;s drawing what in real-time.
               </p>
             </Card>
 
@@ -126,7 +125,7 @@ const Index = () => {
               © 2025 Excalidraw Clone. All rights reserved.
             </p>
             <div className="flex items-center space-x-6">
-              <a href="https://github.com" className="text-gray-400 hover:text-[#9b87f5] transition-colors">
+              <a href="https://github.com/saurabhraghuvanshii/excalidraw-clone" className="text-gray-400 hover:text-[#9b87f5] transition-colors">
                 <Github className="h-5 w-5" />
               </a>
               <a href="#" className="text-gray-400 hover:text-[#9b87f5] transition-colors">

@@ -1,7 +1,6 @@
 "use client";
 
 import { WS_URL } from "@/config";
-import { initDraw } from "@/draw";
 import { useEffect, useState } from "react";
 import { Canvas } from "./Canvas";
 
@@ -21,7 +20,7 @@ export function RoomCanvas({roomId}: {roomId: string}) {
             ws.send(data)
         }
         
-    }, [])
+    }, [roomId])
    
     if (!socket) {
         return <div>
