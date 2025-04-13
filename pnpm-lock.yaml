@@ -202,6 +202,12 @@ importers:
         specifier: workspace:*
         version: link:../typescript-config
 
+  packages/element:
+    devDependencies:
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+
   packages/eslint-config:
     devDependencies:
       '@eslint/js':
