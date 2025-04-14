@@ -1,5 +1,6 @@
 import express, { Request, Response } from "express";
 import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
 import { JWT_SECRET } from "@repo/backend-common/config";
 import { middleware } from "./middleware";
 import {
@@ -16,25 +17,27 @@ const prisma = prismaClient;
 app.post("/signup", async (req: Request, res: Response) => {
 	const parsedData = CreateUserSchema.safeParse(req.body);
 	if (!parsedData.success) {
-		res.json({
+		res.status(400).json({
 			message: "Incorrect inputs",
+			errors: parsedData.error.errors
 		});
 		return;
 	}
 	try {
+		const hashedPassword = await bcrypt.hash(parsedData.data.password, 10);
 		const user = await prisma.user.create({
 			data: {
-				email: parsedData.data?.username,
-				password: parsedData.data.password,
-				name: parsedData.data.name,
-			},
+				username: parsedData.data.username,
+				email: parsedData.data.email,
+				password: hashedPassword,
+			}
 		});
 		res.json({
 			userId: user.id,
 		});
-	} catch (e) {
-		res.status(411).json({
-			message: "User already exists with this username",
+	} catch (error: unknown) {
+		res.status(500).json({
+			message: "Something went wrong",
 		});
 	}
 });
@@ -42,29 +45,37 @@ app.post("/signup", async (req: Request, res: Response) => {
 app.post("/signin", async (req, res) => {
 	const parsedData = SigninSchema.safeParse(req.body);
 	if (!parsedData.success) {
-		res.json({
+		res.status(400).json({
 			message: "Incorrect inputs",
+			errors: parsedData.error.errors
 		});
 		return;
 	}
 
 	const user = await prisma.user.findFirst({
 		where: {
-			email: parsedData.data.username,
-			password: parsedData.data.password,
+			email: parsedData.data.email,
 		},
 	});
 
 	if (!user) {
-		res.json({
-			message: "notauthrized",
+		res.status(401).json({
+			message: "Invalid credentials",
+		});
+		return;
+	}
+
+	const isPasswordValid = await bcrypt.compare(parsedData.data.password, user.password);
+	if (!isPasswordValid) {
+		res.status(401).json({
+			message: "Invalid credentials",
 		});
 		return;
 	}
 
 	const token = jwt.sign(
 		{
-			userId: user?.id,
+			userId: user.id,
 		},
 		JWT_SECRET
 	);

@@ -7,7 +7,7 @@ import { Pencil, Share2, Users2, Sparkles, Github, Download, Moon, ExternalLink 
 const Index = () => {
   return (
     <div className="min-h-screen bg-[#121212] text-white">
-      {/* Hero Section with animated gradient */}
+      
       <header className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-[#8B5CF6]/20 via-[#1EAEDB]/10 to-[#7E69AB]/20 animate-gradient"></div>
         <div className="relative z-10 container mx-auto px-4 py-20 sm:px-6 lg:px-8">
@@ -41,7 +41,6 @@ const Index = () => {
         </div>
       </header>
 
-      {/* Features Section with glass morphism cards */}
       <section className="py-24 bg-[#1A1F2C]">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold tracking-tight text-center mb-16 bg-gradient-to-r from-[#D6BCFA] to-[#8B5CF6] bg-clip-text text-transparent">
