@@ -23,7 +23,7 @@ type Shape = {
 export async function initDraw(canvas: HTMLCanvasElement, roomId: string, socket: WebSocket) {
     const ctx = canvas.getContext("2d");
 
-    let existingShapes: Shape[] = await getExistingShapes(roomId)
+    const existingShapes: Shape[] = await getExistingShapes(roomId)
 
     if (!ctx) {
         return
@@ -56,7 +56,8 @@ export async function initDraw(canvas: HTMLCanvasElement, roomId: string, socket
         const width = e.clientX - startX;
         const height = e.clientY - startY;
 
-        // @ts-ignore
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error
         const selectedTool = window.selectedTool;
         let shape: Shape | null = null;
         if (selectedTool === "rect") {
@@ -100,7 +101,8 @@ export async function initDraw(canvas: HTMLCanvasElement, roomId: string, socket
             const height = e.clientY - startY;
             clearCanvas(existingShapes, canvas, ctx);
             ctx.strokeStyle = "rgba(255, 255, 255)"
-            // @ts-ignore
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-expect-error
             const selectedTool = window.selectedTool;
             if (selectedTool === "rect") {
                 ctx.strokeRect(startX, startY, width, height);   
