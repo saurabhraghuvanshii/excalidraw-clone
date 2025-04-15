@@ -1,5 +1,5 @@
-import { AuthPage } from "@/components/AuthPage";
+import { AuthPage } from "@/app/api/auth/AuthPage";
 
-export default function Signin() {
-    return <AuthPage isSignin={true} />
+export default function SignIn() {
+    return <AuthPage type="signin" />;
 }
