@@ -51,7 +51,7 @@ export class Game {
         this.initHandlers();
         this.initMouseHandlers();
     }
-    
+
     destroy() {
         this.canvas.removeEventListener("mousedown", this.mouseDownHandler);
         this.canvas.removeEventListener("mouseup", this.mouseUpHandler);
@@ -99,7 +99,7 @@ export class Game {
                 const message = JSON.parse(event.data);
                 if (message.type === "chat") {
                     const parsedData = JSON.parse(message.message);
-                    
+
                     if (parsedData.shape) {
                         // Add new shape
                         this.existingShapes.push(parsedData.shape);
@@ -122,29 +122,29 @@ export class Game {
         // Ensure the canvas is correctly sized before drawing
         const width = this.canvas.width;
         const height = this.canvas.height;
-        
+
         // Clear and set black background
         this.ctx.clearRect(0, 0, width, height);
         this.ctx.fillStyle = "rgba(0, 0, 0, 1)";
         this.ctx.fillRect(0, 0, width, height);
-        
+
         // Apply scale and translation transformations
         this.ctx.save();
         this.ctx.translate(this.offsetX, this.offsetY);
         this.ctx.scale(this.scale, this.scale);
-        
+
         // Draw all existing shapes
         this.drawShapes();
-        
+
         // Restore original transform
         this.ctx.restore();
     }
-    
+
     drawShapes() {
         if (!this.existingShapes || this.existingShapes.length === 0) return;
-        
+
         this.ctx.strokeStyle = "rgba(255, 255, 255, 1)";
-        
+
         this.existingShapes.forEach((shape) => {
             if (shape.type === "rect") {
                 this.ctx.strokeRect(shape.x, shape.y, shape.width, shape.height);
@@ -170,18 +170,18 @@ export class Game {
 
     private eraseAtPosition(clientX: number, clientY: number) {
         const shapeToErase = this.findShapeUnderPoint(clientX, clientY);
-        
+
         if (shapeToErase && shapeToErase.id) {
             // Remove shape locally
             this.existingShapes = this.existingShapes.filter(shape => shape.id !== shapeToErase.id);
-            
+
             // Send erase action to other clients
             this.socket.send(JSON.stringify({
                 type: "chat",
                 message: JSON.stringify({ eraseId: shapeToErase.id }),
                 roomId: this.roomId
             }));
-            
+
             // Redraw canvas
             this.clearCanvas();
         }
@@ -190,11 +190,11 @@ export class Game {
     // Check if a point is inside a rectangle
     private isPointInRect(x: number, y: number, rect: Shape & { type: "rect" }): boolean {
         const buffer = Math.min(Math.abs(rect.width), Math.abs(rect.height)) < 10 ? 5 : 0;
-    
+
         return (
-            x >= rect.x - buffer && 
-            x <= rect.x + rect.width + buffer && 
-            y >= rect.y - buffer && 
+            x >= rect.x - buffer &&
+            x <= rect.x + rect.width + buffer &&
+            y >= rect.y - buffer &&
             y <= rect.y + rect.height + buffer
         );
     }
@@ -214,40 +214,40 @@ export class Game {
         const B = y - pencil.startY;
         const C = pencil.endX - pencil.startX;
         const D = pencil.endY - pencil.startY;
-        
+
         const dot = A * C + B * D;
         const len_sq = C * C + D * D;
         const param = len_sq !== 0 ? dot / len_sq : -1;
-        
+
         let xx, yy;
-        
+
         if (param < 0) {
             xx = pencil.startX;
             yy = pencil.startY;
         } else if (param > 1) {
             xx = pencil.endX;
             yy = pencil.endY;
-        } else { 
+        } else {
             xx = pencil.startX + param * C;
             yy = pencil.startY + param * D;
         }
-        
+
         const dx = x - xx;
         const dy = y - yy;
-        
+
         const distance = Math.sqrt(dx * dx + dy * dy);
         return distance < 10; // 10px buffer for pencil lines
     }
-    
+
     private findShapeUnderPoint(x: number, y: number): Shape | null {
         // Adjust for scale and offset
         const adjustedX = (x - this.offsetX) / this.scale;
         const adjustedY = (y - this.offsetY) / this.scale;
-        
+
         // Check from the newest shape (top) to the oldest (bottom)
         for (let i = this.existingShapes.length - 1; i >= 0; i--) {
             const shape = this.existingShapes[i];
-            
+
             if (shape.type === "rect" && this.isPointInRect(adjustedX, adjustedY, shape)) {
                 return shape;
             } else if (shape.type === "circle" && this.isPointInCircle(adjustedX, adjustedY, shape)) {
@@ -256,7 +256,7 @@ export class Game {
                 return shape;
             }
         }
-        
+
         return null;
     }
 
@@ -264,13 +264,13 @@ export class Game {
         this.clicked = true;
         this.startX = (e.clientX - this.offsetX) / this.scale;
         this.startY = (e.clientY - this.offsetY) / this.scale;
-        
-            
+
+
         if (this.selectedTool === "eraser") {
             this.eraserActive = true;
             this.eraseAtPosition(e.clientX, e.clientY);
         }
-        
+
     }
 
     mouseUpHandler = (e: MouseEvent) => {
@@ -278,18 +278,18 @@ export class Game {
             // Stop erasing when mouse button is released
             this.eraserActive = false;
         }
-        
+
         this.clicked = false;
-        
+
         if (["pencil", "rect", "circle"].includes(this.selectedTool)) {
             const endX = (e.clientX - this.offsetX) / this.scale;
             const endY = (e.clientY - this.offsetY) / this.scale;
             const width = endX - this.startX;
             const height = endY - this.startY;
-    
+
             let shape: Shape | null = null;
             const shapeId = this.generateId();
-            
+
             if (this.selectedTool === "rect") {
                 shape = {
                     type: "rect",
@@ -303,7 +303,7 @@ export class Game {
                 const radius = Math.max(Math.abs(width), Math.abs(height)) / 2;
                 const centerX = this.startX + width / 2;
                 const centerY = this.startY + height / 2;
-                
+
                 shape = {
                     type: "circle",
                     radius: radius,
@@ -321,19 +321,19 @@ export class Game {
                     id: shapeId
                 };
             }
-    
+
             if (!shape) return;
-    
+
             // Add shape locally
             this.existingShapes.push(shape);
-            
+
             // Send to other clients
             this.socket.send(JSON.stringify({
                 type: "chat",
                 message: JSON.stringify({ shape }),
                 roomId: this.roomId
             }));
-            
+
             // Redraw canvas
             this.clearCanvas();
         }
@@ -345,31 +345,31 @@ export class Game {
             this.eraseAtPosition(e.clientX, e.clientY);
             return;
         }
-        
+
         if (!this.clicked) return;
-        
+
         const endX = (e.clientX - this.offsetX) / this.scale;
         const endY = (e.clientY - this.offsetY) / this.scale;
         const width = endX - this.startX;
         const height = endY - this.startY;
-        
+
         // Redraw existing shapes plus current preview
         this.clearCanvas();
-        
+
         // Apply scale and translation for preview
         this.ctx.save();
         this.ctx.translate(this.offsetX, this.offsetY);
         this.ctx.scale(this.scale, this.scale);
-        
+
         this.ctx.strokeStyle = "rgba(255, 255, 255, 1)";
-        
+
         if (this.selectedTool === "rect") {
             this.ctx.strokeRect(this.startX, this.startY, width, height);
         } else if (this.selectedTool === "circle") {
             const radius = Math.max(Math.abs(width), Math.abs(height)) / 2;
             const centerX = this.startX + width / 2;
             const centerY = this.startY + height / 2;
-            
+
             this.ctx.beginPath();
             this.ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
             this.ctx.stroke();
@@ -381,7 +381,7 @@ export class Game {
             this.ctx.stroke();
             this.ctx.closePath();
         }
-        
+
         this.ctx.restore();
     }
 

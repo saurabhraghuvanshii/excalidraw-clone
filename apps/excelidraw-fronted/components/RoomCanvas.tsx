@@ -3,14 +3,11 @@
 import { WS_URL } from "@/config";
 import { useEffect, useState } from "react";
 import { Canvas } from "./Canvas";
-import { Share2, Check } from "lucide-react";
 import { getToken } from "@/utils/auth";
-import { isAuthenticated } from "@/utils/auth";
 
-export function RoomCanvas({roomId}: {roomId: string}) {
+export function RoomCanvas({ roomId }: { roomId: string }) {
     const [socket, setSocket] = useState<WebSocket | null>(null);
     const [error, setError] = useState<string | null>(null);
-    const [copied, setCopied] = useState(false);
 
     useEffect(() => {
         const token = getToken();
@@ -47,23 +44,14 @@ export function RoomCanvas({roomId}: {roomId: string}) {
         };
     }, [roomId]);
 
-    const handleShare = () => {
-        const url = `${window.location.origin}/canvas/${roomId}`;
-        navigator.clipboard.writeText(url).then(() => {
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
-        }).catch(() => {
-            setError('Failed to copy URL to clipboard');
-        });
-    };
-   
+
     if (error) {
         return (
             <div className="w-screen h-screen flex items-center justify-center bg-gray-900 text-white">
                 <div className="text-center">
                     <h2 className="text-2xl font-bold mb-4">Error</h2>
                     <p className="text-red-500">{error}</p>
-                    <button 
+                    <button
                         onClick={() => window.location.href = '/signin'}
                         className="mt-4 px-4 py-2 bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
                     >

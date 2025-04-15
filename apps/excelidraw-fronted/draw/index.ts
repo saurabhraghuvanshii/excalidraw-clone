@@ -38,7 +38,7 @@ export async function initDraw(canvas: HTMLCanvasElement, roomId: string, socket
             clearCanvas(existingShapes, canvas, ctx);
         }
     }
-    
+
 
     clearCanvas(existingShapes, canvas, ctx);
     let clicked = false;
@@ -105,7 +105,7 @@ export async function initDraw(canvas: HTMLCanvasElement, roomId: string, socket
             // @ts-expect-error
             const selectedTool = window.selectedTool;
             if (selectedTool === "rect") {
-                ctx.strokeRect(startX, startY, width, height);   
+                ctx.strokeRect(startX, startY, width, height);
             } else if (selectedTool === "circle") {
                 const radius = Math.max(width, height) / 2;
                 const centerX = startX + radius;
@@ -113,10 +113,10 @@ export async function initDraw(canvas: HTMLCanvasElement, roomId: string, socket
                 ctx.beginPath();
                 ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
                 ctx.stroke();
-                ctx.closePath();                
+                ctx.closePath();
             }
         }
-    })            
+    })
 }
 
 function clearCanvas(existingShapes: Shape[], canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D) {
@@ -132,7 +132,7 @@ function clearCanvas(existingShapes: Shape[], canvas: HTMLCanvasElement, ctx: Ca
             ctx.beginPath();
             ctx.arc(shape.centerX, shape.centerY, shape.radius, 0, Math.PI * 2);
             ctx.stroke();
-            ctx.closePath();                
+            ctx.closePath();
         }
     })
 }
@@ -141,7 +141,7 @@ async function getExistingShapes(roomId: string) {
     const res = await axios.get(`${HTTP_BACKEND}/chats/${roomId}`);
     const messages = res.data.messages;
 
-    const shapes = messages.map((x: {message: string}) => {
+    const shapes = messages.map((x: { message: string }) => {
         const messageData = JSON.parse(x.message)
         return messageData.shape;
     })

@@ -2,12 +2,12 @@ import React from "react";
 import { Button } from "@repo/ui/button"
 import { Card } from "@repo/ui/card";
 import Link from "next/link";
-import { Pencil, Share2, Users2, Sparkles, Github, Download, Moon, ExternalLink } from "lucide-react";
+import { Pencil, Share2, Users2, Sparkles, Github, Download, Moon, } from "lucide-react";
 
 const Index = () => {
   return (
     <div className="min-h-screen bg-[#121212] text-white">
-      
+
       <header className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-[#8B5CF6]/20 via-[#1EAEDB]/10 to-[#7E69AB]/20 animate-gradient"></div>
         <div className="relative z-10 container mx-auto px-4 py-20 sm:px-6 lg:px-8">
@@ -17,24 +17,24 @@ const Index = () => {
               <span className="block mt-2">Made Simple</span>
             </h1>
             <p className="mx-auto mt-8 max-w-2xl text-lg text-gray-300">
-              Create, collaborate, and share beautiful diagrams and sketches with our intuitive drawing tool. 
+              Create, collaborate, and share beautiful diagrams and sketches with our intuitive drawing tool.
               No sign-up required.
             </p>
             <div className="mt-10 flex flex-wrap items-center justify-center gap-6">
-                <Link href={"/signin"} >
-              <Button 
-                className="h-12 px-6 bg-gradient-to-r from-[#8B5CF6] to-[#7E69AB] hover:from-[#9b87f5] hover:to-[#8B5CF6] border-none shadow-lg shadow-purple-900/20 text-white"
-              >
-                Sign in
-              </Button>
+              <Link href={"/signin"} >
+                <Button
+                  className="h-12 px-6 bg-gradient-to-r from-[#8B5CF6] to-[#7E69AB] hover:from-[#9b87f5] hover:to-[#8B5CF6] border-none shadow-lg shadow-purple-900/20 text-white"
+                >
+                  Sign in
+                </Button>
               </Link>
               <Link href={"/signup"}>
-              <Button 
-                variant="outline" 
-                className="h-12 px-6 bg-transparent border-[#9b87f5] text-[#D6BCFA] hover:bg-[#9b87f5]/10 hover:text-white transition-all"
-              >
-                Sign up
-              </Button>
+                <Button
+                  variant="outline"
+                  className="h-12 px-6 bg-transparent border-[#9b87f5] text-[#D6BCFA] hover:bg-[#9b87f5]/10 hover:text-white transition-all"
+                >
+                  Sign up
+                </Button>
               </Link>
             </div>
           </div>
@@ -101,18 +101,14 @@ const Index = () => {
                   Join thousands of users who are already creating amazing diagrams and sketches.
                 </p>
                 <div className="mt-10 flex flex-wrap items-center justify-center gap-6">
-                  <Button 
-                    className="h-12 px-6 bg-white text-[#8B5CF6] hover:bg-gray-100 shadow-lg shadow-white/20"
+                  <Button
+                    className="relative h-12 px-8 overflow-hidden bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-semibold rounded-xl transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-[0_0_40px_rgba(167,139,250,0.5)] group"
                   >
-                    Open Canvas
-                    <Pencil className="ml-2 h-4 w-4" />
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    className="h-12 px-6 bg-transparent text-white border-white hover:bg-white/10 transition-all"
-                  >
-                    View Gallery
-                    <ExternalLink className="ml-2 h-4 w-4" />
+                    <span className="relative z-10 flex items-center">
+                      Open Canvas
+                      <Pencil className="ml-2 h-5 w-5 transition-transform group-hover:rotate-12" />
+                    </span>
+                    <div className="absolute inset-0 bg-white/20 translate-y-full transition-transform duration-300 group-hover:translate-y-0" />
                   </Button>
                 </div>
               </div>

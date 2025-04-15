@@ -8,10 +8,10 @@ export async function getExistingShapes(roomId: string) {
         const res = await axios.get(`${HTTP_BACKEND}/chats/${roomId}`, {
             headers: token ? { Authorization: `Bearer ${token}` } : {}
         });
-        
+
         const messages = res.data.messages || [];
-        
-        const shapes = messages.map((x: {message: string}) => {
+
+        const shapes = messages.map((x: { message: string }) => {
             try {
                 const messageData = JSON.parse(x.message);
                 return messageData.shape;
@@ -20,7 +20,7 @@ export async function getExistingShapes(roomId: string) {
                 return null;
             }
         }).filter(Boolean); // Filter out null values
-        
+
         return shapes;
     } catch (error) {
         console.error("Error fetching shapes:", error);

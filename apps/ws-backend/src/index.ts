@@ -32,25 +32,25 @@ wss.on("connection", function connection(ws, request) {
 	const querParams = new URLSearchParams(url.split("?")[1]);
 	const token = querParams.get("token") || "";
 	const isGuest = querParams.get("guest") === "true";
-    let userId = null;
-    
-    if (!isGuest) {
-        userId = checkUser(token);
-        if (userId == null) {
-            ws.close();
-            return null;
-        }
-    } else {
-        // Generate a temporary guest ID
-        userId = `guest-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-    }
+	let userId = null;
 
-    users.push({
-        userId,
-        rooms: [],
-        ws,
-        isGuest: isGuest
-    });
+	if (!isGuest) {
+		userId = checkUser(token);
+		if (userId == null) {
+			ws.close();
+			return null;
+		}
+	} else {
+		// Generate a temporary guest ID
+		userId = `guest-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+	}
+
+	users.push({
+		userId,
+		rooms: [],
+		ws,
+		isGuest: isGuest
+	});
 
 	ws.on("message", async function message(data) {
 		let parsedData;
@@ -77,9 +77,9 @@ wss.on("connection", function connection(ws, request) {
 					}
 				});
 			} catch (error: any) {
-				if (error.code === 'P2002'){
+				if (error.code === 'P2002') {
 
-				}else{
+				} else {
 					console.error("Error creating room:", error);
 				}
 			}

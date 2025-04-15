@@ -1,9 +1,9 @@
 export function isAuthenticated() {
     if (typeof window === 'undefined') return false;
-    
+
     const token = localStorage.getItem('token');
     if (!token) return false;
-    
+
     try {
         // Basic validation - in production, you might want server-side validation
         const payload = JSON.parse(atob(token.split('.')[1]));

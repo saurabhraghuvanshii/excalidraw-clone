@@ -124,9 +124,8 @@ export function AuthPage({ type }: { type: "signup" | "signin" }) {
                                 name="emailOrUsername"
                                 type={type === "signup" ? "email" : "text"}
                                 required
-                                className={`appearance-none rounded-lg relative block w-full px-3 py-2 border ${
-                                    type === "signup" && validationErrors.email ? "border-red-500" : "border-gray-700"
-                                } bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+                                className={`appearance-none rounded-lg relative block w-full px-3 py-2 border ${type === "signup" && validationErrors.email ? "border-red-500" : "border-gray-700"
+                                    } bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
                                 placeholder={type === "signup" ? "Email address" : "Email or Username"}
                                 value={emailOrUsername}
                                 onChange={(e) => setEmailOrUsername(e.target.value)}
@@ -146,9 +145,8 @@ export function AuthPage({ type }: { type: "signup" | "signin" }) {
                                     name="username"
                                     type="text"
                                     required
-                                    className={`appearance-none rounded-lg relative block w-full px-3 py-2 border ${
-                                        validationErrors.username ? "border-red-500" : "border-gray-700"
-                                    } bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+                                    className={`appearance-none rounded-lg relative block w-full px-3 py-2 border ${validationErrors.username ? "border-red-500" : "border-gray-700"
+                                        } bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
                                     placeholder="Username"
                                     value={username}
                                     onChange={(e) => setUsername(e.target.value)}
@@ -168,9 +166,8 @@ export function AuthPage({ type }: { type: "signup" | "signin" }) {
                                 name="password"
                                 type="password"
                                 required
-                                className={`appearance-none rounded-lg relative block w-full px-3 py-2 border ${
-                                    type === "signup" && validationErrors.password ? "border-red-500" : "border-gray-700"
-                                } bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+                                className={`appearance-none rounded-lg relative block w-full px-3 py-2 border ${type === "signup" && validationErrors.password ? "border-red-500" : "border-gray-700"
+                                    } bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
                                 placeholder="Password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
@@ -210,7 +207,7 @@ export function AuthPage({ type }: { type: "signup" | "signin" }) {
                     <div className="text-center">
                         <p className="text-gray-400">
                             {type === "signup" ? "Already have an account? " : "Don't have an account? "}
-                            <Link 
+                            <Link
                                 href={type === "signup" ? "/signin" : "/signup"}
                                 className="text-blue-400 hover:text-blue-300 transition-colors"
                             >

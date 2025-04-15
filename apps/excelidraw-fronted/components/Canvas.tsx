@@ -69,23 +69,23 @@ export function Canvas({
         const handleWheel = (e: WheelEvent) => {
             if (e.ctrlKey || e.metaKey) {
                 e.preventDefault();
-                
+
                 // Calculate zoom center point (mouse position)
                 const rect = canvasRef.current?.getBoundingClientRect();
                 if (!rect) return;
-                
+
                 // Update scale
                 setScale(prevScale => {
-                    const newScale = e.deltaY < 0 
-                        ? Math.min(prevScale * 1.1, 5) 
+                    const newScale = e.deltaY < 0
+                        ? Math.min(prevScale * 1.1, 5)
                         : Math.max(prevScale * 0.9, 0.2);
                     return newScale;
                 });
             }
         };
-        
+
         canvasRef.current?.addEventListener('wheel', handleWheel, { passive: false });
-        
+
         return () => {
             // eslint-disable-next-line react-hooks/exhaustive-deps
             canvasRef.current?.removeEventListener('wheel', handleWheel);
@@ -95,28 +95,28 @@ export function Canvas({
     // Set up window resize handling with debounce
     useEffect(() => {
         let resizeTimer: number | null = null;
-        
+
         function handleResize() {
             // Clear previous timer
             if (resizeTimer) {
                 window.clearTimeout(resizeTimer);
             }
-            
+
             // Update dimensions state immediately
             const newWidth = window.innerWidth;
             const newHeight = window.innerHeight;
-            
+
             setDimensions({
                 width: newWidth,
                 height: newHeight
             });
-            
+
             // Update canvas dimensions
             if (canvasRef.current) {
                 canvasRef.current.width = newWidth;
                 canvasRef.current.height = newHeight;
             }
-            
+
             // Debounce the actual redraw to avoid multiple redraws during resize
             resizeTimer = window.setTimeout(() => {
                 if (gameRef.current) {
@@ -126,7 +126,7 @@ export function Canvas({
         }
 
         window.addEventListener('resize', handleResize);
-        
+
         // Clean up
         return () => {
             window.removeEventListener('resize', handleResize);
@@ -183,7 +183,7 @@ export function Canvas({
             document.body.style.cursor = 'grab';
         }
     };
-    
+
     // Handle eraser size with keyboard shortcuts
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -195,7 +195,7 @@ export function Canvas({
                 }
             }
         };
-        
+
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [selectedTool]);
@@ -206,7 +206,7 @@ export function Canvas({
                 <div className="text-center">
                     <h2 className="text-2xl font-bold mb-4">Authentication Required</h2>
                     <p className="text-red-500">You must be signed in to edit the canvas.</p>
-                    <button 
+                    <button
                         onClick={() => window.location.href = '/signin'}
                         className="mt-4 px-4 py-2 bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
                     >
@@ -218,15 +218,15 @@ export function Canvas({
     }
 
     return (
-        <div 
+        <div
             className="h-screen overflow-hidden relative bg-black"
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
         >
-            <canvas 
-                ref={canvasRef} 
-                width={dimensions.width} 
+            <canvas
+                ref={canvasRef}
+                width={dimensions.width}
                 height={dimensions.height}
                 className="absolute top-0 left-0"
             />
@@ -237,9 +237,9 @@ export function Canvas({
     );
 }
 
-function Topbar({selectedTool, setSelectedTool}: {
+function Topbar({ selectedTool, setSelectedTool }: {
     selectedTool: Tool,
-    setSelectedTool: (s: Tool) => void 
+    setSelectedTool: (s: Tool) => void
 }) {
     return (
         <div className="fixed top-2 left-2 z-10">
@@ -249,14 +249,14 @@ function Topbar({selectedTool, setSelectedTool}: {
                     activated={selectedTool === "pencil"}
                     icon={<Pencil />}
                 />
-                <IconButton 
-                    onClick={() => setSelectedTool("rect")} 
-                    activated={selectedTool === "rect"} 
-                    icon={<RectangleHorizontalIcon />} 
+                <IconButton
+                    onClick={() => setSelectedTool("rect")}
+                    activated={selectedTool === "rect"}
+                    icon={<RectangleHorizontalIcon />}
                 />
-                <IconButton 
-                    onClick={() => setSelectedTool("circle")} 
-                    activated={selectedTool === "circle"} 
+                <IconButton
+                    onClick={() => setSelectedTool("circle")}
+                    activated={selectedTool === "circle"}
                     icon={<Circle />}
                 />
                 <IconButton

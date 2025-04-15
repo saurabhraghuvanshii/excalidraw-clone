@@ -143,7 +143,7 @@ app.post("/room", middleware, async (req, res) => {
 
 //@ts-ignore
 app.get("/chats/:roomId", optionalAuthMiddleware, async (req, res) => {
-	try{
+	try {
 		const roomSlug = req.params.roomId;
 		const room = await prismaClient.room.findFirst({
 			where: { slug: roomSlug }
@@ -160,7 +160,7 @@ app.get("/chats/:roomId", optionalAuthMiddleware, async (req, res) => {
 
 			const messages = await prismaClient.chat.findMany({
 				where: { roomId },
-				orderBy:{ id: "asc" },
+				orderBy: { id: "asc" },
 				take: 100,
 			})
 
