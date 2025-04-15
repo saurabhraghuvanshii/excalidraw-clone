@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { Canvas } from "./Canvas";
 import { Share2, Check } from "lucide-react";
 import { getToken } from "@/utils/auth";
+import { isAuthenticated } from "@/utils/auth";
 
 export function RoomCanvas({roomId}: {roomId: string}) {
     const [socket, setSocket] = useState<WebSocket | null>(null);
@@ -90,22 +91,6 @@ export function RoomCanvas({roomId}: {roomId: string}) {
                 <div className="bg-gray-800 text-white px-4 py-2 rounded-lg">
                     Room ID: {roomId}
                 </div>
-                <button
-                    onClick={handleShare}
-                    className="flex items-center gap-2 px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors"
-                >
-                    {copied ? (
-                        <>
-                            <Check className="h-5 w-5 text-green-500" />
-                            <span>Copied!</span>
-                        </>
-                    ) : (
-                        <>
-                            <Share2 className="h-5 w-5" />
-                            <span>Share Room</span>
-                        </>
-                    )}
-                </button>
             </div>
             <Canvas roomId={roomId} socket={socket as WebSocket} />
         </div>
