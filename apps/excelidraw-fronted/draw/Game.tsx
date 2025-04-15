@@ -227,7 +227,7 @@ export class Game {
         } else if (param > 1) {
             xx = pencil.endX;
             yy = pencil.endY;
-        } else {
+        } else { 
             xx = pencil.startX + param * C;
             yy = pencil.startY + param * D;
         }

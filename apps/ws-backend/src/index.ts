@@ -9,6 +9,7 @@ interface User {
 	ws: WebSocket;
 	rooms: string[];
 	userId: string;
+	isGuest: boolean;
 }
 const users: User[] = [];
 
@@ -30,18 +31,26 @@ wss.on("connection", function connection(ws, request) {
 
 	const querParams = new URLSearchParams(url.split("?")[1]);
 	const token = querParams.get("token") || "";
-	const userId = checkUser(token);
+	const isGuest = querParams.get("guest") === "true";
+    let userId = null;
+    
+    if (!isGuest) {
+        userId = checkUser(token);
+        if (userId == null) {
+            ws.close();
+            return null;
+        }
+    } else {
+        // Generate a temporary guest ID
+        userId = `guest-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+    }
 
-	if (userId == null) {
-		ws.close();
-		return null;
-	}
-
-	users.push({
-		userId,
-		rooms: [],
-		ws,
-	});
+    users.push({
+        userId,
+        rooms: [],
+        ws,
+        isGuest: isGuest
+    });
 
 	ws.on("message", async function message(data) {
 		let parsedData;
@@ -67,8 +76,12 @@ wss.on("connection", function connection(ws, request) {
 						adminId: userId
 					}
 				});
-			} catch (error) {
-				console.error("Error creating room:", error);
+			} catch (error: any) {
+				if (error.code === 'P2002'){
+
+				}else{
+					console.error("Error creating room:", error);
+				}
 			}
 		}
 

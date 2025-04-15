@@ -4,15 +4,18 @@ import { Circle, Pencil, RectangleHorizontalIcon, Eraser } from "lucide-react";
 import { EraserCursor } from "./eraser";
 import { Game } from "@/draw/Game";
 import ZoomControl from "./ZoomControl";
+import { isAuthenticated } from "@/utils/auth";
 
 export type Tool = "circle" | "rect" | "pencil" | "eraser";
 
 export function Canvas({
     roomId,
-    socket
+    socket,
+    readOnly = false
 }: {
     socket: WebSocket;
     roomId: string;
+    readOnly?: boolean;
 }) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const gameRef = useRef<Game | null>(null);
@@ -26,13 +29,13 @@ export function Canvas({
     const [isDragging, setIsDragging] = useState(false);
     const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
     const [eraserSize, setEraserSize] = useState(5);
+    const canEdit = !readOnly;
 
     // Initialize game once
     useEffect(() => {
         if (canvasRef.current && !gameRef.current) {
             const g = new Game(canvasRef.current, roomId, socket);
             gameRef.current = g;
-            
             return () => {
                 g.destroy();
                 gameRef.current = null;
@@ -196,6 +199,23 @@ export function Canvas({
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [selectedTool]);
+
+    if (canEdit && !isAuthenticated()) {
+        return (
+            <div className="w-screen h-screen flex items-center justify-center bg-gray-900 text-white">
+                <div className="text-center">
+                    <h2 className="text-2xl font-bold mb-4">Authentication Required</h2>
+                    <p className="text-red-500">You must be signed in to edit the canvas.</p>
+                    <button 
+                        onClick={() => window.location.href = '/signin'}
+                        className="mt-4 px-4 py-2 bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                        Go to Sign In
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div 

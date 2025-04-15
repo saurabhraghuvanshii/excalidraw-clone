@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import cors from "cors";
 import { JWT_SECRET } from "@repo/backend-common/config";
-import { middleware } from "./middleware";
+import { middleware, optionalAuthMiddleware } from "./middleware";
 import {
 	CreateRoomSchema,
 	CreateUserSchema,
@@ -104,14 +104,15 @@ app.post("/signin", async (req, res) => {
 		{
 			userId: user.id,
 		},
-		JWT_SECRET
+		JWT_SECRET,
+		{ expiresIn: '7d' }
 	);
 
 	res.json({
 		token,
 	});
 });
-
+//@ts-ignore
 app.post("/room", middleware, async (req, res) => {
 	const parsedData = CreateRoomSchema.safeParse(req.body);
 	if (!parsedData.success) {
@@ -140,29 +141,44 @@ app.post("/room", middleware, async (req, res) => {
 	}
 });
 
-app.get("/chats/:roomId", async (req, res) => {
-	try {
-		const roomId = Number(req.params.roomId);
-		const messages = await prismaClient.chat.findMany({
-			where: {
-				roomId: roomId,
-			},
-			orderBy: {
-				id: "desc",
-			},
+//@ts-ignore
+app.get("/chats/:roomId", optionalAuthMiddleware, async (req, res) => {
+	try{
+		const roomSlug = req.params.roomId;
+		const room = await prismaClient.room.findFirst({
+			where: { slug: roomSlug }
+		});
 
+		if (!room) {
+			const roomId = parseInt(req.params.roomId || "");
+			if (isNaN(roomId)) {
+				return res.status(404).json({
+					message: "Room not found",
+					messages: []
+				});
+			}
+
+			const messages = await prismaClient.chat.findMany({
+				where: { roomId },
+				orderBy:{ id: "asc" },
+				take: 100,
+			})
+
+			return res.json({ messages });
+		}
+
+		const messages = await prismaClient.chat.findMany({
+			where: { roomId: room.id },
+			orderBy: { id: "asc" },
 			take: 100,
 		});
 
-		res.json({
-			messages,
-		});
+		res.json({ messages })
 	} catch (e) {
 		console.log(e);
-		res.json({
-			messages: [],
-		});
+		res.json({ messages: [] })
 	}
+
 });
 
 app.get("/room/:slug", async (req, res) => {

@@ -4,6 +4,7 @@ import { WS_URL } from "@/config";
 import { useEffect, useState } from "react";
 import { Canvas } from "./Canvas";
 import { Share2, Check } from "lucide-react";
+import { getToken } from "@/utils/auth";
 
 export function RoomCanvas({roomId}: {roomId: string}) {
     const [socket, setSocket] = useState<WebSocket | null>(null);
@@ -11,13 +12,18 @@ export function RoomCanvas({roomId}: {roomId: string}) {
     const [copied, setCopied] = useState(false);
 
     useEffect(() => {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            setError('No authentication token found. Please sign in.');
-            return;
+        const token = getToken();
+        let wsUrl = `${WS_URL}?`;
+
+        if (token) {
+            wsUrl += `token=${token}`;
+        } else {
+            // Connect as guest
+            wsUrl += `guest=true`;
+            // Guest mode - show limited functionality
         }
 
-        const ws = new WebSocket(`${WS_URL}?token=${token}`);
+        const ws = new WebSocket(wsUrl);
 
         ws.onopen = () => {
             setSocket(ws);
@@ -101,7 +107,7 @@ export function RoomCanvas({roomId}: {roomId: string}) {
                     )}
                 </button>
             </div>
-            <Canvas roomId={roomId} socket={socket} />
+            <Canvas roomId={roomId} socket={socket as WebSocket} />
         </div>
     );
 }
