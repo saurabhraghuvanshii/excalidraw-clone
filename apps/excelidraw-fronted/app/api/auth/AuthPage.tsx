@@ -1,6 +1,5 @@
-"use client"
+"use client";
 import React, { useState, useEffect } from 'react';
-import { Mail, Lock, User, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
@@ -13,11 +12,14 @@ export function AuthPage({ type }: { type: "signup" | "signin" }) {
     const [username, setUsername] = useState("");
     const [name, setName] = useState("");
     const [error, setError] = useState("");
+    const [message, setMessage] = useState("");
+
     const [validationErrors, setValidationErrors] = useState({
         email: "",
         username: "",
         password: ""
     });
+
     const { validateEmail, validatePassword, validateUsername, validateField } = useFormValidation();
 
     useEffect(() => {
@@ -31,9 +33,19 @@ export function AuthPage({ type }: { type: "signup" | "signin" }) {
         }
     }, [emailOrUsername, username, password, type]);
 
+    // Get message from URL (like "Signup success")
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const msg = params.get("message");
+        if (msg) {
+            setMessage(msg);
+        }
+    }, []);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError("");
+        setMessage("");
 
         try {
             let data;
@@ -62,9 +74,13 @@ export function AuthPage({ type }: { type: "signup" | "signin" }) {
             }
 
             const response = await axios.post("/api/auth", data);
-            localStorage.setItem("token", response.data.token);
-            const roomId = generateRoomId();
-            router.push(`/canvas/${roomId}`);
+            if (type === "signup") {
+                router.push("/signin?message=Signup successful. Please log in.");
+            } else {
+                localStorage.setItem("token", response.data.token);
+                const roomId = generateRoomId();
+                router.push(`/canvas/${roomId}`);
+            }
         } catch (err) {
             if (axios.isAxiosError(err) && err.response) {
                 setError(err.response.data.message || `${type} failed`);
@@ -86,6 +102,17 @@ export function AuthPage({ type }: { type: "signup" | "signin" }) {
                         {type === "signup" ? "Create your account" : "Sign in to your account"}
                     </h2>
                 </div>
+
+                {/* Show signup success message */}
+                {message && (
+                    <div className="text-green-500 text-sm text-center">{message}</div>
+                )}
+
+                {/* Show error */}
+                {error && (
+                    <div className="text-red-500 text-sm text-center">{error}</div>
+                )}
+
                 <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
                     <div className="rounded-md shadow-sm space-y-4">
                         <div>
@@ -108,6 +135,7 @@ export function AuthPage({ type }: { type: "signup" | "signin" }) {
                                 <p className="text-red-500 text-sm mt-1">{validationErrors.email}</p>
                             )}
                         </div>
+
                         {type === "signup" && (
                             <div>
                                 <label htmlFor="username" className="sr-only">
@@ -130,6 +158,7 @@ export function AuthPage({ type }: { type: "signup" | "signin" }) {
                                 )}
                             </div>
                         )}
+
                         <div>
                             <label htmlFor="password" className="sr-only">
                                 Password
@@ -150,6 +179,7 @@ export function AuthPage({ type }: { type: "signup" | "signin" }) {
                                 <p className="text-red-500 text-sm mt-1">{validationErrors.password}</p>
                             )}
                         </div>
+
                         {type === "signup" && (
                             <div>
                                 <label htmlFor="name" className="sr-only">
@@ -167,10 +197,6 @@ export function AuthPage({ type }: { type: "signup" | "signin" }) {
                             </div>
                         )}
                     </div>
-
-                    {error && (
-                        <div className="text-red-500 text-sm text-center">{error}</div>
-                    )}
 
                     <div>
                         <button
