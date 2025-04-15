@@ -101,6 +101,7 @@ const Index = () => {
                   Join thousands of users who are already creating amazing diagrams and sketches.
                 </p>
                 <div className="mt-10 flex flex-wrap items-center justify-center gap-6">
+                <Link href={"/signin"} >
                   <Button
                     className="relative h-12 px-8 overflow-hidden bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-semibold rounded-xl transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-[0_0_40px_rgba(167,139,250,0.5)] group"
                   >
@@ -110,6 +111,7 @@ const Index = () => {
                     </span>
                     <div className="absolute inset-0 bg-white/20 translate-y-full transition-transform duration-300 group-hover:translate-y-0" />
                   </Button>
+                  </Link>
                 </div>
               </div>
             </div>
