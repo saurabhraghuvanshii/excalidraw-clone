@@ -18,7 +18,7 @@ const Index = () => {
             </h1>
             <p className="mx-auto mt-8 max-w-2xl text-lg text-gray-300">
               Create, collaborate, and share beautiful diagrams and sketches with our intuitive drawing tool.
-              No sign-up required.
+              sign-up required.
             </p>
             <div className="mt-10 flex flex-wrap items-center justify-center gap-6">
               <Link href={"/signin"} >
@@ -54,9 +54,9 @@ const Index = () => {
                 </div>
                 <h3 className="text-xl font-semibold text-gray-100">Real-time Collaboration</h3>
               </div>
-              <p className="mt-4 text-gray-300">
+              <div className="mt-4 text-gray-300">
                 Work together with your team in real-time. Share your drawings instantly with a simple link.
-              </p>
+              </div>
             </Card>
 
             <Card className="p-6 bg-[#403E43]/30 backdrop-blur-sm border rounded-md border-[#8B5CF6]/20 hover:border-[#8B5CF6] transition-all duration-300 shadow-xl shadow-purple-900/10 group">
@@ -66,9 +66,9 @@ const Index = () => {
                 </div>
                 <h3 className="text-xl font-semibold text-gray-100">Multiplayer Editing</h3>
               </div>
-              <p className="mt-4 text-gray-300">
-                Multiple users can edit the same canvas simultaneously. See who&#39;s drawing what in real-time.
-              </p>
+              <div className="mt-4 text-gray-300">
+                Multiple users can edit the same canvas simultaneously. See who&apos;s drawing what in real-time.
+              </div>
             </Card>
 
             <Card className="p-6 bg-[#403E43]/30 backdrop-blur-sm border rounded-md border-[#8B5CF6]/20 hover:border-[#8B5CF6] transition-all duration-300 shadow-xl shadow-purple-900/10 group">
@@ -78,9 +78,9 @@ const Index = () => {
                 </div>
                 <h3 className="text-xl font-semibold text-gray-100">Smart Drawing</h3>
               </div>
-              <p className="mt-4 text-gray-300">
+              <div className="mt-4 text-gray-300">
                 Intelligent shape recognition and drawing assistance helps you create perfect diagrams.
-              </p>
+              </div>
             </Card>
           </div>
         </div>

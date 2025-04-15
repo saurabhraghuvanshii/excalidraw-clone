@@ -5,6 +5,7 @@ import { EraserCursor } from "./eraser";
 import { Game } from "@/draw/Game";
 import ZoomControl from "./ZoomControl";
 import { isAuthenticated } from "@/utils/auth";
+import { PanHandler } from "./PanHandler";
 
 export type Tool = "circle" | "rect" | "pencil" | "eraser";
 
@@ -27,7 +28,6 @@ export function Canvas({
     });
     const [offset, setOffset] = useState({ x: 0, y: 0 });
     const [isDragging, setIsDragging] = useState(false);
-    const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
     const [eraserSize, setEraserSize] = useState(5);
     const canEdit = !readOnly;
 
@@ -64,17 +64,13 @@ export function Canvas({
         }
     }, [offset]);
 
-    // Handle wheel zoom
+    // Handle wheel zoom (ctrl/cmd + wheel)
     useEffect(() => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
         const handleWheel = (e: WheelEvent) => {
             if (e.ctrlKey || e.metaKey) {
                 e.preventDefault();
-
-                // Calculate zoom center point (mouse position)
-                const rect = canvasRef.current?.getBoundingClientRect();
-                if (!rect) return;
-
-                // Update scale
                 setScale(prevScale => {
                     const newScale = e.deltaY < 0
                         ? Math.min(prevScale * 1.1, 5)
@@ -83,51 +79,36 @@ export function Canvas({
                 });
             }
         };
-
-        canvasRef.current?.addEventListener('wheel', handleWheel, { passive: false });
-
+        canvas.addEventListener('wheel', handleWheel, { passive: false });
         return () => {
-            // eslint-disable-next-line react-hooks/exhaustive-deps
-            canvasRef.current?.removeEventListener('wheel', handleWheel);
+            canvas.removeEventListener('wheel', handleWheel);
         };
     }, []);
 
     // Set up window resize handling with debounce
     useEffect(() => {
         let resizeTimer: number | null = null;
-
         function handleResize() {
-            // Clear previous timer
             if (resizeTimer) {
                 window.clearTimeout(resizeTimer);
             }
-
-            // Update dimensions state immediately
             const newWidth = window.innerWidth;
             const newHeight = window.innerHeight;
-
             setDimensions({
                 width: newWidth,
                 height: newHeight
             });
-
-            // Update canvas dimensions
             if (canvasRef.current) {
                 canvasRef.current.width = newWidth;
                 canvasRef.current.height = newHeight;
             }
-
-            // Debounce the actual redraw to avoid multiple redraws during resize
             resizeTimer = window.setTimeout(() => {
                 if (gameRef.current) {
                     gameRef.current.handleResize();
                 }
             }, 100);
         }
-
         window.addEventListener('resize', handleResize);
-
-        // Clean up
         return () => {
             window.removeEventListener('resize', handleResize);
             if (resizeTimer) {
@@ -135,54 +116,6 @@ export function Canvas({
             }
         };
     }, []);
-
-    // Setup canvas panning with space bar
-    useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.code === 'Space') {
-                document.body.style.cursor = 'grab';
-                setIsDragging(true);
-            }
-        };
-
-        const handleKeyUp = (e: KeyboardEvent) => {
-            if (e.code === 'Space') {
-                document.body.style.cursor = 'default';
-                setIsDragging(false);
-            }
-        };
-
-        window.addEventListener('keydown', handleKeyDown);
-        window.addEventListener('keyup', handleKeyUp);
-
-        return () => {
-            window.removeEventListener('keydown', handleKeyDown);
-            window.removeEventListener('keyup', handleKeyUp);
-        };
-    }, []);
-
-    // Handle mouse events for panning
-    const handleMouseDown = (e: React.MouseEvent) => {
-        if (isDragging) {
-            setDragStart({ x: e.clientX - offset.x, y: e.clientY - offset.y });
-            document.body.style.cursor = 'grabbing';
-        }
-    };
-
-    const handleMouseMove = (e: React.MouseEvent) => {
-        if (isDragging) {
-            setOffset({
-                x: e.clientX - dragStart.x,
-                y: e.clientY - dragStart.y
-            });
-        }
-    };
-
-    const handleMouseUp = () => {
-        if (isDragging) {
-            document.body.style.cursor = 'grab';
-        }
-    };
 
     // Handle eraser size with keyboard shortcuts
     useEffect(() => {
@@ -195,7 +128,6 @@ export function Canvas({
                 }
             }
         };
-
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [selectedTool]);
@@ -218,12 +150,14 @@ export function Canvas({
     }
 
     return (
-        <div
-            className="h-screen overflow-hidden relative bg-black"
-            onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-        >
+        <div className="h-screen overflow-hidden relative bg-black">
+            <PanHandler
+                canvasRef={canvasRef as React.RefObject<HTMLCanvasElement>}
+                offset={offset}
+                setOffset={setOffset}
+                isDragging={isDragging}
+                setIsDragging={setIsDragging}
+            />
             <canvas
                 ref={canvasRef}
                 width={dimensions.width}
