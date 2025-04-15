@@ -1,6 +1,7 @@
 import express, { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
+import cors from "cors";
 import { JWT_SECRET } from "@repo/backend-common/config";
 import { middleware } from "./middleware";
 import {
@@ -11,6 +12,10 @@ import {
 import { prismaClient } from "@repo/db/client";
 const app = express();
 app.use(express.json());
+app.use(cors({
+	origin: process.env.FRONTEND_URL || "http://localhost:3000",
+	credentials: true
+}));
 const prisma = prismaClient;
 
 app.post("/signup", async (req: Request, res: Response) => {
@@ -22,7 +27,27 @@ app.post("/signup", async (req: Request, res: Response) => {
 		});
 		return;
 	}
+
 	try {
+		// Check if email or username already exists
+		const existingUser = await prisma.user.findFirst({
+			where: {
+				OR: [
+					{ email: parsedData.data.email },
+					{ username: parsedData.data.username }
+				]
+			}
+		});
+
+		if (existingUser) {
+			const field = existingUser.email === parsedData.data.email ? "email" : "username";
+			res.status(400).json({
+				message: `${field} already exists`,
+				field: field
+			});
+			return;
+		}
+
 		const hashedPassword = await bcrypt.hash(parsedData.data.password, 10);
 		const user = await prisma.user.create({
 			data: {
@@ -53,7 +78,10 @@ app.post("/signin", async (req, res) => {
 
 	const user = await prisma.user.findFirst({
 		where: {
-			email: parsedData.data.email,
+			OR: [
+				{ email: parsedData.data.email },
+				{ username: parsedData.data.email }
+			]
 		},
 	});
 
