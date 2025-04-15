@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { Canvas } from "./Canvas";
 import { getToken } from "@/utils/auth";
 
-export function RoomCanvas({ roomId }: { roomId: string }) {
+export function RoomCanvas({ roomId, readOnly = false }: { roomId: string; readOnly?: boolean }) {
     const [socket, setSocket] = useState<WebSocket | null>(null);
     const [error, setError] = useState<string | null>(null);
 
@@ -80,7 +80,7 @@ export function RoomCanvas({ roomId }: { roomId: string }) {
                     Room ID: {roomId}
                 </div>
             </div>
-            <Canvas roomId={roomId} socket={socket as WebSocket} />
+            <Canvas roomId={roomId} socket={socket as WebSocket} readOnly={readOnly} />
         </div>
     );
 }

@@ -37,16 +37,18 @@ export class Game {
     private offsetX = 0;
     private offsetY = 0;
     private eraserActive = false;
-
+    private selectedShapeId: string | null = null;
+    private readOnly: boolean = false;
 
     socket: WebSocket;
 
-    constructor(canvas: HTMLCanvasElement, roomId: string, socket: WebSocket) {
+    constructor(canvas: HTMLCanvasElement, roomId: string, socket: WebSocket, readOnly = false) {
         this.canvas = canvas;
         this.ctx = canvas.getContext("2d", { willReadFrequently: true })!;
         this.roomId = roomId;
         this.socket = socket;
         this.clicked = false;
+        this.readOnly = readOnly;
         this.init();
         this.initHandlers();
         this.initMouseHandlers();
@@ -71,6 +73,10 @@ export class Game {
         this.offsetX = x;
         this.offsetY = y;
         this.clearCanvas();
+    }
+
+    setReadOnly(readOnly: boolean) {
+        this.readOnly = readOnly;
     }
 
     async init() {
@@ -135,6 +141,33 @@ export class Game {
 
         // Draw all existing shapes
         this.drawShapes();
+
+        // Draw highlight for selected shape
+        if (this.selectedShapeId) {
+            const selected = this.existingShapes.find(s => s.id === this.selectedShapeId);
+            if (selected) {
+                this.ctx.save();
+                this.ctx.translate(this.offsetX, this.offsetY);
+                this.ctx.scale(this.scale, this.scale);
+                this.ctx.strokeStyle = "#FFD700";
+                this.ctx.lineWidth = 3;
+                if (selected.type === "rect") {
+                    this.ctx.strokeRect(selected.x, selected.y, selected.width, selected.height);
+                } else if (selected.type === "circle") {
+                    this.ctx.beginPath();
+                    this.ctx.arc(selected.centerX, selected.centerY, Math.abs(selected.radius), 0, Math.PI * 2);
+                    this.ctx.stroke();
+                    this.ctx.closePath();
+                } else if (selected.type === "pencil") {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(selected.startX, selected.startY);
+                    this.ctx.lineTo(selected.endX, selected.endY);
+                    this.ctx.stroke();
+                    this.ctx.closePath();
+                }
+                this.ctx.restore();
+            }
+        }
 
         // Restore original transform
         this.ctx.restore();
@@ -261,16 +294,27 @@ export class Game {
     }
 
     mouseDownHandler = (e: MouseEvent) => {
+        // Selection logic
+        const x = (e.clientX - this.offsetX) / this.scale;
+        const y = (e.clientY - this.offsetY) / this.scale;
+        const shape = this.findShapeUnderPoint(x, y);
+        if (shape) {
+            if (this.selectedShapeId === shape.id) {
+                this.selectedShapeId = null; // Unselect if already selected
+            } else {
+                this.selectedShapeId = shape.id || null;
+            }
+            this.clearCanvas();
+            return; // Do not start drawing if a shape is selected
+        }
+        if (this.readOnly) return;
         this.clicked = true;
-        this.startX = (e.clientX - this.offsetX) / this.scale;
-        this.startY = (e.clientY - this.offsetY) / this.scale;
-
-
+        this.startX = x;
+        this.startY = y;
         if (this.selectedTool === "eraser") {
             this.eraserActive = true;
             this.eraseAtPosition(e.clientX, e.clientY);
         }
-
     }
 
     mouseUpHandler = (e: MouseEvent) => {

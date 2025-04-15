@@ -34,14 +34,21 @@ export function Canvas({
     // Initialize game once
     useEffect(() => {
         if (canvasRef.current && !gameRef.current) {
-            const g = new Game(canvasRef.current, roomId, socket);
+            const g = new Game(canvasRef.current, roomId, socket, readOnly);
             gameRef.current = g;
             return () => {
                 g.destroy();
                 gameRef.current = null;
             };
         }
-    }, [roomId, socket]);
+    }, [roomId, socket, readOnly]);
+
+    // Update readonly mode if it changes
+    useEffect(() => {
+        if (gameRef.current) {
+            gameRef.current.setReadOnly(readOnly);
+        }
+    }, [readOnly]);
 
     // Handle tool selection
     useEffect(() => {
