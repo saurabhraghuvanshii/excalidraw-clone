@@ -9,7 +9,6 @@ import {
 	SigninSchema,
 } from "@repo/common/types";
 import { prismaClient } from "@repo/db/client";
-
 const app = express();
 app.use(express.json());
 const prisma = prismaClient;

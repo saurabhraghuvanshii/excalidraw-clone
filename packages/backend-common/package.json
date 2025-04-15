@@ -16,6 +16,8 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@types/node": "^22.10.10"
+    "@types/dotenv": "^8.2.3",
+    "@types/node": "^22.10.10",
+    "dotenv": "^16.5.0"
   }
 }
