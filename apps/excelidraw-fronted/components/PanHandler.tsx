@@ -102,4 +102,3 @@ export function PanHandler({ canvasRef, offset, setOffset, isDragging, setIsDrag
 
   return null; // This component only handles events
 }
- 

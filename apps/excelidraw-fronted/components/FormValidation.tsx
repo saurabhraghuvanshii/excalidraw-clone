@@ -59,7 +59,7 @@ export const useFormValidation = () => {
 
     const validateField = (name: string, value: string, currentErrors: FormErrors) => {
         const newErrors: FormErrors = { ...currentErrors };
-        
+
         if (name === 'email' && value) {
             if (!validateEmail(value)) {
                 newErrors.email = 'Please enter a valid email address';
@@ -72,8 +72,8 @@ export const useFormValidation = () => {
             const passwordValidation = validatePassword(value);
             if (!passwordValidation.isLongEnough) {
                 newErrors.password = 'Password must be at least 8 characters';
-            } else if (!passwordValidation.hasUpperCase || !passwordValidation.hasLowerCase || 
-                       !passwordValidation.hasNumbers || !passwordValidation.hasSpecialChar) {
+            } else if (!passwordValidation.hasUpperCase || !passwordValidation.hasLowerCase ||
+                !passwordValidation.hasNumbers || !passwordValidation.hasSpecialChar) {
                 newErrors.password = 'Password must contain uppercase, lowercase, numbers, and special characters';
             } else {
                 delete newErrors.password;
@@ -127,4 +127,3 @@ export const PasswordRequirements = ({ password }: { password: string }) => {
         </div>
     );
 };
- 

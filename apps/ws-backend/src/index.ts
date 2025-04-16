@@ -136,12 +136,12 @@ wss.on("connection", function connection(ws, request) {
 						}
 					});
 
-					if (shapesToDelete.length > 0){
-						await Promise.all(shapesToDelete.map(shape => 
+					if (shapesToDelete.length > 0) {
+						await Promise.all(shapesToDelete.map(shape =>
 							prismaClient.chat.delete({
-							  where: {
-								id: shape.id
-							  }
+								where: {
+									id: shape.id
+								}
 							})
 						));
 					}
@@ -152,7 +152,6 @@ wss.on("connection", function connection(ws, request) {
 							roomId: room.id,
 							message,
 							userId,
-							// @ts-expect-error: chatId is a new field, Prisma types may not be updated yet
 							chatId,
 						},
 					});

@@ -27,7 +27,7 @@ export function EraserCursor({ size = 10, isActive = false }: { size: number; is
   if (!isActive) return null;
 
   return (
-    <div 
+    <div
       className="pointer-events-none fixed z-50 border-2 border-white rounded-full transform -translate-x-1/2 -translate-y-1/2"
       style={{
         width: `${size * 10}px`,
