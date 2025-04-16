@@ -208,10 +208,13 @@ export class Game {
             // Remove shape locally
             this.existingShapes = this.existingShapes.filter(shape => shape.id !== shapeToErase.id);
 
+            const eraseMessage = JSON.stringify({
+                eraseId: shapeToErase.id
+            });
             // Send erase action to other clients
             this.socket.send(JSON.stringify({
                 type: "chat",
-                message: JSON.stringify({ eraseId: shapeToErase.id }),
+                message: eraseMessage,
                 roomId: this.roomId
             }));
 

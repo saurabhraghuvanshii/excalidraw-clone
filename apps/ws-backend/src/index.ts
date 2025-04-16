@@ -110,13 +110,53 @@ wss.on("connection", function connection(ws, request) {
 					return;
 				}
 
-				await prismaClient.chat.create({
-					data: {
-						roomId: room.id,
-						message,
-						userId,
-					},
-				});
+				// Check if this is an erase action or shape creation
+				let clientShapeId: string | undefined = undefined;
+				let chatId: string | null = null;
+				try {
+					const msgObj = JSON.parse(message);
+					if (msgObj.eraseId) {
+						clientShapeId = msgObj.eraseId;
+					} else if (msgObj.shape && typeof msgObj.shape.id === 'string') {
+						chatId = msgObj.shape.id;
+					} else {
+						chatId = null;
+					}
+				} catch {
+					chatId = null;
+				}
+
+				if (clientShapeId) {
+					const shapesToDelete = await prismaClient.chat.findMany({
+						where: {
+							roomId: room.id,
+							message: {
+								contains: clientShapeId
+							}
+						}
+					});
+
+					if (shapesToDelete.length > 0){
+						await Promise.all(shapesToDelete.map(shape => 
+							prismaClient.chat.delete({
+							  where: {
+								id: shape.id
+							  }
+							})
+						));
+					}
+				} else {
+					// Normal shape creation (store chatId if present)
+					await prismaClient.chat.create({
+						data: {
+							roomId: room.id,
+							message,
+							userId,
+							// @ts-expect-error: chatId is a new field, Prisma types may not be updated yet
+							chatId,
+						},
+					});
+				}
 
 				users.forEach((user) => {
 					if (user.rooms.includes(roomId)) {
@@ -130,7 +170,7 @@ wss.on("connection", function connection(ws, request) {
 					}
 				});
 			} catch (error) {
-				console.error("Error creating chat:", error);
+				console.error("Error creating chat or erasing shape:", error);
 			}
 		}
 	});

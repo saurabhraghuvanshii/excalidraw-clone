@@ -8,19 +8,38 @@ export async function getExistingShapes(roomId: string) {
         const res = await axios.get(`${HTTP_BACKEND}/chats/${roomId}`, {
             headers: token ? { Authorization: `Bearer ${token}` } : {}
         });
-
+        
         const messages = res.data.messages || [];
-
-        const shapes = messages.map((x: { message: string }) => {
+        
+        const erasedShapeIds = new Set<string>();
+        messages.forEach((x: { message: string }) => {
             try {
                 const messageData = JSON.parse(x.message);
-                return messageData.shape;
+                if (messageData.eraseId) {
+                    erasedShapeIds.add(messageData.eraseId);
+                }
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             } catch (e) {
-                console.error("Error parsing message:", e);
-                return null;
+                // Ignore parsing errors for eraseId messages
             }
-        }).filter(Boolean); // Filter out null values
-
+        });
+        
+        // Then collect and filter shapes that haven't been erased
+        const shapes = messages
+            .map((x: { message: string }) => {
+                try {
+                    const messageData = JSON.parse(x.message);
+                    if (messageData.shape && messageData.shape.id && !erasedShapeIds.has(messageData.shape.id)) {
+                        return messageData.shape;
+                    }
+                    return null;
+                } catch (e) {
+                    console.error("Error parsing message:", e);
+                    return null;
+                }
+            })
+            .filter(Boolean); // Filter out null values
+        
         return shapes;
     } catch (error) {
         console.error("Error fetching shapes:", error);

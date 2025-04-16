@@ -170,6 +170,7 @@ export function Canvas({
                 width={dimensions.width}
                 height={dimensions.height}
                 className="absolute top-0 left-0"
+                style={{ cursor: getCursorForTool(selectedTool) }}
             />
             {selectedTool === "eraser" && <EraserCursor size={eraserSize} isActive />}
             <Topbar setSelectedTool={setSelectedTool} selectedTool={selectedTool} />
@@ -208,4 +209,16 @@ function Topbar({ selectedTool, setSelectedTool }: {
             </div>
         </div>
     );
+}
+
+function getCursorForTool(tool: Tool) {
+    switch (tool) {
+        case "pencil":
+            return "crosshair";
+        case "rect":
+        case "circle":
+            return "crosshair";// or use a custom eraser cursor if desired
+        default:
+            return "default";
+    }
 }
