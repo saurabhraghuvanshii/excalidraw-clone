@@ -15,11 +15,13 @@
     "@types/cors": "^2.8.17",
     "@types/dotenv": "^8.2.3",
     "@types/jsonwebtoken": "^9.0.7",
+    "@types/jwt-decode": "^3.1.0",
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^4.21.2",
-    "jsonwebtoken": "^9.0.2"
+    "jsonwebtoken": "^9.0.2",
+    "jwt-decode": "^4.0.0"
   },
   "devDependencies": {
     "@repo/backend-common": "workspace:*",

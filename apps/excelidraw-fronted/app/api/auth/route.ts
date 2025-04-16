@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
+import { HTTP_BACKEND } from '@/config';
 
-const BACKEND_URL = 'http://localhost:3001';
 
 export async function POST(req: Request) {
     try {
@@ -15,7 +15,7 @@ export async function POST(req: Request) {
         }
 
         const endpoint = type === 'signin' ? '/signin' : '/signup';
-        const response = await fetch(`${BACKEND_URL}${endpoint}`, {
+        const response = await fetch(`${HTTP_BACKEND}${endpoint}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -40,4 +40,5 @@ export async function POST(req: Request) {
             { status: 500 }
         );
     }
-} 
+}
+ 

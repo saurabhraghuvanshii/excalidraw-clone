@@ -42,6 +42,29 @@ export function AuthPage({ type }: { type: "signup" | "signin" }) {
         }
     }, []);
 
+    // Helper to decode JWT payload (client-side, no verification)
+    function decodeJwt(token: string): { exp?: number } {
+        try {
+            const payload = token.split('.')[1];
+            const decoded = JSON.parse(atob(payload));
+            return decoded;
+        } catch {
+            return {};
+        }
+    }
+
+    // Redirect if already signed in
+    useEffect(() => {
+        const token = localStorage.getItem("token");
+        if (token) {
+            const decoded = decodeJwt(token);
+            if (decoded.exp && decoded.exp * 1000 > Date.now()) {
+                const roomId = generateRoomId();
+                router.replace(`/canvas/${roomId}`);
+            }
+        }
+    }, []);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError("");
