@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { IconButton } from "./ui/IconButton";
 import { Circle, Pencil, RectangleHorizontalIcon, Eraser, MousePointer2 } from "lucide-react";
 import { EraserCursor } from "./canvaFuncationality/eraser";
-import { Game, Tool } from "@/draw/Game";
+import { Tool } from "@/draw/CanvasEngine";
+import { Game } from "@/draw/Game";
 import ZoomControl from "./canvaFuncationality/ZoomControl";
 import { isAuthenticated } from "@/utils/auth";
 import { PanHandler } from "./canvaFuncationality/PanHandler";
@@ -156,10 +157,10 @@ export function Canvas({
             const y = (e.clientY - rect.top - offset.y) / scale;
             let cursor = getCursorForTool(selectedTool);
             // Check for handle hover if a shape is selected
-            if (game.selectedShapeId) {
-                const selected = game.existingShapes.find(s => s.id === game.selectedShapeId);
+            if (game.engine.selectedShapeId) {
+                const selected = game.engine.shapes.find((s: any) => s.id === game.engine.selectedShapeId);
                 if (selected) {
-                    const handleIdx = game.getHandleAtPoint(selected, x, y);
+                    const handleIdx = game.engine.getHandleAtPoint(selected, x, y);
                     if (handleIdx !== null) {
                         cursor = game.getHandleCursor(handleIdx);
                         c.style.cursor = cursor;
@@ -168,8 +169,8 @@ export function Canvas({
                 }
             }
             // Otherwise, check for shape hover
-            const shape = game.findShapeUnderPoint
-                ? game.findShapeUnderPoint(x, y)
+            const shape = game.engine.findShapeUnderPoint
+                ? game.engine.findShapeUnderPoint(x, y)
                 : null;
             if (shape) {
                 c.style.cursor = "move";
@@ -194,12 +195,12 @@ export function Canvas({
             const rect = c.getBoundingClientRect();
             const x = (e.clientX - rect.left - offset.x) / scale;
             const y = (e.clientY - rect.top - offset.y) / scale;
-            const shape = gameRef.current.findShapeUnderPoint
-                ? gameRef.current.findShapeUnderPoint(x, y)
+            const shape = gameRef.current.engine.findShapeUnderPoint
+                ? gameRef.current.engine.findShapeUnderPoint(x, y)
                 : null;
             if (shape) {
-                gameRef.current.selectedShapeId = shape.id || null;
-                gameRef.current.clearCanvas();
+                gameRef.current.engine.selectedShapeId = shape.id || null;
+                gameRef.current.engine.clearCanvas();
             }
         }
         canvas.addEventListener("click", handleClick);
