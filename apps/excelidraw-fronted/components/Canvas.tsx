@@ -2,12 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import { IconButton } from "./IconButton";
 import { Circle, Pencil, RectangleHorizontalIcon, Eraser } from "lucide-react";
 import { EraserCursor } from "./eraser";
-import { Game } from "@/draw/Game";
+import { Game, Tool } from "@/draw/Game";
 import ZoomControl from "./ZoomControl";
 import { isAuthenticated } from "@/utils/auth";
 import { PanHandler } from "./PanHandler";
-
-export type Tool = "circle" | "rect" | "pencil" | "eraser";
 
 export function Canvas({
     roomId,
@@ -28,7 +26,7 @@ export function Canvas({
     });
     const [offset, setOffset] = useState({ x: 0, y: 0 });
     const [isDragging, setIsDragging] = useState(false);
-    const [eraserSize, setEraserSize] = useState(5);
+    const [eraserSize, setEraserSize] = useState(2);
     const canEdit = !readOnly;
 
     // Initialize game once
@@ -184,27 +182,32 @@ function Topbar({ selectedTool, setSelectedTool }: {
     setSelectedTool: (s: Tool) => void
 }) {
     return (
-        <div className="fixed top-2 left-2 z-10">
-            <div className="flex gap-2 bg-gray-800 p-2 rounded-md">
+        <div className="fixed top-2 left-1/2 -translate-x-1/2 z-10 flex justify-center w-full pointer-events-none">
+            <div className="flex gap-1 bg-gray-800 p-1 rounded-md pointer-events-auto shadow-md border border-gray-700 cursor-pointer">
                 <IconButton
-                    onClick={() => setSelectedTool("pencil")}
-                    activated={selectedTool === "pencil"}
-                    icon={<Pencil />}
+                    onClick={() => setSelectedTool("freehand")}
+                    activated={selectedTool === "freehand"}
+                    icon={<Pencil size={18} />}
+                />
+                <IconButton
+                    onClick={() => setSelectedTool("line")}
+                    activated={selectedTool === "line"}
+                    image="/line.svg"
                 />
                 <IconButton
                     onClick={() => setSelectedTool("rect")}
                     activated={selectedTool === "rect"}
-                    icon={<RectangleHorizontalIcon />}
+                    icon={<RectangleHorizontalIcon size={18} />}
                 />
                 <IconButton
                     onClick={() => setSelectedTool("circle")}
                     activated={selectedTool === "circle"}
-                    icon={<Circle />}
+                    icon={<Circle size={18} />}
                 />
                 <IconButton
                     onClick={() => setSelectedTool("eraser")}
                     activated={selectedTool === "eraser"}
-                    icon={<Eraser />}
+                    icon={<Eraser size={18} />}
                 />
             </div>
         </div>
@@ -213,11 +216,11 @@ function Topbar({ selectedTool, setSelectedTool }: {
 
 function getCursorForTool(tool: Tool) {
     switch (tool) {
-        case "pencil":
+        case "line":
             return "crosshair";
         case "rect":
         case "circle":
-            return "crosshair";// or use a custom eraser cursor if desired
+            return "crosshair";
         default:
             return "default";
     }

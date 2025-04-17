@@ -1,4 +1,3 @@
-type Tool = "pencil" | "rect" | "circle" | "eraser";
 import { getExistingShapes } from "./http";
 
 type Shape = {
@@ -15,13 +14,15 @@ type Shape = {
     radius: number;
     id?: string;
 } | {
-    type: "pencil";
+    type: "line";
     startX: number;
     startY: number;
     endX: number;
     endY: number;
     id?: string;
 }
+
+export type Tool = "freehand" | "line" | "rect" | "circle" | "eraser";
 
 export class Game {
     private canvas: HTMLCanvasElement;
@@ -158,7 +159,7 @@ export class Game {
                     this.ctx.arc(selected.centerX, selected.centerY, Math.abs(selected.radius), 0, Math.PI * 2);
                     this.ctx.stroke();
                     this.ctx.closePath();
-                } else if (selected.type === "pencil") {
+                } else if (selected.type === "line") {
                     this.ctx.beginPath();
                     this.ctx.moveTo(selected.startX, selected.startY);
                     this.ctx.lineTo(selected.endX, selected.endY);
@@ -186,7 +187,7 @@ export class Game {
                 this.ctx.arc(shape.centerX, shape.centerY, Math.abs(shape.radius), 0, Math.PI * 2);
                 this.ctx.stroke();
                 this.ctx.closePath();
-            } else if (shape.type === "pencil") {
+            } else if (shape.type === "line") {
                 this.ctx.beginPath();
                 this.ctx.moveTo(shape.startX, shape.startY);
                 this.ctx.lineTo(shape.endX, shape.endY);
@@ -244,7 +245,7 @@ export class Game {
     }
 
     // Check if a point is near a pencil line
-    private isPointNearPencilLine(x: number, y: number, pencil: Shape & { type: "pencil" }): boolean {
+    private isPointNearPencilLine(x: number, y: number, pencil: Shape & { type: "line" }): boolean {
         // Calculate distance from point to line segment
         const A = x - pencil.startX;
         const B = y - pencil.startY;
@@ -288,7 +289,7 @@ export class Game {
                 return shape;
             } else if (shape.type === "circle" && this.isPointInCircle(adjustedX, adjustedY, shape)) {
                 return shape;
-            } else if (shape.type === "pencil" && this.isPointNearPencilLine(adjustedX, adjustedY, shape)) {
+            } else if (shape.type === "line" && this.isPointNearPencilLine(adjustedX, adjustedY, shape)) {
                 return shape;
             }
         }
@@ -328,7 +329,7 @@ export class Game {
 
         this.clicked = false;
 
-        if (["pencil", "rect", "circle"].includes(this.selectedTool)) {
+        if (["line", "rect", "circle"].includes(this.selectedTool)) {
             const endX = (e.clientX - this.offsetX) / this.scale;
             const endY = (e.clientY - this.offsetY) / this.scale;
             const width = endX - this.startX;
@@ -358,9 +359,9 @@ export class Game {
                     centerY: centerY,
                     id: shapeId
                 };
-            } else if (this.selectedTool === "pencil") {
+            } else if (this.selectedTool === "line") {
                 shape = {
-                    type: "pencil",
+                    type: "line",
                     startX: this.startX,
                     startY: this.startY,
                     endX: endX,
@@ -421,7 +422,7 @@ export class Game {
             this.ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
             this.ctx.stroke();
             this.ctx.closePath();
-        } else if (this.selectedTool === "pencil") {
+        } else if (this.selectedTool === "line") {
             this.ctx.beginPath();
             this.ctx.moveTo(this.startX, this.startY);
             this.ctx.lineTo(endX, endY);
