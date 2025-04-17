@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { IconButton } from "./ui/IconButton";
-import { Circle, Pencil, RectangleHorizontalIcon, Eraser } from "lucide-react";
+import { Circle, Pencil, RectangleHorizontalIcon, Eraser, MousePointer2 } from "lucide-react";
 import { EraserCursor } from "./Shapes/eraser";
 import { Game, Tool } from "@/draw/Game";
 import ZoomControl from "./Shapes/ZoomControl";
@@ -18,7 +18,7 @@ export function Canvas({
 }) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const gameRef = useRef<Game | null>(null);
-    const [selectedTool, setSelectedTool] = useState<Tool>("circle");
+    const [selectedTool, setSelectedTool] = useState<Tool>("select");
     const [scale, setScale] = useState<number>(1);
     const [dimensions, setDimensions] = useState({
         width: window.innerWidth,
@@ -27,12 +27,17 @@ export function Canvas({
     const [offset, setOffset] = useState({ x: 0, y: 0 });
     const [isDragging, setIsDragging] = useState(false);
     const [eraserSize, setEraserSize] = useState(2);
+    const [hoveringShape, setHoveringShape] = useState(false);
     const canEdit = !readOnly;
 
     // Initialize game once
     useEffect(() => {
         if (canvasRef.current && !gameRef.current) {
             const g = new Game(canvasRef.current, roomId, socket, readOnly);
+            // Set up callback to switch to select tool after drawing
+            g.onShapeDrawn = (newShapeId: string) => {
+                setSelectedTool("select");
+            };
             gameRef.current = g;
             return () => {
                 g.destroy();
@@ -137,6 +142,75 @@ export function Canvas({
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [selectedTool]);
 
+    // Cursor logic: change to move or resize if hovering a shape or handle
+    useEffect(() => {
+        const canvas = canvasRef.current;
+        if (!canvas || !gameRef.current) return;
+        function handleMouseMove(e: MouseEvent) {
+            const game = gameRef.current;
+            if (!game) return;
+            const c = canvasRef.current;
+            if (!c) return;
+            const rect = c.getBoundingClientRect();
+            const x = (e.clientX - rect.left - offset.x) / scale;
+            const y = (e.clientY - rect.top - offset.y) / scale;
+            let cursor = getCursorForTool(selectedTool);
+            // Check for handle hover if a shape is selected
+            if (game.selectedShapeId) {
+                const selected = game.existingShapes.find(s => s.id === game.selectedShapeId);
+                if (selected) {
+                    const handleIdx = game.getHandleAtPoint(selected, x, y);
+                    if (handleIdx !== null) {
+                        cursor = game.getHandleCursor(handleIdx);
+                        c.style.cursor = cursor;
+                        setHoveringShape(false);
+                        return;
+                    }
+                }
+            }
+            // Otherwise, check for shape hover
+            const shape = game.findShapeUnderPoint
+                ? game.findShapeUnderPoint(x, y)
+                : null;
+            if (shape) {
+                setHoveringShape(true);
+                c.style.cursor = "move";
+            } else {
+                setHoveringShape(false);
+                c.style.cursor = cursor;
+            }
+        }
+        canvas.addEventListener("mousemove", handleMouseMove);
+        return () => {
+            canvas.removeEventListener("mousemove", handleMouseMove);
+        };
+    }, [offset, scale, selectedTool]);
+
+    // Click to select shape (no drag)
+    useEffect(() => {
+        const canvas = canvasRef.current;
+        if (!canvas || !gameRef.current) return;
+        function handleClick(e: MouseEvent) {
+            if (!gameRef.current) return;
+            const c = canvasRef.current;
+            if (!c) return;
+            const rect = c.getBoundingClientRect();
+            const x = (e.clientX - rect.left - offset.x) / scale;
+            const y = (e.clientY - rect.top - offset.y) / scale;
+            const shape = gameRef.current.findShapeUnderPoint
+                ? gameRef.current.findShapeUnderPoint(x, y)
+                : null;
+            if (shape) {
+                gameRef.current.selectedShapeId = shape.id || null;
+                gameRef.current.clearCanvas();
+            }
+        }
+        canvas.addEventListener("click", handleClick);
+        return () => {
+            canvas.removeEventListener("click", handleClick);
+        };
+    }, [offset, scale]);
+
     if (canEdit && !isAuthenticated()) {
         return (
             <div className="w-screen h-screen flex items-center justify-center bg-gray-900 text-white">
@@ -168,7 +242,6 @@ export function Canvas({
                 width={dimensions.width}
                 height={dimensions.height}
                 className="absolute top-0 left-0"
-                style={{ cursor: getCursorForTool(selectedTool) }}
             />
             {selectedTool === "eraser" && <EraserCursor size={eraserSize} isActive />}
             <Topbar setSelectedTool={setSelectedTool} selectedTool={selectedTool} />
@@ -184,6 +257,11 @@ function Topbar({ selectedTool, setSelectedTool }: {
     return (
         <div className="fixed top-2 left-1/2 -translate-x-1/2 z-10 flex justify-center w-full pointer-events-none">
             <div className="flex gap-1 bg-gray-800 p-1 rounded-md pointer-events-auto shadow-md border border-gray-700 cursor-pointer">
+                <IconButton
+                    onClick={() => setSelectedTool("select")}
+                    activated={selectedTool === "select"}
+                    icon={<MousePointer2 size={18} />}
+                />
                 <IconButton
                     onClick={() => setSelectedTool("freehand")}
                     activated={selectedTool === "freehand"}
