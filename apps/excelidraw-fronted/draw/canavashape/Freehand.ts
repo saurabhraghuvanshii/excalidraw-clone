@@ -72,4 +72,3 @@ export function resizeFreehand(shape: Shape, handleIdx: number, px: number, py: 
         pt.y = centerY + (pt.y - centerY) * scaleY;
     }
 }
- 

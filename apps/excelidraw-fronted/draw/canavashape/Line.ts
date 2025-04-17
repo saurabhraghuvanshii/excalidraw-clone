@@ -47,4 +47,3 @@ export function resizeLine(shape: Shape, handleIdx: number, px: number, py: numb
         shape.endY = py;
     }
 }
- 

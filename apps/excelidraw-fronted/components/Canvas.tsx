@@ -27,7 +27,7 @@ export function Canvas({
     const [offset, setOffset] = useState({ x: 0, y: 0 });
     const [isDragging, setIsDragging] = useState(false);
     const [eraserSize, setEraserSize] = useState(2);
-    const [hoveringShape, setHoveringShape] = useState(false);
+    const [isCanvasHovered, setIsCanvasHovered] = useState(false);
     const canEdit = !readOnly;
 
     // Initialize game once
@@ -163,7 +163,6 @@ export function Canvas({
                     if (handleIdx !== null) {
                         cursor = game.getHandleCursor(handleIdx);
                         c.style.cursor = cursor;
-                        setHoveringShape(false);
                         return;
                     }
                 }
@@ -173,10 +172,8 @@ export function Canvas({
                 ? game.findShapeUnderPoint(x, y)
                 : null;
             if (shape) {
-                setHoveringShape(true);
                 c.style.cursor = "move";
             } else {
-                setHoveringShape(false);
                 c.style.cursor = cursor;
             }
         }
@@ -242,8 +239,10 @@ export function Canvas({
                 width={dimensions.width}
                 height={dimensions.height}
                 className="absolute top-0 left-0"
+                onMouseEnter={() => setIsCanvasHovered(true)}
+                onMouseLeave={() => setIsCanvasHovered(false)}
             />
-            {selectedTool === "eraser" && <EraserCursor size={eraserSize} isActive />}
+            {selectedTool === "eraser" && isCanvasHovered && <EraserCursor size={eraserSize} isActive />}
             <Topbar setSelectedTool={setSelectedTool} selectedTool={selectedTool} />
             <ZoomControl scale={scale} setScale={setScale} />
         </div>
@@ -261,31 +260,37 @@ function Topbar({ selectedTool, setSelectedTool }: {
                     onClick={() => setSelectedTool("select")}
                     activated={selectedTool === "select"}
                     icon={<MousePointer2 size={18} />}
+                    title="Select"
                 />
                 <IconButton
                     onClick={() => setSelectedTool("freehand")}
                     activated={selectedTool === "freehand"}
                     icon={<Pencil size={18} />}
+                    title="Freehand"
                 />
                 <IconButton
                     onClick={() => setSelectedTool("line")}
                     activated={selectedTool === "line"}
                     image="/line.svg"
+                    title="Line"
                 />
                 <IconButton
                     onClick={() => setSelectedTool("rect")}
                     activated={selectedTool === "rect"}
                     icon={<RectangleHorizontalIcon size={18} />}
+                    title="Rectangle"
                 />
                 <IconButton
                     onClick={() => setSelectedTool("circle")}
                     activated={selectedTool === "circle"}
                     icon={<Circle size={18} />}
+                    title="Circle"
                 />
                 <IconButton
                     onClick={() => setSelectedTool("eraser")}
                     activated={selectedTool === "eraser"}
                     icon={<Eraser size={18} />}
+                    title="Eraser"
                 />
             </div>
         </div>

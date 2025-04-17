@@ -220,7 +220,7 @@ export class Game {
 
     // Check if a point is inside a rectangle
     private isPointInRect(x: number, y: number, rect: Shape & { type: "rect" }): boolean {
-        return isPointInRectangle(x, y, rect);
+        return isPointInRectangle(x, y, rect, 10);
     }
 
     // Check if a point is inside a circle
@@ -237,12 +237,13 @@ export class Game {
         // Adjust for scale and offset
         const adjustedX = (x - this.offsetX) / this.scale;
         const adjustedY = (y - this.offsetY) / this.scale;
+        const eraserBuffer = 10; // Always use a 10px buffer for eraser
 
         // Check from the newest shape (top) to the oldest (bottom)
         for (let i = this.existingShapes.length - 1; i >= 0; i--) {
             const shape = this.existingShapes[i];
 
-            if (shape.type === "rect" && this.isPointInRect(adjustedX, adjustedY, shape)) {
+            if (shape.type === "rect" && isPointInRectangle(adjustedX, adjustedY, shape, eraserBuffer)) {
                 return shape;
             } else if (shape.type === "circle" && this.isPointInCircle(adjustedX, adjustedY, shape)) {
                 return shape;
@@ -259,7 +260,7 @@ export class Game {
     drawSelectionFrameAndHandles(shape: Shape) {
         // Do NOT apply translate/scale here; already applied in clearCanvas
         this.ctx.save();
-        this.ctx.strokeStyle = "#FFD700";
+        this.ctx.strokeStyle = "#60A5FA";
         this.ctx.lineWidth = 2;
         let bounds = this.getShapeBounds(shape);
         if (!bounds) return;
@@ -278,7 +279,7 @@ export class Game {
             [x, y + height], // bottom-left
             [x, y + height / 2], // left-center
         ];
-        this.ctx.fillStyle = "#FFD700";
+        this.ctx.fillStyle = "#60A5FA";
         for (let [hx, hy] of handles) {
             this.ctx.fillRect(hx - hs / 2, hy - hs / 2, hs, hs);
         }

@@ -25,4 +25,3 @@ export function resizeCircle(shape: Shape, handleIdx: number, px: number, py: nu
     let minSize = 10;
     shape.radius = Math.max(Math.sqrt(dx * dx + dy * dy), minSize / 2);
 }
- 

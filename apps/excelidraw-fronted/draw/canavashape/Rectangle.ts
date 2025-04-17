@@ -5,9 +5,8 @@ export function drawRectangle(ctx: CanvasRenderingContext2D, shape: Shape) {
     ctx.strokeRect(shape.x, shape.y, shape.width, shape.height);
 }
 
-export function isPointInRectangle(x: number, y: number, shape: Shape): boolean {
+export function isPointInRectangle(x: number, y: number, shape: Shape, buffer: number = 10): boolean {
     if (shape.type !== 'rect') return false;
-    const buffer = Math.min(Math.abs(shape.width), Math.abs(shape.height)) < 10 ? 5 : 0;
     return (
         x >= shape.x - buffer &&
         x <= shape.x + shape.width + buffer &&
@@ -60,4 +59,3 @@ export function resizeRectangle(shape: Shape, handleIdx: number, px: number, py:
     if (shape.width < minSize) shape.width = minSize;
     if (shape.height < minSize) shape.height = minSize;
 }
- 

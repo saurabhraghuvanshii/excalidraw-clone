@@ -4,17 +4,20 @@ export function IconButton({
     icon,
     image,
     onClick,
-    activated
+    activated,
+    title
 }: {
     icon?: ReactNode,
     image?: string,
     onClick: () => void,
-    activated: boolean
+    activated: boolean,
+    title?: string
 }) {
     return (
         <div
             className={`m-2 pointer rounded-full border p-2 bg-black hover:bg-gray ${activated ? "text-red-400" : "text-white"}`}
             onClick={onClick}
+            title={title}
         >
             {image ? (
                 <img src={image} alt="tool" className="w-5 h-5" />
