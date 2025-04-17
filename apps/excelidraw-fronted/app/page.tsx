@@ -1,12 +1,25 @@
+"use client"
 import React from "react";
 import { Button } from "@repo/ui/button"
 import { Card } from "@repo/ui/card";
 import Link from "next/link";
 import { Pencil, Share2, Users2, Sparkles, Github, Download, Moon, } from "lucide-react";
+import { SignOutButton } from "@/components/buttons/SignOutButton";
+import { useEffect, useState } from "react";
+import { SignInButton } from "@/components/buttons/SignInButton";
+import { SignUpButton } from "@/components/buttons/SignUpButton";
+import { OpenCanvasButton } from "@/components/buttons/OpenCanvasButton";
 
 const Index = () => {
+  const [signedIn, setSignedIn] = useState(false);
+
+  useEffect(() => {
+    setSignedIn(!!localStorage.getItem("token"));
+  }, []);
+
   return (
-    <div className="min-h-screen bg-[#121212] text-white">
+    <main className="min-h-screen bg-[#121212] text-white">
+      <SignOutButton />
 
       <header className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-[#8B5CF6]/20 via-[#1EAEDB]/10 to-[#7E69AB]/20 animate-gradient"></div>
@@ -21,21 +34,14 @@ const Index = () => {
               sign-up required.
             </p>
             <div className="mt-10 flex flex-wrap items-center justify-center gap-6">
-              <Link href={"/signin"} >
-                <Button
-                  className="h-12 px-6 bg-gradient-to-r from-[#8B5CF6] to-[#7E69AB] hover:from-[#9b87f5] hover:to-[#8B5CF6] border-none shadow-lg shadow-purple-900/20 text-white"
-                >
-                  Sign in
-                </Button>
-              </Link>
-              <Link href={"/signup"}>
-                <Button
-                  variant="outline"
-                  className="h-12 px-6 bg-gradient-to-r from-[#8B5CF6] to-[#7E69AB] hover:from-[#9b87f5] hover:to-[#8B5CF6] border-none shadow-lg shadow-purple-900/20 text-white"
-                >
-                  Sign up
-                </Button>
-              </Link>
+              {!signedIn ? (
+                <>
+                  <SignInButton />
+                  <SignUpButton />
+                </>
+              ) : (
+                <OpenCanvasButton />
+              )}
             </div>
           </div>
         </div>
@@ -67,7 +73,7 @@ const Index = () => {
                 <h3 className="text-xl font-semibold text-gray-100">Multiplayer Editing</h3>
               </div>
               <div className="mt-4 text-gray-300">
-                Multiple users can edit the same canvas simultaneously. See who&apos;s drawing what in real-time.
+                Multiple users can edit the same canvas simultaneously. See who's drawing what in real-time.
               </div>
             </Card>
 
@@ -86,12 +92,11 @@ const Index = () => {
         </div>
       </section>
 
-      {/* CTA Section with modern gradient */}
       <section className="py-24 bg-[#121212]">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="relative overflow-hidden rounded-3xl">
             <div className="absolute inset-0 bg-gradient-to-r from-[#8B5CF6] to-[#1EAEDB]"></div>
-            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIj48cGF0aCBkPSJNMzYgMzRjMC0yLjIgMS44LTQgNC00czQgMS44IDQgNC0xLjggNC00IDQtNC0xLjgtNC00TTI2IDE0YzAtMi4yIDEuOC00IDQtNHM0IDEuOCA0IDQtMS44IDQtNCA0LTQtMS44LTQtNE0xNiA0NGMwLTIuMiAxLjgtNCA0LTRzNCAxLjggNCA0LTEuOCA0LTQgNC00LTEuOC00LTQiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLW9wYWNpdHk9Ii4xNSIgc3Ryb2tlLXdpZHRoPSIyIi8+PC9nPjwvc3ZnPg==')] opacity-10"></div>
+            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIj48cGF0aCBkPSJNMzYgMzRjMC0yLjIgMS44LTQgNC00czQgMS44IDQgNC0xLjggNC00TTI2IDE0YzAtMi4yIDEuOC00IDQtNHM0IDEuOCA0IDQtMS44IDQtNCA0LTQtMS44LTQtNE0xNiA0NGMwLTIuMiAxLjgtNCA0LTRzNCAxLjggNCA0LTEuOCA0LTQgNC00LTEuOC00LTQiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLW9wYWNpdHk9Ii4xNSIgc3Ryb2tlLXdpZHRoPSIyIi8+PC9nPjwvc3ZnPg==')] opacity-10"></div>
             <div className="relative p-8 sm:p-16">
               <div className="mx-auto max-w-2xl text-center">
                 <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
@@ -102,15 +107,7 @@ const Index = () => {
                 </p>
                 <div className="mt-10 flex flex-wrap items-center justify-center gap-6">
                   <Link href={"/signin"} >
-                    <Button
-                      className="relative h-12 px-8 overflow-hidden bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-semibold rounded-xl transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-[0_0_40px_rgba(167,139,250,0.5)] group"
-                    >
-                      <span className="relative z-10 flex items-center">
-                        Open Canvas
-                        <Pencil className="ml-2 h-5 w-5 transition-transform group-hover:rotate-12" />
-                      </span>
-                      <div className="absolute inset-0 bg-white/20 translate-y-full transition-transform duration-300 group-hover:translate-y-0" />
-                    </Button>
+                    <OpenCanvasButton/>
                   </Link>
                 </div>
               </div>
@@ -119,7 +116,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Footer with dark theme */}
       <footer className="border-t border-gray-800 bg-[#0F1115]">
         <div className="container mx-auto px-4 py-12 sm:px-6 lg:px-8">
           <div className="flex flex-col items-center justify-between gap-6 sm:flex-row">
@@ -140,7 +136,7 @@ const Index = () => {
           </div>
         </div>
       </footer>
-    </div>
+    </main>
   );
 };
 

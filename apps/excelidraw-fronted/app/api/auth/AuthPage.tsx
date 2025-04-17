@@ -118,7 +118,7 @@ export function AuthPage({ type }: { type: "signup" | "signin" }) {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-900">
+        <main className="min-h-screen flex items-center justify-center bg-gray-900">
             <div className="max-w-md w-full space-y-8 p-8 bg-gray-800 rounded-lg shadow-lg">
                 <div>
                     <h2 className="mt-6 text-center text-3xl font-extrabold text-white">
@@ -240,6 +240,6 @@ export function AuthPage({ type }: { type: "signup" | "signin" }) {
                     </div>
                 </form>
             </div>
-        </div>
+        </main>
     );
 }
