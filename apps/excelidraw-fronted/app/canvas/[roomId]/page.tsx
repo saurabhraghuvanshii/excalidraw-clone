@@ -2,7 +2,7 @@
 import { useState, useEffect, use } from "react";
 import { RoomCanvas } from "@/components/RoomCanvas";
 import { isAuthenticated } from "@/utils/auth";
-import { ShareRoomButton } from "@/components/ShareRoomButton";
+import { ShareRoomButton } from "@/components/buttons/ShareRoomButton";
 
 interface RoomParams {
     roomId: string;
