@@ -1,4 +1,4 @@
-import { Shape } from '../Game';
+import { Shape } from '../CanvasEngine';
 
 export function drawLine(ctx: CanvasRenderingContext2D, shape: Shape) {
     if (shape.type !== 'line') return;

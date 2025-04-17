@@ -1,4 +1,4 @@
-import { Shape } from '../Game';
+import { Shape } from '../CanvasEngine';
 
 export function drawFreehand(ctx: CanvasRenderingContext2D, shape: Shape) {
     if (shape.type !== 'freehand' || shape.points.length < 2) return;
