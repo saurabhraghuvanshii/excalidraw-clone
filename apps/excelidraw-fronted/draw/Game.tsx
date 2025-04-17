@@ -20,7 +20,11 @@ type Shape = {
     endX: number;
     endY: number;
     id?: string;
-}
+} | {
+    type: "freehand";
+    points: { x: number; y: number }[];
+    id?: string;
+};
 
 export type Tool = "freehand" | "line" | "rect" | "circle" | "eraser";
 
@@ -40,6 +44,8 @@ export class Game {
     private eraserActive = false;
     private selectedShapeId: string | null = null;
     private readOnly: boolean = false;
+    private freehandDrawing: boolean = false;
+    private freehandPoints: { x: number; y: number }[] = [];
 
     socket: WebSocket;
 
@@ -108,9 +114,12 @@ export class Game {
                     const parsedData = JSON.parse(message.message);
 
                     if (parsedData.shape) {
-                        // Add new shape
-                        this.existingShapes.push(parsedData.shape);
-                        this.clearCanvas();
+                        // Only add shape if it doesn't already exist (by id)
+                        const shapeId = parsedData.shape.id;
+                        if (shapeId && !this.existingShapes.some(s => s.id === shapeId)) {
+                            this.existingShapes.push(parsedData.shape);
+                            this.clearCanvas();
+                        }
                     } else if (parsedData.eraseId) {
                         // Handle eraser action
                         this.existingShapes = this.existingShapes.filter(
@@ -298,49 +307,53 @@ export class Game {
     }
 
     mouseDownHandler = (e: MouseEvent) => {
-        // Selection logic
         const x = (e.clientX - this.offsetX) / this.scale;
         const y = (e.clientY - this.offsetY) / this.scale;
+        if (this.readOnly) return;
+        if (this.selectedTool === "eraser") {
+            this.eraserActive = true;
+            this.eraseAtPosition(e.clientX, e.clientY);
+            return;
+        }
+        // Only select shape if not drawing
         const shape = this.findShapeUnderPoint(x, y);
         if (shape) {
             if (this.selectedShapeId === shape.id) {
-                this.selectedShapeId = null; // Unselect if already selected
+                this.selectedShapeId = null;
             } else {
                 this.selectedShapeId = shape.id || null;
             }
             this.clearCanvas();
-            return; // Do not start drawing if a shape is selected
+            return;
         }
-        if (this.readOnly) return;
         this.clicked = true;
         this.startX = x;
         this.startY = y;
-        if (this.selectedTool === "eraser") {
-            this.eraserActive = true;
-            this.eraseAtPosition(e.clientX, e.clientY);
+        if (this.selectedTool === "freehand") {
+            this.freehandDrawing = true;
+            this.freehandPoints = [{ x, y }];
         }
+        // Do not create shape yet; wait for drag (mouse move + up)
     }
 
     mouseUpHandler = (e: MouseEvent) => {
         if (this.selectedTool === "eraser") {
-            // Stop erasing when mouse button is released
             this.eraserActive = false;
         }
-
+        if (!this.clicked) return;
         this.clicked = false;
-
+        const endX = (e.clientX - this.offsetX) / this.scale;
+        const endY = (e.clientY - this.offsetY) / this.scale;
+        const width = endX - this.startX;
+        const height = endY - this.startY;
+        let shape = null;
+        const shapeId = this.generateId();
         if (["line", "rect", "circle"].includes(this.selectedTool)) {
-            const endX = (e.clientX - this.offsetX) / this.scale;
-            const endY = (e.clientY - this.offsetY) / this.scale;
-            const width = endX - this.startX;
-            const height = endY - this.startY;
-
-            let shape: Shape | null = null;
-            const shapeId = this.generateId();
-
+            // Only create shape if there was a drag (not just a tap)
+            if (Math.abs(width) < 2 && Math.abs(height) < 2) return;
             if (this.selectedTool === "rect") {
                 shape = {
-                    type: "rect",
+                    type: "rect" as const,
                     x: this.startX,
                     y: this.startY,
                     height,
@@ -351,9 +364,8 @@ export class Game {
                 const radius = Math.max(Math.abs(width), Math.abs(height)) / 2;
                 const centerX = this.startX + width / 2;
                 const centerY = this.startY + height / 2;
-
                 shape = {
-                    type: "circle",
+                    type: "circle" as const,
                     radius: radius,
                     centerX: centerX,
                     centerY: centerY,
@@ -361,7 +373,7 @@ export class Game {
                 };
             } else if (this.selectedTool === "line") {
                 shape = {
-                    type: "line",
+                    type: "line" as const,
                     startX: this.startX,
                     startY: this.startY,
                     endX: endX,
@@ -369,55 +381,101 @@ export class Game {
                     id: shapeId
                 };
             }
-
             if (!shape) return;
-
-            // Add shape locally
-            this.existingShapes.push(shape);
-
-            // Send to other clients
-            this.socket.send(JSON.stringify({
-                type: "chat",
-                message: JSON.stringify({ shape }),
-                roomId: this.roomId
-            }));
-
-            // Redraw canvas
-            this.clearCanvas();
+            // Only add if not already present
+            if (!this.existingShapes.some(s => s.id === shapeId)) {
+                this.existingShapes.push(shape);
+                this.socket.send(
+                    JSON.stringify({
+                        type: "chat",
+                        message: JSON.stringify({ shape }),
+                        roomId: this.roomId
+                    })
+                );
+                this.clearCanvas();
+            }
+        } else if (this.selectedTool === "freehand" && this.freehandDrawing) {
+            this.freehandDrawing = false;
+            // Only create freehand shape if there was a drag (more than 1 point and moved at least 2px)
+            if (this.freehandPoints.length > 1) {
+                let moved = false;
+                for (let i = 1; i < this.freehandPoints.length; i++) {
+                    const dx = this.freehandPoints[i].x - this.freehandPoints[0].x;
+                    const dy = this.freehandPoints[i].y - this.freehandPoints[0].y;
+                    if (Math.abs(dx) > 2 || Math.abs(dy) > 2) {
+                        moved = true;
+                        break;
+                    }
+                }
+                if (moved) {
+                    const shape = {
+                        type: "freehand" as const,
+                        points: [...this.freehandPoints],
+                        id: shapeId
+                    };
+                    if (!this.existingShapes.some(s => s.id === shapeId)) {
+                        this.existingShapes.push(shape);
+                        this.socket.send(
+                            JSON.stringify({
+                                type: "chat",
+                                message: JSON.stringify({ shape }),
+                                roomId: this.roomId
+                            })
+                        );
+                        this.clearCanvas();
+                    }
+                }
+            }
+            this.freehandPoints = [];
         }
     }
 
     mouseMoveHandler = (e: MouseEvent) => {
         if (this.selectedTool === "eraser" && this.eraserActive) {
-            // Only erase if mouse button is being held down (eraserActive is true)
             this.eraseAtPosition(e.clientX, e.clientY);
             return;
         }
-
         if (!this.clicked) return;
-
-        const endX = (e.clientX - this.offsetX) / this.scale;
-        const endY = (e.clientY - this.offsetY) / this.scale;
+        const x = (e.clientX - this.offsetX) / this.scale;
+        const y = (e.clientY - this.offsetY) / this.scale;
+        if (this.selectedTool === "freehand" && this.freehandDrawing) {
+            const last = this.freehandPoints[this.freehandPoints.length - 1];
+            const dx = x - last.x;
+            const dy = y - last.y;
+            if (dx * dx + dy * dy > 4) { // Only add if moved more than 2px
+                this.freehandPoints.push({ x, y });
+            }
+            this.clearCanvas();
+            // Draw preview in canvas coordinates, no extra transform!
+            this.ctx.save();
+            this.ctx.translate(this.offsetX, this.offsetY);
+            this.ctx.scale(this.scale, this.scale);
+            this.ctx.strokeStyle = "rgba(255,255,255,1)";
+            this.ctx.beginPath();
+            this.ctx.moveTo(this.freehandPoints[0].x, this.freehandPoints[0].y);
+            for (let i = 1; i < this.freehandPoints.length; i++) {
+                this.ctx.lineTo(this.freehandPoints[i].x, this.freehandPoints[i].y);
+            }
+            this.ctx.stroke();
+            this.ctx.closePath();
+            this.ctx.restore();
+            return;
+        }
+        const endX = x;
+        const endY = y;
         const width = endX - this.startX;
         const height = endY - this.startY;
-
-        // Redraw existing shapes plus current preview
         this.clearCanvas();
-
-        // Apply scale and translation for preview
         this.ctx.save();
         this.ctx.translate(this.offsetX, this.offsetY);
         this.ctx.scale(this.scale, this.scale);
-
         this.ctx.strokeStyle = "rgba(255, 255, 255, 1)";
-
         if (this.selectedTool === "rect") {
             this.ctx.strokeRect(this.startX, this.startY, width, height);
         } else if (this.selectedTool === "circle") {
             const radius = Math.max(Math.abs(width), Math.abs(height)) / 2;
             const centerX = this.startX + width / 2;
             const centerY = this.startY + height / 2;
-
             this.ctx.beginPath();
             this.ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
             this.ctx.stroke();
@@ -429,7 +487,6 @@ export class Game {
             this.ctx.stroke();
             this.ctx.closePath();
         }
-
         this.ctx.restore();
     }
 

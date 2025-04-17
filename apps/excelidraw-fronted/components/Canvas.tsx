@@ -216,8 +216,8 @@ function Topbar({ selectedTool, setSelectedTool }: {
 
 function getCursorForTool(tool: Tool) {
     switch (tool) {
+        case "freehand":
         case "line":
-            return "crosshair";
         case "rect":
         case "circle":
             return "crosshair";
