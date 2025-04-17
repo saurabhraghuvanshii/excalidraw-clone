@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { IconButton } from "./ui/IconButton";
 import { Circle, Pencil, RectangleHorizontalIcon, Eraser, MousePointer2 } from "lucide-react";
-import { EraserCursor } from "./Shapes/eraser";
+import { EraserCursor } from "./canvaFuncationality/eraser";
 import { Game, Tool } from "@/draw/Game";
-import ZoomControl from "./Shapes/ZoomControl";
+import ZoomControl from "./canvaFuncationality/ZoomControl";
 import { isAuthenticated } from "@/utils/auth";
-import { PanHandler } from "./Shapes/PanHandler";
+import { PanHandler } from "./canvaFuncationality/PanHandler";
 
 export function Canvas({
     roomId,

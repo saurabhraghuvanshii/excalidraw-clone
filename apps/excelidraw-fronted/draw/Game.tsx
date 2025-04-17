@@ -1,6 +1,10 @@
 import { getExistingShapes } from "./http";
+import { drawRectangle, isPointInRectangle, resizeRectangle } from './canavashape/Rectangle';
+import { drawCircle, isPointInCircle, resizeCircle } from './canavashape/Circle';
+import { drawLine, isPointNearLine, resizeLine } from './canavashape/Line';
+import { drawFreehand, isPointNearFreehand, resizeFreehand } from './canavashape/Freehand';
 
-type Shape = {
+export type Shape = {
     type: "rect";
     x: number;
     y: number;
@@ -173,23 +177,16 @@ export class Game {
 
     drawShapes() {
         if (!this.existingShapes || this.existingShapes.length === 0) return;
-
         this.ctx.strokeStyle = "rgba(255, 255, 255, 1)";
-
         this.existingShapes.forEach((shape) => {
             if (shape.type === "rect") {
-                this.ctx.strokeRect(shape.x, shape.y, shape.width, shape.height);
+                drawRectangle(this.ctx, shape);
             } else if (shape.type === "circle") {
-                this.ctx.beginPath();
-                this.ctx.arc(shape.centerX, shape.centerY, Math.abs(shape.radius), 0, Math.PI * 2);
-                this.ctx.stroke();
-                this.ctx.closePath();
+                drawCircle(this.ctx, shape);
             } else if (shape.type === "line") {
-                this.ctx.beginPath();
-                this.ctx.moveTo(shape.startX, shape.startY);
-                this.ctx.lineTo(shape.endX, shape.endY);
-                this.ctx.stroke();
-                this.ctx.closePath();
+                drawLine(this.ctx, shape);
+            } else if (shape.type === "freehand") {
+                drawFreehand(this.ctx, shape);
             }
         });
     }
@@ -223,54 +220,17 @@ export class Game {
 
     // Check if a point is inside a rectangle
     private isPointInRect(x: number, y: number, rect: Shape & { type: "rect" }): boolean {
-        const buffer = Math.min(Math.abs(rect.width), Math.abs(rect.height)) < 10 ? 5 : 0;
-
-        return (
-            x >= rect.x - buffer &&
-            x <= rect.x + rect.width + buffer &&
-            y >= rect.y - buffer &&
-            y <= rect.y + rect.height + buffer
-        );
+        return isPointInRectangle(x, y, rect);
     }
 
     // Check if a point is inside a circle
     private isPointInCircle(x: number, y: number, circle: Shape & { type: "circle" }): boolean {
-        const dx = x - circle.centerX;
-        const dy = y - circle.centerY;
-        const buffer = circle.radius < 10 ? 5 : 0;
-        return Math.sqrt(dx * dx + dy * dy) <= circle.radius + buffer;
+        return isPointInCircle(x, y, circle);
     }
 
     // Check if a point is near a pencil line
     private isPointNearPencilLine(x: number, y: number, pencil: Shape & { type: "line" }): boolean {
-        // Calculate distance from point to line segment
-        const A = x - pencil.startX;
-        const B = y - pencil.startY;
-        const C = pencil.endX - pencil.startX;
-        const D = pencil.endY - pencil.startY;
-
-        const dot = A * C + B * D;
-        const len_sq = C * C + D * D;
-        const param = len_sq !== 0 ? dot / len_sq : -1;
-
-        let xx, yy;
-
-        if (param < 0) {
-            xx = pencil.startX;
-            yy = pencil.startY;
-        } else if (param > 1) {
-            xx = pencil.endX;
-            yy = pencil.endY;
-        } else {
-            xx = pencil.startX + param * C;
-            yy = pencil.startY + param * D;
-        }
-
-        const dx = x - xx;
-        const dy = y - yy;
-
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        return distance < 10; // 10px buffer for pencil lines
+        return isPointNearLine(x, y, pencil);
     }
 
     public findShapeUnderPoint(x: number, y: number): Shape | null {
@@ -287,6 +247,8 @@ export class Game {
             } else if (shape.type === "circle" && this.isPointInCircle(adjustedX, adjustedY, shape)) {
                 return shape;
             } else if (shape.type === "line" && this.isPointNearPencilLine(adjustedX, adjustedY, shape)) {
+                return shape;
+            } else if (shape.type === "freehand" && isPointNearFreehand(adjustedX, adjustedY, shape)) {
                 return shape;
             }
         }
@@ -652,86 +614,13 @@ export class Game {
         let minSize = 10;
         // 0-7: TL, TC, TR, RC, BR, BC, BL, LC
         if (shape.type === "rect") {
-            switch (handleIdx) {
-                case 0: // TL
-                    shape.x = px;
-                    shape.y = py;
-                    shape.width = x + width - px;
-                    shape.height = y + height - py;
-                    break;
-                case 1: // TC
-                    shape.y = py;
-                    shape.height = y + height - py;
-                    break;
-                case 2: // TR
-                    shape.y = py;
-                    shape.width = px - x;
-                    shape.height = y + height - py;
-                    break;
-                case 3: // RC
-                    shape.width = px - x;
-                    break;
-                case 4: // BR
-                    shape.width = px - x;
-                    shape.height = py - y;
-                    break;
-                case 5: // BC
-                    shape.height = py - y;
-                    break;
-                case 6: // BL
-                    shape.x = px;
-                    shape.width = x + width - px;
-                    shape.height = py - y;
-                    break;
-                case 7: // LC
-                    shape.x = px;
-                    shape.width = x + width - px;
-                    break;
-            }
-            // Clamp min size
-            if (shape.width < minSize) shape.width = minSize;
-            if (shape.height < minSize) shape.height = minSize;
+            resizeRectangle(shape, handleIdx, px, py);
         } else if (shape.type === "circle") {
-            // Resize by changing radius
-            const cx = shape.centerX;
-            const cy = shape.centerY;
-            const dx = px - cx;
-            const dy = py - cy;
-            shape.radius = Math.max(Math.sqrt(dx * dx + dy * dy), minSize / 2);
+            resizeCircle(shape, handleIdx, px, py);
         } else if (shape.type === "line") {
-            // Handles: 0=start, 4=end
-            if (handleIdx === 0) {
-                shape.startX = px;
-                shape.startY = py;
-            } else if (handleIdx === 4) {
-                shape.endX = px;
-                shape.endY = py;
-            }
+            resizeLine(shape, handleIdx, px, py);
         } else if (shape.type === "freehand") {
-            // Scale all points relative to center
-            const xs = shape.points.map(p => p.x);
-            const ys = shape.points.map(p => p.y);
-            const centerX = (Math.min(...xs) + Math.max(...xs)) / 2;
-            const centerY = (Math.min(...ys) + Math.max(...ys)) / 2;
-            let scaleX = 1, scaleY = 1;
-            if (handleIdx === 0 || handleIdx === 6 || handleIdx === 7) {
-                // left handles
-                scaleX = (x + width - px) / width;
-            } else if (handleIdx === 2 || handleIdx === 3 || handleIdx === 4) {
-                // right handles
-                scaleX = (px - x) / width;
-            }
-            if (handleIdx === 0 || handleIdx === 1 || handleIdx === 2) {
-                // top handles
-                scaleY = (y + height - py) / height;
-            } else if (handleIdx === 4 || handleIdx === 5 || handleIdx === 6) {
-                // bottom handles
-                scaleY = (py - y) / height;
-            }
-            for (let pt of shape.points) {
-                pt.x = centerX + (pt.x - centerX) * scaleX;
-                pt.y = centerY + (pt.y - centerY) * scaleY;
-            }
+            resizeFreehand(shape, handleIdx, px, py);
         }
     }
 
