@@ -40,6 +40,8 @@ export type Shape = {
     fontFamily?: string;
     color?: string;
     id?: string;
+    textAlign?: string;
+    fontStyle?: string;
 }
 
 export type Tool = "select" | "freehand" | "line" | "rect" | "circle" | "eraser" | "text";
