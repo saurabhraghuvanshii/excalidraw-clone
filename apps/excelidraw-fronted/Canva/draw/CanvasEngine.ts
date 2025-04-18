@@ -38,10 +38,10 @@ export type Shape = {
     text: string;
     fontSize?: number;
     fontFamily?: string;
-    color?: string;
-    id?: string;
     textAlign?: string;
     fontStyle?: string;
+    color?: string;
+    id?: string;
 }
 
 export type Tool = "select" | "freehand" | "line" | "rect" | "circle" | "eraser" | "text";
@@ -139,7 +139,7 @@ export class CanvasEngine {
         this.ctx.save();
         this.ctx.strokeStyle = "#60A5FA";
         this.ctx.lineWidth = 2;
-        const bounds = getShapeBounds(shape);
+        let bounds = getShapeBounds(shape);
         if (!bounds) return;
         const { x, y, width, height } = bounds;
         this.ctx.strokeRect(x, y, width, height);
@@ -155,7 +155,7 @@ export class CanvasEngine {
             [x, y + height / 2],
         ];
         this.ctx.fillStyle = "#60A5FA";
-        for (const [hx, hy] of handles) {
+        for (let [hx, hy] of handles) {
             this.ctx.fillRect(hx - hs / 2, hy - hs / 2, hs, hs);
         }
         this.ctx.restore();

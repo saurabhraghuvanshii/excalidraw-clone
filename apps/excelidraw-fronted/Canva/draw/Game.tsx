@@ -258,7 +258,7 @@ export class Game {
             if ('fontBoundingBoxAscent' in metrics && 'fontBoundingBoxDescent' in metrics) {
                 textHeight = (metrics.fontBoundingBoxAscent || 0) + (metrics.fontBoundingBoxDescent || 0);
             } else if ('actualBoundingBoxAscent' in metrics && 'actualBoundingBoxDescent' in metrics) {
-                const m = metrics as TextMetrics & { actualBoundingBoxAscent?: number; actualBoundingBoxDescent?: number };
+                const m = metrics as any;
                 textHeight = (m.actualBoundingBoxAscent || 0) + (m.actualBoundingBoxDescent || 0);
             } else {
                 textHeight = fontSize;
@@ -333,7 +333,7 @@ export class Game {
                         shape.endX += dx;
                         shape.endY += dy;
                     } else if (shape.type === "freehand") {
-                        for (const pt of shape.points) {
+                        for (let pt of shape.points) {
                             pt.x += dx;
                             pt.y += dy;
                         }
@@ -403,63 +403,7 @@ export class Game {
         this.canvas.addEventListener("mousemove", this.mouseMoveHandler);
     }
 
-    drawSelectionFrameAndHandles(shape: Shape) {
-        this.engine.ctx.save();
-        this.engine.ctx.strokeStyle = "#60A5FA";
-        this.engine.ctx.lineWidth = 2;
-        const bounds = getShapeBounds(shape);
-        if (!bounds) return;
-        const { x, y, width, height } = bounds;
-        
-        // Special handling for text shapes
-        if (shape.type === "text") {
-            // Add padding for text shapes
-            const padding = 10;
-            this.engine.ctx.strokeRect(x - padding, y - padding, width + padding * 2, height + padding * 2);
-            
-            // Draw handles with larger size for text
-            const hs = 10; // Bigger handles for text
-            const handles = [
-                [x - padding, y - padding],
-                [x + width/2, y - padding],
-                [x + width + padding, y - padding],
-                [x + width + padding, y + height/2],
-                [x + width + padding, y + height + padding],
-                [x + width/2, y + height + padding],
-                [x - padding, y + height + padding],
-                [x - padding, y + height/2]
-            ];
-            
-            this.engine.ctx.fillStyle = "#60A5FA";
-            for (const [hx, hy] of handles) {
-                this.engine.ctx.fillRect(hx - hs/2, hy - hs/2, hs, hs);
-            }
-        } else {
-            // Original handling for other shapes
-            this.engine.ctx.strokeRect(x, y, width, height);
-            const hs = this.handleSize;
-            const handles = [
-                [x, y],
-                [x + width/2, y],
-                [x + width, y],
-                [x + width, y + height/2],
-                [x + width, y + height],
-                [x + width/2, y + height],
-                [x, y + height],
-                [x, y + height/2]
-            ];
-            
-            this.engine.ctx.fillStyle = "#60A5FA";
-            for (const [hx, hy] of handles) {
-                this.engine.ctx.fillRect(hx - hs/2, hy - hs/2, hs, hs);
-            }
-        }
-        
-        this.engine.ctx.restore();
-    }
-
     getHandleCursor(handleIdx: number): string {
-        // Keep original cursor logic but add text-specific cursors
         switch (handleIdx) {
             case 0: return 'nwse-resize';
             case 1: return 'ns-resize';
@@ -471,5 +415,39 @@ export class Game {
             case 7: return 'ew-resize';
             default: return 'default';
         }
+    }
+
+    drawSelectionFrameAndHandles(shape: Shape) {
+        this.engine.ctx.save();
+        this.engine.ctx.strokeStyle = "#60A5FA";
+        this.engine.ctx.lineWidth = 2;
+        let bounds = getShapeBounds(shape);
+        if (!bounds) return;
+        const { x, y, width, height } = bounds;
+        this.engine.ctx.strokeRect(x, y, width, height);
+        if (shape.type === "text") {
+            this.engine.ctx.save();
+            this.engine.ctx.strokeStyle = "red";
+            this.engine.ctx.setLineDash([4, 2]);
+            this.engine.ctx.strokeRect(x, y, width, height);
+            this.engine.ctx.setLineDash([]);
+            this.engine.ctx.restore();
+        }
+        const hs = this.handleSize;
+        const handles = [
+            [x, y],
+            [x + width / 2, y],
+            [x + width, y],
+            [x + width, y + height / 2],
+            [x + width, y + height],
+            [x + width / 2, y + height],
+            [x, y + height],
+            [x, y + height / 2],
+        ];
+        this.engine.ctx.fillStyle = "#60A5FA";
+        for (let [hx, hy] of handles) {
+            this.engine.ctx.fillRect(hx - hs / 2, hy - hs / 2, hs, hs);
+        }
+        this.engine.ctx.restore();
     }
 }
