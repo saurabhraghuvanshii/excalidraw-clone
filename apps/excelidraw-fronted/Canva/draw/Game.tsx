@@ -132,7 +132,7 @@ export class Game {
         if (this.engine.selectedShapeId) {
             const selected = this.engine.shapes.find(s => s.id === this.engine.selectedShapeId);
             if (selected) {
-                const bounds = this.getShapeBounds(selected);
+                const bounds = getShapeBounds(selected);
                 if (bounds && x >= bounds.x && x <= bounds.x + bounds.width && y >= bounds.y && y <= bounds.y + bounds.height) {
                     this.draggingShapeId = (typeof selected.id === 'string' ? selected.id : null);
                     this.dragOffset = { x: x - bounds.x, y: y - bounds.y };
@@ -317,7 +317,7 @@ export class Game {
             const y = (e.clientY - this.engine.offsetY) / this.engine.scale;
             const shape = this.engine.shapes.find(s => s.id === this.draggingShapeId);
             if (shape) {
-                const bounds = this.getShapeBounds(shape);
+                const bounds = getShapeBounds(shape);
                 if (bounds) {
                     const dx = x - bounds.x - this.dragOffset.x;
                     const dy = y - bounds.y - this.dragOffset.y;
@@ -421,7 +421,7 @@ export class Game {
         this.engine.ctx.save();
         this.engine.ctx.strokeStyle = "#60A5FA";
         this.engine.ctx.lineWidth = 2;
-        let bounds = this.getShapeBounds(shape);
+        let bounds = getShapeBounds(shape);
         if (!bounds) return;
         const { x, y, width, height } = bounds;
         this.engine.ctx.strokeRect(x, y, width, height);
@@ -449,35 +449,5 @@ export class Game {
             this.engine.ctx.fillRect(hx - hs / 2, hy - hs / 2, hs, hs);
         }
         this.engine.ctx.restore();
-    }
-
-    getShapeBounds(shape: Shape): { x: number; y: number; width: number; height: number } | null {
-        if (shape.type === "rect") {
-            return { x: shape.x, y: shape.y, width: shape.width, height: shape.height };
-        } else if (shape.type === "circle") {
-            return {
-                x: shape.centerX - shape.radius,
-                y: shape.centerY - shape.radius,
-                width: shape.radius * 2,
-                height: shape.radius * 2
-            };
-        } else if (shape.type === "line") {
-            const x = Math.min(shape.startX, shape.endX);
-            const y = Math.min(shape.startY, shape.endY);
-            const width = Math.abs(shape.endX - shape.startX);
-            const height = Math.abs(shape.endY - shape.startY);
-            return { x, y, width, height };
-        } else if (shape.type === "freehand") {
-            const xs = shape.points.map(p => p.x);
-            const ys = shape.points.map(p => p.y);
-            const x = Math.min(...xs);
-            const y = Math.min(...ys);
-            const width = Math.max(...xs) - x;
-            const height = Math.max(...ys) - y;
-            return { x, y, width, height };
-        } else if (shape.type === "text") {
-            return { x: shape.x, y: shape.y, width: shape.width, height: shape.height };
-        }
-        return null;
     }
 }

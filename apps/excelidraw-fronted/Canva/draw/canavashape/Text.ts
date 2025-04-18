@@ -1,19 +1,11 @@
+import { getShapeBounds } from '../utils';
 import type { Shape } from "../CanvasEngine";
 
 export function drawText(
     ctx: CanvasRenderingContext2D,
-    shape: {
-        x: number;
-        y: number;
-        width: number;
-        height: number;
-        text: string;
-        fontSize?: number;
-        fontFamily?: string;
-        color?: string;
-        id?: string;
-    }
+    shape: Shape
 ) {
+    if (shape.type !== 'text') return;
     ctx.save();
     const fontSize = shape.fontSize || 24;
     const fontFamily = shape.fontFamily || "Nunito";
@@ -55,23 +47,16 @@ export function drawText(
 export function isPointInText(
     x: number,
     y: number,
-    shape: {
-        x: number;
-        y: number;
-        width: number;
-        height: number;
-        text: string;
-        fontSize?: number;
-        fontFamily?: string;
-        color?: string;
-        id?: string;
-    }
+    shape: Shape
 ): boolean {
+    if (shape.type !== 'text') return false;
+    const bounds = getShapeBounds(shape);
+    if (!bounds) return false;
     return (
-        x >= shape.x &&
-        x <= shape.x + shape.width &&
-        y >= shape.y &&
-        y <= shape.y + shape.height
+        x >= bounds.x &&
+        x <= bounds.x + bounds.width &&
+        y >= bounds.y &&
+        y <= bounds.y + bounds.height
     );
 }
 

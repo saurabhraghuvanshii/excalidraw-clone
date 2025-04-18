@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, use } from "react";
-import { RoomCanvas } from "@/components/RoomCanvas";
+import { RoomCanvas } from "@/Canva/RoomCanvas";
 import { isAuthenticated } from "@/utils/auth";
 import { ShareRoomButton } from "@/components/buttons/ShareRoomButton";
 import Link from "next/link";

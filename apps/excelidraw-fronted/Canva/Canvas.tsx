@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-import { IconButton } from "./ui/IconButton";
+import { IconButton } from "../components/ui/IconButton";
 import { Circle, Pencil, RectangleHorizontalIcon, Eraser, MousePointer2, LetterText } from "lucide-react";
-import { Tool } from "@/draw/CanvasEngine";
-import { Game } from "@/draw/Game";
+import { Tool } from "@/Canva/draw/CanvasEngine";
+import { Game } from "@/Canva/draw/Game";
 import ZoomControl from "./canvaFuncationality/ZoomControl";
 import { EraserCursor } from "./canvaFuncationality/eraser";
-import { drawText, isPointInText, resizeText } from '../draw/canavashape/Text';
+import { drawText, isPointInText, resizeText } from './draw/canavashape/Text';
 import { isAuthenticated } from "@/utils/auth";
 import { PanHandler } from "./canvaFuncationality/PanHandler";
 

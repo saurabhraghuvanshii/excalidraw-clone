@@ -1,6 +1,6 @@
 import { Minus, Plus } from "lucide-react";
-import { Button } from "../ui/button";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
+import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export default function ZoomControl({
     scale,
