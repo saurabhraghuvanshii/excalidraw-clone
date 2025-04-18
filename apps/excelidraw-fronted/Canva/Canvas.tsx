@@ -301,6 +301,7 @@ export function Canvas({
     let textInput = null;
     if (editingTextId && editingTextBox) {
         const { x, y, width, height, fontSize, fontFamily, color } = editingTextBox;
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         textInput = (
             <textarea
                 value={editingTextValue}

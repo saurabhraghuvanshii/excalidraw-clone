@@ -67,7 +67,7 @@ export function resizeFreehand(shape: Shape, handleIdx: number, px: number, py: 
         // bottom handles
         scaleY = (py - y) / height;
     }
-    for (let pt of shape.points) {
+    for (const pt of shape.points) {
         pt.x = centerX + (pt.x - centerX) * scaleX;
         pt.y = centerY + (pt.y - centerY) * scaleY;
     }

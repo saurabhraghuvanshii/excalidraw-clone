@@ -1,9 +1,8 @@
 "use client"
 import React from "react";
-import { Button } from "@repo/ui/button"
 import { Card } from "@repo/ui/card";
 import Link from "next/link";
-import { Pencil, Share2, Users2, Sparkles, Github, Download, Moon, } from "lucide-react";
+import { Share2, Users2, Sparkles, Github, Download, Moon, } from "lucide-react";
 import { SignOutButton } from "@/components/buttons/SignOutButton";
 import { useEffect, useState } from "react";
 import { SignInButton } from "@/components/buttons/SignInButton";

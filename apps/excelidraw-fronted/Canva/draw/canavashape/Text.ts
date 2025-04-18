@@ -18,7 +18,7 @@ export function drawText(
     if ('fontBoundingBoxAscent' in metrics && 'fontBoundingBoxDescent' in metrics) {
         shape.height = (metrics.fontBoundingBoxAscent || 0) + (metrics.fontBoundingBoxDescent || 0);
     } else if ('actualBoundingBoxAscent' in metrics && 'actualBoundingBoxDescent' in metrics) {
-        const m = metrics as any;
+        const m = metrics as TextMetrics & { actualBoundingBoxAscent?: number; actualBoundingBoxDescent?: number };
         shape.height = (m.actualBoundingBoxAscent || 0) + (m.actualBoundingBoxDescent || 0);
     } else {
         shape.height = fontSize;

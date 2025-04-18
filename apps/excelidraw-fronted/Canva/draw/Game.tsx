@@ -258,7 +258,7 @@ export class Game {
             if ('fontBoundingBoxAscent' in metrics && 'fontBoundingBoxDescent' in metrics) {
                 textHeight = (metrics.fontBoundingBoxAscent || 0) + (metrics.fontBoundingBoxDescent || 0);
             } else if ('actualBoundingBoxAscent' in metrics && 'actualBoundingBoxDescent' in metrics) {
-                const m = metrics as any;
+                const m = metrics as TextMetrics & { actualBoundingBoxAscent?: number; actualBoundingBoxDescent?: number };
                 textHeight = (m.actualBoundingBoxAscent || 0) + (m.actualBoundingBoxDescent || 0);
             } else {
                 textHeight = fontSize;
@@ -333,7 +333,7 @@ export class Game {
                         shape.endX += dx;
                         shape.endY += dy;
                     } else if (shape.type === "freehand") {
-                        for (let pt of shape.points) {
+                        for (const pt of shape.points) {
                             pt.x += dx;
                             pt.y += dy;
                         }
@@ -421,7 +421,7 @@ export class Game {
         this.engine.ctx.save();
         this.engine.ctx.strokeStyle = "#60A5FA";
         this.engine.ctx.lineWidth = 2;
-        let bounds = getShapeBounds(shape);
+        const bounds = getShapeBounds(shape);
         if (!bounds) return;
         const { x, y, width, height } = bounds;
         this.engine.ctx.strokeRect(x, y, width, height);
@@ -445,7 +445,7 @@ export class Game {
             [x, y + height / 2],
         ];
         this.engine.ctx.fillStyle = "#60A5FA";
-        for (let [hx, hy] of handles) {
+        for (const [hx, hy] of handles) {
             this.engine.ctx.fillRect(hx - hs / 2, hy - hs / 2, hs, hs);
         }
         this.engine.ctx.restore();

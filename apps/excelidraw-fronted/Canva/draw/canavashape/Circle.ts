@@ -16,12 +16,12 @@ export function isPointInCircle(x: number, y: number, shape: Shape): boolean {
     return Math.sqrt(dx * dx + dy * dy) <= shape.radius + buffer;
 }
 
-export function resizeCircle(shape: Shape, handleIdx: number, px: number, py: number) {
+export function resizeCircle(shape: Shape, px: number, py: number) {
     if (shape.type !== 'circle') return;
     const cx = shape.centerX;
     const cy = shape.centerY;
     const dx = px - cx;
     const dy = py - cy;
-    let minSize = 10;
+    const minSize = 10;
     shape.radius = Math.max(Math.sqrt(dx * dx + dy * dy), minSize / 2);
 }

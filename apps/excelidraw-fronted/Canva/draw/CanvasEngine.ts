@@ -137,7 +137,7 @@ export class CanvasEngine {
         this.ctx.save();
         this.ctx.strokeStyle = "#60A5FA";
         this.ctx.lineWidth = 2;
-        let bounds = getShapeBounds(shape);
+        const bounds = getShapeBounds(shape);
         if (!bounds) return;
         const { x, y, width, height } = bounds;
         this.ctx.strokeRect(x, y, width, height);
@@ -153,7 +153,7 @@ export class CanvasEngine {
             [x, y + height / 2],
         ];
         this.ctx.fillStyle = "#60A5FA";
-        for (let [hx, hy] of handles) {
+        for (const [hx, hy] of handles) {
             this.ctx.fillRect(hx - hs / 2, hy - hs / 2, hs, hs);
         }
         this.ctx.restore();
@@ -192,7 +192,7 @@ export class CanvasEngine {
         if (shape.type === "rect") {
             resizeRectangle(shape, handleIdx, px, py);
         } else if (shape.type === "circle") {
-            resizeCircle(shape, handleIdx, px, py);
+            resizeCircle(shape, px, py);
         } else if (shape.type === "line") {
             resizeLine(shape, handleIdx, px, py);
         } else if (shape.type === "freehand") {
