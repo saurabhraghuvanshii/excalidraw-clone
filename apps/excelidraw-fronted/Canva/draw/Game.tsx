@@ -1,6 +1,7 @@
 import { CanvasEngine, Shape, Tool } from "./CanvasEngine";
 import { getExistingShapes } from "./http";
 import { getShapeBounds } from "./utils";
+import { generateId } from "./utils";
 
 export class Game {
     public canvas: HTMLCanvasElement;
@@ -154,12 +155,32 @@ export class Game {
         if (this.selectedTool === "eraser") {
             this.eraserActive = false;
         }
-        if (this.resizeHandle !== null) {
+        if (this.resizeHandle !== null && this.engine.selectedShapeId) {
+            const shape = this.engine.shapes.find(s => s.id === this.engine.selectedShapeId);
+            if (shape) {
+                this.socket.send(
+                    JSON.stringify({
+                        type: "chat",
+                        message: JSON.stringify({ shape: shape }),
+                        roomId: this.roomId
+                    })
+                );
+            }
             this.resizeHandle = null;
             this.engine.clearCanvas();
             return;
         }
         if (this.draggingShapeId) {
+            const shape = this.engine.shapes.find(s => s.id === this.draggingShapeId);
+            if (shape) {
+                this.socket.send(
+                    JSON.stringify({
+                        type: "chat",
+                        message: JSON.stringify({ shape: shape }),
+                        roomId: this.roomId
+                    })
+                );
+            }
             this.draggingShapeId = null;
             this.dragOffset = null;
             this.engine.clearCanvas();

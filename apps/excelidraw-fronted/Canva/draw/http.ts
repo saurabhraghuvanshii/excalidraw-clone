@@ -1,46 +1,50 @@
 import { HTTP_BACKEND } from "@/config";
 import axios from "axios";
 import { getToken } from "@/utils/auth";
+import { Shape } from "./CanvasEngine";
 
-export async function getExistingShapes(roomId: string) {
+export async function getExistingShapes(roomId: string): Promise<Shape[]> {
     try {
-        const token = getToken();
-        const res = await axios.get(`${HTTP_BACKEND}/chats/${roomId}`, {
-            headers: token ? { Authorization: `Bearer ${token}` } : {}
-        });
-
-        const messages = res.data.messages || [];
-
+        const response = await fetch(`${HTTP_BACKEND}/chats/${roomId}`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        
+        // Get the list of erased shape IDs from the messages
         const erasedShapeIds = new Set<string>();
-        messages.forEach((x: { message: string }) => {
+        data.messages.forEach((msg: any) => {
             try {
-                const messageData = JSON.parse(x.message);
-                if (messageData.eraseId) {
-                    erasedShapeIds.add(messageData.eraseId);
+                const parsedMsg = JSON.parse(msg.message);
+                if (parsedMsg.type === "erase" && parsedMsg.shapeId) {
+                    erasedShapeIds.add(parsedMsg.shapeId);
                 }
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
             } catch (e) {
-                // Ignore parsing errors for eraseId messages
+                console.error("Error parsing message:", e);
             }
         });
-
-        // Then collect and filter shapes that haven't been erased
-        const shapes = messages
-            .map((x: { message: string }) => {
-                try {
-                    const messageData = JSON.parse(x.message);
-                    if (messageData.shape && messageData.shape.id && !erasedShapeIds.has(messageData.shape.id)) {
-                        return messageData.shape;
+        
+        // Create a map to store the most recent version of each shape
+        const shapeMap = new Map<string, Shape>();
+        
+        // Process messages in chronological order to get the most recent version of each shape
+        data.messages.forEach((msg: any) => {
+            try {
+                const parsedMsg = JSON.parse(msg.message);
+                if (parsedMsg.shape && parsedMsg.shape.id) {
+                    // Only add shapes that haven't been erased
+                    if (!erasedShapeIds.has(parsedMsg.shape.id)) {
+                        // Always update with the latest version of the shape
+                        shapeMap.set(parsedMsg.shape.id, parsedMsg.shape);
                     }
-                    return null;
-                } catch (e) {
-                    console.error("Error parsing message:", e);
-                    return null;
                 }
-            })
-            .filter(Boolean); // Filter out null values
-
-        return shapes;
+            } catch (e) {
+                console.error("Error parsing message:", e);
+            }
+        });
+        
+        // Convert the map to an array of shapes
+        return Array.from(shapeMap.values());
     } catch (error) {
         console.error("Error fetching shapes:", error);
         return [];
