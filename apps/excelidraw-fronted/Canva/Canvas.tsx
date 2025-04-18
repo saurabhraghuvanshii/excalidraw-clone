@@ -323,10 +323,10 @@ export function Canvas({
                     fontSize: ((editingTextBox.fontSize || 24) * scale) + "px",
                     fontFamily: editingTextBox.fontFamily || "Nunito",
                     color: editingTextBox.color || "#fff",
-                    background: "rgba(0, 0, 0, 0.3)",
-                    border: "1px solid rgba(255, 255, 255, 0.3)",
+                    background: "transparent",
+                    border: "none",
                     zIndex: 20,
-                    padding: "2px",
+                    padding: 0,
                     outline: "none",
                     resize: "none",
                     minWidth: "40px",
@@ -334,8 +334,7 @@ export function Canvas({
                     boxSizing: "border-box",
                     caretColor: editingTextBox.color || "#fff",
                     overflow: "hidden",
-                    whiteSpace: "nowrap",
-                    textShadow: "1px 1px 2px rgba(0, 0, 0, 0.5)"
+                    whiteSpace: "pre-wrap"
                 }}
                 onChange={e => {
                     setEditingTextValue(e.target.value);
