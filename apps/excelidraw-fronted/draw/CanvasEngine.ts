@@ -3,6 +3,7 @@ import { drawCircle, isPointInCircle, resizeCircle } from './canavashape/Circle'
 import { drawLine, isPointNearLine, resizeLine } from './canavashape/Line';
 import { drawFreehand, isPointNearFreehand, resizeFreehand } from './canavashape/Freehand';
 import { generateId, getShapeBounds } from './utils';
+import { drawText, isPointInText, resizeText } from './canavashape/Text';
 
 export type Shape = {
     type: "rect";
@@ -28,9 +29,20 @@ export type Shape = {
     type: "freehand";
     points: { x: number; y: number }[];
     id?: string;
-};
+} | {
+    type: "text",
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    text: string;
+    fontSize?: number;
+    fontFamily?: string;
+    color?: string;
+    id?: string;
+}
 
-export type Tool = "select" | "freehand" | "line" | "rect" | "circle" | "eraser";
+export type Tool = "select" | "freehand" | "line" | "rect" | "circle" | "eraser" | "text";
 
 export class CanvasEngine {
     public canvas: HTMLCanvasElement;
@@ -89,6 +101,8 @@ export class CanvasEngine {
                 drawLine(this.ctx, shape);
             } else if (shape.type === "freehand") {
                 drawFreehand(this.ctx, shape);
+            } else if (shape.type === "text") {
+                drawText(this.ctx, shape);
             }
         });
     }
@@ -111,6 +125,8 @@ export class CanvasEngine {
             } else if (shape.type === "line" && isPointNearLine(adjustedX, adjustedY, shape)) {
                 return shape;
             } else if (shape.type === "freehand" && isPointNearFreehand(adjustedX, adjustedY, shape)) {
+                return shape;
+            }  else if (shape.type === "text" && isPointInText(adjustedX, adjustedY, shape)) {
                 return shape;
             }
         }
@@ -181,6 +197,8 @@ export class CanvasEngine {
             resizeLine(shape, handleIdx, px, py);
         } else if (shape.type === "freehand") {
             resizeFreehand(shape, handleIdx, px, py);
+        } else if (shape.type === "text") {
+            resizeText(shape, handleIdx, px, py);
         }
     }
 

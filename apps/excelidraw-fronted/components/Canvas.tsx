@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { IconButton } from "./ui/IconButton";
-import { Circle, Pencil, RectangleHorizontalIcon, Eraser, MousePointer2 } from "lucide-react";
-import { EraserCursor } from "./canvaFuncationality/eraser";
+import { Circle, Pencil, RectangleHorizontalIcon, Eraser, MousePointer2, LetterText } from "lucide-react";
 import { Tool } from "@/draw/CanvasEngine";
 import { Game } from "@/draw/Game";
 import ZoomControl from "./canvaFuncationality/ZoomControl";
+import { EraserCursor } from "./canvaFuncationality/eraser";
+import { drawText, isPointInText, resizeText } from '../draw/canavashape/Text';
 import { isAuthenticated } from "@/utils/auth";
 import { PanHandler } from "./canvaFuncationality/PanHandler";
 
@@ -29,6 +30,17 @@ export function Canvas({
     const [isDragging, setIsDragging] = useState(false);
     const [eraserSize, setEraserSize] = useState(2);
     const [isCanvasHovered, setIsCanvasHovered] = useState(false);
+    const [editingTextId, setEditingTextId] = useState<string | null>(null);
+    const [editingTextValue, setEditingTextValue] = useState<string>("");
+    const [editingTextBox, setEditingTextBox] = useState<{
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+        fontSize?: number;
+        fontFamily?: string;
+        color?: string;
+    } | null>(null);
     const canEdit = !readOnly;
 
     // Initialize game once
@@ -209,6 +221,157 @@ export function Canvas({
         };
     }, [offset, scale]);
 
+    // Text tool: click to create text box and edit
+    useEffect(() => {
+        if (selectedTool !== "text" || !canEdit) return;
+        const canvas = canvasRef.current;
+        if (!canvas || !gameRef.current) return;
+        function handleTextClick(e: MouseEvent) {
+            const c = canvasRef.current;
+            if (!c || !gameRef.current) return;
+            const rect = c.getBoundingClientRect();
+            const x = (e.clientX - rect.left - offset.x) / scale;
+            const y = (e.clientY - rect.top - offset.y) / scale;
+            // Measure text size for bounding box
+            const ctx = c.getContext("2d")!;
+            const fontSize = 24;
+            const fontFamily = "Nunito";
+            ctx.font = `${fontSize}px ${fontFamily}`;
+            const metrics = ctx.measureText("");
+            let textHeight;
+            if ('fontBoundingBoxAscent' in metrics && 'fontBoundingBoxDescent' in metrics) {
+                textHeight = (metrics.fontBoundingBoxAscent || 0) + (metrics.fontBoundingBoxDescent || 0);
+            } else if ('actualBoundingBoxAscent' in metrics && 'actualBoundingBoxDescent' in metrics) {
+                const m = metrics as any;
+                textHeight = (m.actualBoundingBoxAscent || 0) + (m.actualBoundingBoxDescent || 0);
+            } else {
+                textHeight = fontSize;
+            }
+            // Add a new text shape with measured size
+            const shape = {
+                type: "text" as const,
+                x,
+                y,
+                width: 120,
+                height: textHeight,
+                text: "",
+                fontSize,
+                fontFamily,
+                color: "#fff"
+            };
+            gameRef.current.engine.addShape(shape);
+            const addedShape = gameRef.current.engine.shapes[gameRef.current.engine.shapes.length - 1];
+            gameRef.current.engine.selectedShapeId = addedShape.id ?? null;
+            setEditingTextId(addedShape.id ?? null);
+            setEditingTextValue("");
+            setEditingTextBox({ x, y, width: 120, height: textHeight, fontSize, fontFamily, color: "#fff" });
+            setSelectedTool("select");
+        }
+        canvas.addEventListener("click", handleTextClick);
+        return () => {
+            canvas.removeEventListener("click", handleTextClick);
+        };
+    }, [selectedTool, offset, scale, canEdit]);
+
+    // Double-click to edit text again
+    useEffect(() => {
+        const canvas = canvasRef.current;
+        if (!canvas || !gameRef.current) return;
+        function handleDoubleClick(e: MouseEvent) {
+            const c = canvasRef.current;
+            if (!c || !gameRef.current) return;
+            const rect = c.getBoundingClientRect();
+            const x = (e.clientX - rect.left - offset.x) / scale;
+            const y = (e.clientY - rect.top - offset.y) / scale;
+            const found = gameRef.current.engine.findShapeUnderPoint
+                ? gameRef.current.engine.findShapeUnderPoint(x, y)
+                : null;
+            if (found && found.type === "text") {
+                setEditingTextId(found.id ?? null);
+                setEditingTextValue(found.text);
+                setEditingTextBox({ x: found.x, y: found.y, width: found.width, height: found.height, fontSize: found.fontSize, fontFamily: found.fontFamily, color: found.color });
+            }
+        }
+        canvas.addEventListener("dblclick", handleDoubleClick);
+        return () => {
+            canvas.removeEventListener("dblclick", handleDoubleClick);
+        };
+    }, [offset, scale]);
+
+    // Inline text input rendering (textarea for editing)
+    let textInput = null;
+    if (editingTextId && editingTextBox) {
+        const { x, y, width, height, fontSize, fontFamily, color } = editingTextBox;
+        textInput = (
+            <textarea
+                value={editingTextValue}
+                autoFocus
+                placeholder="Type..."
+                style={{
+                    position: "absolute",
+                    left: x * scale + offset.x,
+                    top: y * scale + offset.y,
+                    width: width * scale,
+                    height: height * scale,
+                    fontSize: (fontSize || 24) * scale,
+                    fontFamily: fontFamily || "Nunito",
+                    color: color || "#fff",
+                    background: "rgba(0,0,0,0.7)",
+                    border: "1px solid #60A5FA",
+                    zIndex: 20,
+                    padding: 4,
+                    outline: "none",
+                    resize: "none",
+                    minWidth: 40,
+                    minHeight: 24,
+                    boxSizing: "border-box"
+                }}
+                onChange={e => setEditingTextValue(e.target.value)}
+                onBlur={() => {
+                    if (!gameRef.current) return;
+                    const found = gameRef.current.engine.shapes.find(s => s.id === editingTextId && s.type === "text");
+                    if (found && found.type === "text") {
+                        found.text = editingTextValue;
+                        // Re-measure text size
+                        const ctx = canvasRef.current!.getContext("2d")!;
+                        ctx.font = `${found.fontSize || 24}px ${found.fontFamily || "Nunito"}`;
+                        const metrics = ctx.measureText(editingTextValue);
+                        found.width = metrics.width;
+                        let textHeight;
+                        if ('fontBoundingBoxAscent' in metrics && 'fontBoundingBoxDescent' in metrics) {
+                            textHeight = (metrics.fontBoundingBoxAscent || 0) + (metrics.fontBoundingBoxDescent || 0);
+                        } else if ('actualBoundingBoxAscent' in metrics && 'actualBoundingBoxDescent' in metrics) {
+                            const m = metrics as any;
+                            textHeight = (m.actualBoundingBoxAscent || 0) + (m.actualBoundingBoxDescent || 0);
+                        } else {
+                            textHeight = found.fontSize || 24;
+                        }
+                        found.height = textHeight;
+                        gameRef.current.engine.updateShape(found);
+                        if (socket) {
+                            socket.send(
+                                JSON.stringify({
+                                    type: "chat",
+                                    message: JSON.stringify({ shape: found }),
+                                    roomId
+                                })
+                            );
+                        }
+                    }
+                    setEditingTextId(null);
+                    setEditingTextValue("");
+                    setEditingTextBox(null);
+                }}
+                onKeyDown={e => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                        (e.target as HTMLTextAreaElement).blur();
+                        e.preventDefault();
+                    }
+                }}
+            />
+        );
+    }
+
     if (canEdit && !isAuthenticated()) {
         return (
             <div className="w-screen h-screen flex items-center justify-center bg-gray-900 text-white">
@@ -244,6 +407,59 @@ export function Canvas({
                 onMouseLeave={() => setIsCanvasHovered(false)}
             />
             {selectedTool === "eraser" && isCanvasHovered && <EraserCursor size={eraserSize} isActive />}
+            {editingTextId && editingTextBox && (
+            <textarea
+                value={editingTextValue}
+                autoFocus
+                placeholder="Type..."
+                style={{
+                    position: "absolute",
+                    left: editingTextBox.x * scale + offset.x,
+                    top: editingTextBox.y * scale + offset.y,
+                    width: editingTextBox.width * scale,
+                    height: editingTextBox.height * scale,
+                    fontSize: ((editingTextBox.fontSize || 24) * scale) + "px",
+                    fontFamily: editingTextBox.fontFamily || "Nunito",
+                    color: editingTextBox.color || "#fff",
+                    background: "rgba(0,0,0,0.7)",
+                    border: "1px solid #60A5FA",
+                    zIndex: 20,
+                    padding: "4px",
+                    outline: "none",
+                    resize: "none",
+                    minWidth: "40px",
+                    minHeight: "24px",
+                    boxSizing: "border-box"
+                }}
+                onChange={e => setEditingTextValue(e.target.value)}
+                onBlur={() => {
+                    if (!gameRef.current) return;
+                    const found = gameRef.current.engine.shapes.find(s => s.id === editingTextId);
+                    if (found && found.type === "text") {
+                        found.text = editingTextValue;
+                        gameRef.current.engine.updateShape(found);
+                        if (socket) {
+                            socket.send(
+                                JSON.stringify({
+                                    type: "chat",
+                                    message: JSON.stringify({ shape: found }),
+                                    roomId
+                                })
+                            );
+                        }
+                    }
+                    setEditingTextId(null);
+                    setEditingTextValue("");
+                    setEditingTextBox(null);
+                }}
+                onKeyDown={e => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                        (e.target as HTMLTextAreaElement).blur();
+                        e.preventDefault();
+                    }
+                }}
+            />
+        )}
             <Topbar setSelectedTool={setSelectedTool} selectedTool={selectedTool} />
             <ZoomControl scale={scale} setScale={setScale} />
         </div>
@@ -288,6 +504,12 @@ function Topbar({ selectedTool, setSelectedTool }: {
                     title="Circle"
                 />
                 <IconButton
+                    onClick={() => setSelectedTool("text")}
+                    activated={selectedTool === "text"}
+                    icon={<LetterText size={18} />}
+                    title="Text"
+                />
+                <IconButton
                     onClick={() => setSelectedTool("eraser")}
                     activated={selectedTool === "eraser"}
                     icon={<Eraser size={18} />}
@@ -305,6 +527,8 @@ function getCursorForTool(tool: Tool) {
         case "rect":
         case "circle":
             return "crosshair";
+        case "text":
+            return "text";
         default:
             return "default";
     }

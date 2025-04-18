@@ -1,9 +1,5 @@
 import { CanvasEngine, Shape, Tool } from "./CanvasEngine";
 import { getExistingShapes } from "./http";
-import { drawRectangle, isPointInRectangle, resizeRectangle } from './canavashape/Rectangle';
-import { drawCircle, isPointInCircle, resizeCircle } from './canavashape/Circle';
-import { drawLine, isPointNearLine, resizeLine } from './canavashape/Line';
-import { drawFreehand, isPointNearFreehand, resizeFreehand } from './canavashape/Freehand';
 import { getShapeBounds } from "./utils";
 
 export class Game {
@@ -25,6 +21,7 @@ export class Game {
     public onShapeDrawn?: (newShapeId: string) => void;
     public get handleSize() { return this.engine.handleSize; }
     public set handleSize(val: number) { this.engine.handleSize = val; }
+    public textToAdd: string | undefined;
 
     constructor(canvas: HTMLCanvasElement, roomId: string, socket: WebSocket, readOnly = false) {
         this.canvas = canvas;
@@ -249,6 +246,48 @@ export class Game {
                 }
             }
             this.freehandPoints = [];
+        } else if (this.selectedTool === "text" && this.textToAdd) {
+            const ctx = this.engine.ctx;
+            ctx.save();
+            const fontSize = 24;
+            const fontFamily = "Nunito";
+            ctx.font = `${fontSize}px ${fontFamily}`;
+            const metrics = ctx.measureText(this.textToAdd);
+            const textWidth = metrics.width;
+            let textHeight;
+            if ('fontBoundingBoxAscent' in metrics && 'fontBoundingBoxDescent' in metrics) {
+                textHeight = (metrics.fontBoundingBoxAscent || 0) + (metrics.fontBoundingBoxDescent || 0);
+            } else if ('actualBoundingBoxAscent' in metrics && 'actualBoundingBoxDescent' in metrics) {
+                const m = metrics as any;
+                textHeight = (m.actualBoundingBoxAscent || 0) + (m.actualBoundingBoxDescent || 0);
+            } else {
+                textHeight = fontSize;
+            }
+            ctx.restore();
+            shape = {
+                type: "text" as const,
+                x: this.startX,
+                y: this.startY,
+                width: textWidth,
+                height: textHeight,
+                text: this.textToAdd,
+                fontSize,
+                fontFamily,
+                color: "#fff"
+            };
+            this.engine.addShape(shape);
+            const addedShape = this.engine.shapes[this.engine.shapes.length - 1];
+            const shapeId = addedShape.id;
+            this.engine.selectedShapeId = shapeId ?? null;
+            if (this.onShapeDrawn && shapeId) this.onShapeDrawn(shapeId);
+            this.socket.send(
+                JSON.stringify({
+                    type: "chat",
+                    message: JSON.stringify({ shape: addedShape }),
+                    roomId: this.roomId
+                })
+            );
+            this.textToAdd = undefined;
         }
     }
 
@@ -379,26 +418,31 @@ export class Game {
     }
 
     drawSelectionFrameAndHandles(shape: Shape) {
-        // Do NOT apply translate/scale here; already applied in clearCanvas
         this.engine.ctx.save();
         this.engine.ctx.strokeStyle = "#60A5FA";
         this.engine.ctx.lineWidth = 2;
         let bounds = this.getShapeBounds(shape);
         if (!bounds) return;
         const { x, y, width, height } = bounds;
-        // Draw frame
         this.engine.ctx.strokeRect(x, y, width, height);
-        // Draw 8 handles (corners + edges)
+        if (shape.type === "text") {
+            this.engine.ctx.save();
+            this.engine.ctx.strokeStyle = "red";
+            this.engine.ctx.setLineDash([4, 2]);
+            this.engine.ctx.strokeRect(x, y, width, height);
+            this.engine.ctx.setLineDash([]);
+            this.engine.ctx.restore();
+        }
         const hs = this.handleSize;
         const handles = [
-            [x, y], // top-left
-            [x + width / 2, y], // top-center
-            [x + width, y], // top-right
-            [x + width, y + height / 2], // right-center
-            [x + width, y + height], // bottom-right
-            [x + width / 2, y + height], // bottom-center
-            [x, y + height], // bottom-left
-            [x, y + height / 2], // left-center
+            [x, y],
+            [x + width / 2, y],
+            [x + width, y],
+            [x + width, y + height / 2],
+            [x + width, y + height],
+            [x + width / 2, y + height],
+            [x, y + height],
+            [x, y + height / 2],
         ];
         this.engine.ctx.fillStyle = "#60A5FA";
         for (let [hx, hy] of handles) {
@@ -431,6 +475,8 @@ export class Game {
             const width = Math.max(...xs) - x;
             const height = Math.max(...ys) - y;
             return { x, y, width, height };
+        } else if (shape.type === "text") {
+            return { x: shape.x, y: shape.y, width: shape.width, height: shape.height };
         }
         return null;
     }
