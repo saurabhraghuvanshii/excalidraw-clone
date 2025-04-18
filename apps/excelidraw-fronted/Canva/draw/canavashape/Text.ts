@@ -1,46 +1,62 @@
 import { getShapeBounds } from '../utils';
 import type { Shape } from "../CanvasEngine";
 
+// Helper functions similar to those in the reference
+function getFontSize(fontSize: number | undefined, scale: number = 1): number {
+    return (fontSize || 24) * scale;
+}
+
+function getLineHeight(fontSize: number): number {
+    return fontSize * 1.2;
+}
+
 export function drawText(
     ctx: CanvasRenderingContext2D,
     shape: Shape
 ) {
     if (shape.type !== 'text') return;
     ctx.save();
+    
     const fontSize = shape.fontSize || 24;
     const fontFamily = shape.fontFamily || "Nunito";
-    ctx.font = `${fontSize}px ${fontFamily}`;
+    const textAlign = shape.textAlign || "left";
+    const fontStyle = shape.fontStyle || "normal";
+    
+    // Create font string similar to reference
+    const fontString = `${fontStyle} ${fontSize}px/1.2 ${fontFamily}`;
+    ctx.font = fontString;
     ctx.fillStyle = shape.color || "#fff";
-    ctx.textBaseline = "top";
-    // Measure text bounding box
-    const metrics = ctx.measureText(shape.text);
-    shape.width = metrics.width;
-    if ('fontBoundingBoxAscent' in metrics && 'fontBoundingBoxDescent' in metrics) {
-        shape.height = (metrics.fontBoundingBoxAscent || 0) + (metrics.fontBoundingBoxDescent || 0);
-    } else if ('actualBoundingBoxAscent' in metrics && 'actualBoundingBoxDescent' in metrics) {
-        const m = metrics as TextMetrics & { actualBoundingBoxAscent?: number; actualBoundingBoxDescent?: number };
-        shape.height = (m.actualBoundingBoxAscent || 0) + (m.actualBoundingBoxDescent || 0);
-    } else {
-        shape.height = fontSize;
+    ctx.textAlign = textAlign as CanvasTextAlign;
+    
+    // Split text by line breaks for manual line breaking only
+    const lines = shape.text.split('\n');
+    
+    // Calculate height based on number of lines
+    const lineHeight = getLineHeight(fontSize);
+    shape.height = Math.max(lines.length * lineHeight, fontSize);
+    
+    // Determine max line width for shape width
+    let maxWidth = 0;
+    for (const line of lines) {
+        const metrics = ctx.measureText(line);
+        maxWidth = Math.max(maxWidth, metrics.width);
     }
-    // Handle text wrapping
-    const words = shape.text.split(' ');
-    let line = '';
-    let y = shape.y;
-    const lineHeight = fontSize * 1.2;
-    for (let i = 0; i < words.length; i++) {
-        const testLine = line + words[i] + ' ';
-        const testMetrics = ctx.measureText(testLine);
-        const testWidth = testMetrics.width;
-        if (testWidth > shape.width && i > 0) {
-            ctx.fillText(line, shape.x, y);
-            line = words[i] + ' ';
-            y += lineHeight;
-        } else {
-            line = testLine;
+    
+    // Set minimum width for empty text
+    shape.width = Math.max(maxWidth, 100);
+    
+    // Draw each line separately, handling text alignment
+    lines.forEach((line, index) => {
+        let tx = shape.x;
+        if (textAlign === "center") {
+            tx = shape.x + shape.width / 2;
+        } else if (textAlign === "right") {
+            tx = shape.x + shape.width;
         }
-    }
-    ctx.fillText(line, shape.x, y);
+        const ty = shape.y + (index + 1) * lineHeight;
+        ctx.fillText(line, tx, ty);
+    });
+    
     ctx.restore();
 }
 
@@ -70,6 +86,8 @@ export function resizeText(
         text: string;
         fontSize?: number;
         fontFamily?: string;
+        fontStyle?: string;
+        textAlign?: string;
         color?: string;
         id?: string;
     },

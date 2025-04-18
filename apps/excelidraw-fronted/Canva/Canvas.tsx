@@ -32,13 +32,15 @@ export function Canvas({
     const [editingTextId, setEditingTextId] = useState<string | null>(null);
     const [editingTextValue, setEditingTextValue] = useState<string>("");
     const [editingTextBox, setEditingTextBox] = useState<{
-        x: number;
-        y: number;
-        width: number;
-        height: number;
-        fontSize?: number;
-        fontFamily?: string;
-        color?: string;
+        x: number,
+        y: number,
+        width: number,
+        height: number,
+        fontSize?: number,
+        fontFamily?: string,
+        textAlign?: string,
+        fontStyle?: string,
+        color?: string,
     } | null>(null);
     const canEdit = !readOnly;
 
@@ -298,55 +300,55 @@ export function Canvas({
     }, [offset, scale]);
 
     // Inline text input rendering (textarea for editing)
-    let textInput = null;
-    if (editingTextId && editingTextBox) {
-        const { x, y, width, height, fontSize, fontFamily, color } = editingTextBox;
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        textInput = (
+    
+    {editingTextId && editingTextBox && (
+        <div
+            style={{
+                position: "absolute",
+                width: Math.max(editingTextBox.width * scale, 100),
+                minHeight: editingTextBox.height * scale,
+                zIndex: 20,
+                pointerEvents: "auto"
+            }}
+        >
             <textarea
                 value={editingTextValue}
                 autoFocus
-                placeholder="Type..."
                 style={{
                     position: "absolute",
-                    left: x * scale + offset.x,
-                    top: y * scale + offset.y,
-                    width: width * scale,
-                    height: height * scale,
-                    fontSize: (fontSize || 24) * scale,
-                    fontFamily: fontFamily || "Nunito",
-                    color: color || "#fff",
-                    background: "rgba(0,0,0,0.7)",
-                    border: "1px solid #60A5FA",
+                    left: editingTextBox.x * scale + offset.x,
+                    top: editingTextBox.y * scale + offset.y,
+                    width: editingTextBox.width * scale,
+                    height: editingTextBox.height * scale,
+                    fontSize: ((editingTextBox.fontSize || 24) * scale) + "px",
+                    fontFamily: editingTextBox.fontFamily || "Nunito",
+                    color: editingTextBox.color || "#fff",
+                    background: "transparent",
+                    border: "none",
                     zIndex: 20,
-                    padding: 4,
+                    padding: 0,
                     outline: "none",
                     resize: "none",
-                    minWidth: 40,
-                    minHeight: 24,
-                    boxSizing: "border-box"
+                    minWidth: "40px",
+                    minHeight: "24px",
+                    boxSizing: "border-box",
+                    caretColor: editingTextBox.color || "#fff",
+                    overflow: "hidden",
+                    whiteSpace: "nowrap"
                 }}
-                onChange={e => setEditingTextValue(e.target.value)}
+                onChange={e => {
+                    setEditingTextValue(e.target.value);
+                    // Auto-resize the textarea width and height to fit content
+                    e.target.style.width = 'auto';
+                    e.target.style.width = e.target.scrollWidth + 'px';
+                    e.target.style.height = 'auto';
+                    e.target.style.height = e.target.scrollHeight + 'px';
+                }}
                 onBlur={() => {
                     if (!gameRef.current) return;
-                    const found = gameRef.current.engine.shapes.find(s => s.id === editingTextId && s.type === "text");
+                    const found = gameRef.current.engine.shapes.find(s => s.id === editingTextId);
                     if (found && found.type === "text") {
                         found.text = editingTextValue;
-                        // Re-measure text size
-                        const ctx = canvasRef.current!.getContext("2d")!;
-                        ctx.font = `${found.fontSize || 24}px ${found.fontFamily || "Nunito"}`;
-                        const metrics = ctx.measureText(editingTextValue);
-                        found.width = metrics.width;
-                        let textHeight;
-                        if ('fontBoundingBoxAscent' in metrics && 'fontBoundingBoxDescent' in metrics) {
-                            textHeight = (metrics.fontBoundingBoxAscent || 0) + (metrics.fontBoundingBoxDescent || 0);
-                        } else if ('actualBoundingBoxAscent' in metrics && 'actualBoundingBoxDescent' in metrics) {
-                            const m = metrics as any;
-                            textHeight = (m.actualBoundingBoxAscent || 0) + (m.actualBoundingBoxDescent || 0);
-                        } else {
-                            textHeight = found.fontSize || 24;
-                        }
-                        found.height = textHeight;
                         gameRef.current.engine.updateShape(found);
                         if (socket) {
                             socket.send(
@@ -364,13 +366,134 @@ export function Canvas({
                 }}
                 onKeyDown={e => {
                     if (e.key === "Enter" && !e.shiftKey) {
-                        (e.target as HTMLTextAreaElement).blur();
                         e.preventDefault();
+                        // Insert newline at cursor position
+                        const textarea = e.target as HTMLTextAreaElement;
+                        const cursorPos = textarea.selectionStart;
+                        const textBefore = editingTextValue.substring(0, cursorPos);
+                        const textAfter = editingTextValue.substring(cursorPos);
+                        setEditingTextValue(textBefore + '\n' + textAfter);
+                        // Move cursor after the newline
+                        setTimeout(() => {
+                            textarea.selectionStart = cursorPos + 1;
+                            textarea.selectionEnd = cursorPos + 1;
+                        }, 0);
                     }
                 }}
             />
-        );
-    }
+        </div>
+    )}
+
+    useEffect(() => {
+        if (selectedTool !== "text" || !canEdit) return;
+        const canvas = canvasRef.current;
+        if (!canvas || !gameRef.current) return;
+        
+        function handleTextClick(e: MouseEvent) {
+            const c = canvasRef.current;
+            if (!c || !gameRef.current) return;
+            const rect = c.getBoundingClientRect();
+            const x = (e.clientX - rect.left - offset.x) / scale;
+            const y = (e.clientY - rect.top - offset.y) / scale;
+            
+            // Create a new text shape
+            const shape = {
+                type: "text" as const,
+                x,
+                y,
+                width: 100,
+                height: 24,
+                text: "",
+                fontSize: 24,
+                fontFamily: "Nunito",
+                fontStyle: "normal",
+                textAlign: "left",
+                color: "#fff"
+            };
+            
+            gameRef.current.engine.addShape(shape);
+            const addedShape = gameRef.current.engine.shapes[gameRef.current.engine.shapes.length - 1];
+            gameRef.current.engine.selectedShapeId = addedShape.id ?? null;
+            
+            setEditingTextId(addedShape.id ?? null);
+            setEditingTextValue("");
+            setEditingTextBox({
+                x, 
+                y, 
+                width: 100, 
+                height: 24, 
+                fontSize: 24, 
+                fontFamily: "Nunito",
+                fontStyle: "normal",
+                textAlign: "left",
+                color: "#fff"
+            });
+            
+            setSelectedTool("select");
+        }
+        
+        canvas.addEventListener("click", handleTextClick);
+        return () => {
+            canvas.removeEventListener("click", handleTextClick);
+        };
+    }, [selectedTool, offset, scale, canEdit]);
+    
+    // Update the double-click handler for text editing
+    useEffect(() => {
+        const canvas = canvasRef.current;
+        if (!canvas || !gameRef.current) return;
+        
+        function handleDoubleClick(e: MouseEvent) {
+            const c = canvasRef.current;
+            if (!c || !gameRef.current) return;
+            const rect = c.getBoundingClientRect();
+            const x = (e.clientX - rect.left - offset.x) / scale;
+            const y = (e.clientY - rect.top - offset.y) / scale;
+            
+            const found = gameRef.current.engine.findShapeUnderPoint
+                ? gameRef.current.engine.findShapeUnderPoint(x, y)
+                : null;
+                
+            if (found && found.type === "text") {
+                setEditingTextId(found.id ?? null);
+                setEditingTextValue(found.text);
+                setEditingTextBox({
+                    x: found.x,
+                    y: found.y,
+                    width: found.width,
+                    height: found.height,
+                    fontSize: found.fontSize,
+                    fontFamily: found.fontFamily,
+                    fontStyle: found.fontStyle,
+                    textAlign: found.textAlign,
+                    color: found.color
+                });
+            }
+        }
+        
+        canvas.addEventListener("dblclick", handleDoubleClick);
+        return () => {
+            canvas.removeEventListener("dblclick", handleDoubleClick);
+        };
+    }, [offset, scale]);
+    
+    // Handle clicks outside the text area to finish editing
+    useEffect(() => {
+        if (!editingTextId) return;
+        
+        const handleClickOutside = (e: MouseEvent) => {
+            // Check if click is outside the text area
+            const textareaEl = document.querySelector('textarea');
+            if (textareaEl && !textareaEl.contains(e.target as Node)) {
+                textareaEl.blur();
+            }
+        };
+        
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [editingTextId]);
 
     if (canEdit && !isAuthenticated()) {
         return (
@@ -411,7 +534,6 @@ export function Canvas({
             <textarea
                 value={editingTextValue}
                 autoFocus
-                placeholder="Type..."
                 style={{
                     position: "absolute",
                     left: editingTextBox.x * scale + offset.x,
@@ -421,17 +543,27 @@ export function Canvas({
                     fontSize: ((editingTextBox.fontSize || 24) * scale) + "px",
                     fontFamily: editingTextBox.fontFamily || "Nunito",
                     color: editingTextBox.color || "#fff",
-                    background: "rgba(0,0,0,0.7)",
-                    border: "1px solid #60A5FA",
+                    background: "transparent",
+                    border: "none",
                     zIndex: 20,
-                    padding: "4px",
+                    padding: 0,
                     outline: "none",
                     resize: "none",
                     minWidth: "40px",
                     minHeight: "24px",
-                    boxSizing: "border-box"
+                    boxSizing: "border-box",
+                    caretColor: editingTextBox.color || "#fff",
+                    overflow: "hidden",
+                    whiteSpace: "nowrap"
                 }}
-                onChange={e => setEditingTextValue(e.target.value)}
+                onChange={e => {
+                    setEditingTextValue(e.target.value);
+                    // Auto-resize the textarea width and height to fit content
+                    e.target.style.width = 'auto';
+                    e.target.style.width = e.target.scrollWidth + 'px';
+                    e.target.style.height = 'auto';
+                    e.target.style.height = e.target.scrollHeight + 'px';
+                }}
                 onBlur={() => {
                     if (!gameRef.current) return;
                     const found = gameRef.current.engine.shapes.find(s => s.id === editingTextId);
@@ -454,8 +586,18 @@ export function Canvas({
                 }}
                 onKeyDown={e => {
                     if (e.key === "Enter" && !e.shiftKey) {
-                        (e.target as HTMLTextAreaElement).blur();
                         e.preventDefault();
+                        // Insert newline at cursor position
+                        const textarea = e.target as HTMLTextAreaElement;
+                        const cursorPos = textarea.selectionStart;
+                        const textBefore = editingTextValue.substring(0, cursorPos);
+                        const textAfter = editingTextValue.substring(cursorPos);
+                        setEditingTextValue(textBefore + '\n' + textAfter);
+                        // Move cursor after the newline
+                        setTimeout(() => {
+                            textarea.selectionStart = cursorPos + 1;
+                            textarea.selectionEnd = cursorPos + 1;
+                        }, 0);
                     }
                 }}
             />
