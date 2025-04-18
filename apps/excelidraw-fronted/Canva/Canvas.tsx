@@ -5,7 +5,6 @@ import { Tool } from "@/Canva/draw/CanvasEngine";
 import { Game } from "@/Canva/draw/Game";
 import ZoomControl from "./canvaFuncationality/ZoomControl";
 import { EraserCursor } from "./canvaFuncationality/eraser";
-import { drawText, isPointInText, resizeText } from './draw/canavashape/Text';
 import { isAuthenticated } from "@/utils/auth";
 import { PanHandler } from "./canvaFuncationality/PanHandler";
 
