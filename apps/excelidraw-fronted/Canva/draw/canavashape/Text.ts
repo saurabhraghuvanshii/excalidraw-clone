@@ -63,16 +63,17 @@ export function drawText(
 export function isPointInText(
     x: number,
     y: number,
-    shape: Shape
+    shape: Shape,
+    buffer: number = 10
 ): boolean {
     if (shape.type !== 'text') return false;
     const bounds = getShapeBounds(shape);
     if (!bounds) return false;
     return (
-        x >= bounds.x &&
-        x <= bounds.x + bounds.width &&
-        y >= bounds.y &&
-        y <= bounds.y + bounds.height
+        x >= bounds.x - buffer &&
+        x <= bounds.x + bounds.width + buffer &&
+        y >= bounds.y - buffer &&
+        y <= bounds.y + bounds.height + buffer
     );
 }
 

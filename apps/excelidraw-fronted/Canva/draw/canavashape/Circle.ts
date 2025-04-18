@@ -8,11 +8,10 @@ export function drawCircle(ctx: CanvasRenderingContext2D, shape: Shape) {
     ctx.closePath();
 }
 
-export function isPointInCircle(x: number, y: number, shape: Shape): boolean {
+export function isPointInCircle(x: number, y: number, shape: Shape, buffer: number = 10): boolean {
     if (shape.type !== 'circle') return false;
     const dx = x - shape.centerX;
     const dy = y - shape.centerY;
-    const buffer = shape.radius < 10 ? 5 : 0;
     return Math.sqrt(dx * dx + dy * dy) <= shape.radius + buffer;
 }
 

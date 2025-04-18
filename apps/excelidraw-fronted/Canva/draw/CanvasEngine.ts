@@ -122,13 +122,13 @@ export class CanvasEngine {
             const shape = this.shapes[i];
             if (shape.type === "rect" && isPointInRectangle(adjustedX, adjustedY, shape, eraserBuffer)) {
                 return shape;
-            } else if (shape.type === "circle" && isPointInCircle(adjustedX, adjustedY, shape)) {
+            } else if (shape.type === "circle" && isPointInCircle(adjustedX, adjustedY, shape, eraserBuffer)) {
                 return shape;
             } else if (shape.type === "line" && isPointNearLine(adjustedX, adjustedY, shape)) {
                 return shape;
             } else if (shape.type === "freehand" && isPointNearFreehand(adjustedX, adjustedY, shape)) {
                 return shape;
-            }  else if (shape.type === "text" && isPointInText(adjustedX, adjustedY, shape)) {
+            }  else if (shape.type === "text" && isPointInText(adjustedX, adjustedY, shape, eraserBuffer)) {
                 return shape;
             }
         }

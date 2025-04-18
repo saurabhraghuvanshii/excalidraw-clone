@@ -214,6 +214,7 @@ export class Game {
                     roomId: this.roomId
                 })
             );
+            this.engine.clearCanvas();
         } else if (this.selectedTool === "freehand" && this.freehandDrawing) {
             this.freehandDrawing = false;
             if (this.freehandPoints.length > 1) {
