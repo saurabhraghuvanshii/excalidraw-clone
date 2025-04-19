@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { IconButton } from "@/components/ui/IconButton";
-import { Circle, Pencil, RectangleHorizontalIcon, Eraser, MousePointer2, LetterText } from "lucide-react";
 import { Tool } from "./draw/CanvasEngine";
 import { Game } from "./draw/Game";
 import ZoomControl from "./canvaFuncationality/ZoomControl";
@@ -618,13 +617,13 @@ function Topbar({ selectedTool, setSelectedTool }: {
                 <IconButton
                     onClick={() => setSelectedTool("select")}
                     activated={selectedTool === "select"}
-                    icon={<MousePointer2/>}
+                    image="/selector.svg"
                     title="Select"
                 />
                 <IconButton
                     onClick={() => setSelectedTool("freehand")}
                     activated={selectedTool === "freehand"}
-                    icon={<Pencil/>}
+                    image="/pencil.svg"
                     title="Freehand"
                 />
                 <IconButton
@@ -636,25 +635,25 @@ function Topbar({ selectedTool, setSelectedTool }: {
                 <IconButton
                     onClick={() => setSelectedTool("rect")}
                     activated={selectedTool === "rect"}
-                    icon={<RectangleHorizontalIcon/>}
+                    image="/rectangle.svg"
                     title="Rectangle"
                 />
                 <IconButton
                     onClick={() => setSelectedTool("circle")}
                     activated={selectedTool === "circle"}
-                    icon={<Circle/>}
+                    image="/circle.svg"
                     title="Circle"
                 />
                 <IconButton
                     onClick={() => setSelectedTool("text")}
                     activated={selectedTool === "text"}
-                    icon={<LetterText/>}
+                    image="/Text.svg"
                     title="Text"
                 />
                 <IconButton
                     onClick={() => setSelectedTool("eraser")}
                     activated={selectedTool === "eraser"}
-                    icon={<Eraser/>}
+                    image="/Erarser.svg"
                     title="Eraser"
                 />
             </div>
