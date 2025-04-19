@@ -1,4 +1,12 @@
-import { ReactNode } from "react";
+import Image from 'next/image';
+
+interface IconButtonProps {
+    onClick: () => void;
+    activated: boolean;
+    icon?: React.ReactNode;
+    image?: string;
+    title?: string;
+}
 
 export function IconButton({
     icon,
@@ -6,22 +14,27 @@ export function IconButton({
     onClick,
     activated,
     title
-}: {
-    icon?: ReactNode,
-    image?: string,
-    onClick: () => void,
-    activated: boolean,
-    title?: string
-}) {
+}: IconButtonProps ) {
     return (
-        <div
-            className={`m-2 pointer rounded-full border p-2 bg-black hover:bg-gray ${activated ? "text-red-400" : "text-white"}`}
+        <button
             onClick={onClick}
             title={title}
+            className={`p-2 rounded hover:bg-white-700 transition-colors ${
+                activated ? 'bg-gray-700' : ''
+            }`}
         >
             {image ? (
-                <img src={image} alt="tool" className="w-5 h-5" />
-            ) : icon}
-        </div>
+                <div className="w-[18px] h-[18px] relative">
+                    <Image
+                        src={image}
+                        alt={title || ''}
+                        width={18}
+                        height={18}
+                    />
+                </div>
+            ) : (
+                icon
+            )}
+        </button>
     );
 }

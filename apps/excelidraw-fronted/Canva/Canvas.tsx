@@ -384,117 +384,6 @@ export function Canvas({
         </div>
     )}
 
-    useEffect(() => {
-        if (selectedTool !== "text" || !canEdit) return;
-        const canvas = canvasRef.current;
-        if (!canvas || !gameRef.current) return;
-        
-        function handleTextClick(e: MouseEvent) {
-            const c = canvasRef.current;
-            if (!c || !gameRef.current) return;
-            const rect = c.getBoundingClientRect();
-            const x = (e.clientX - rect.left - offset.x) / scale;
-            const y = (e.clientY - rect.top - offset.y) / scale;
-            
-            // Create a new text shape
-            const shape = {
-                type: "text" as const,
-                x,
-                y,
-                width: 100,
-                height: 24,
-                text: "",
-                fontSize: 24,
-                fontFamily: "Nunito",
-                fontStyle: "normal",
-                textAlign: "left",
-                color: "#fff"
-            };
-            
-            gameRef.current.engine.addShape(shape);
-            const addedShape = gameRef.current.engine.shapes[gameRef.current.engine.shapes.length - 1];
-            gameRef.current.engine.selectedShapeId = addedShape.id ?? null;
-            
-            setEditingTextId(addedShape.id ?? null);
-            setEditingTextValue("");
-            setEditingTextBox({
-                x, 
-                y, 
-                width: 100, 
-                height: 24, 
-                fontSize: 24, 
-                fontFamily: "Nunito",
-                fontStyle: "normal",
-                textAlign: "left",
-                color: "#fff"
-            });
-            
-            setSelectedTool("select");
-        }
-        
-        canvas.addEventListener("click", handleTextClick);
-        return () => {
-            canvas.removeEventListener("click", handleTextClick);
-        };
-    }, [selectedTool, offset, scale, canEdit]);
-    
-    // Update the double-click handler for text editing
-    useEffect(() => {
-        const canvas = canvasRef.current;
-        if (!canvas || !gameRef.current) return;
-        
-        function handleDoubleClick(e: MouseEvent) {
-            const c = canvasRef.current;
-            if (!c || !gameRef.current) return;
-            const rect = c.getBoundingClientRect();
-            const x = (e.clientX - rect.left - offset.x) / scale;
-            const y = (e.clientY - rect.top - offset.y) / scale;
-            
-            const found = gameRef.current.engine.findShapeUnderPoint
-                ? gameRef.current.engine.findShapeUnderPoint(x, y)
-                : null;
-                
-            if (found && found.type === "text") {
-                setEditingTextId(found.id ?? null);
-                setEditingTextValue(found.text);
-                setEditingTextBox({
-                    x: found.x,
-                    y: found.y,
-                    width: found.width,
-                    height: found.height,
-                    fontSize: found.fontSize,
-                    fontFamily: found.fontFamily,
-                    fontStyle: found.fontStyle,
-                    textAlign: found.textAlign,
-                    color: found.color
-                });
-            }
-        }
-        
-        canvas.addEventListener("dblclick", handleDoubleClick);
-        return () => {
-            canvas.removeEventListener("dblclick", handleDoubleClick);
-        };
-    }, [offset, scale]);
-    
-    // Handle clicks outside the text area to finish editing
-    useEffect(() => {
-        if (!editingTextId) return;
-        
-        const handleClickOutside = (e: MouseEvent) => {
-            // Check if click is outside the text area
-            const textareaEl = document.querySelector('textarea');
-            if (textareaEl && !textareaEl.contains(e.target as Node)) {
-                textareaEl.blur();
-            }
-        };
-        
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, [editingTextId]);
-
     if (canEdit && !isAuthenticated()) {
         return (
             <div className="w-screen h-screen flex items-center justify-center bg-gray-900 text-white">
@@ -618,13 +507,13 @@ function Topbar({ selectedTool, setSelectedTool }: {
                 <IconButton
                     onClick={() => setSelectedTool("select")}
                     activated={selectedTool === "select"}
-                    icon={<MousePointer2 size={18} />}
+                    icon={<MousePointer2/>}
                     title="Select"
                 />
                 <IconButton
                     onClick={() => setSelectedTool("freehand")}
                     activated={selectedTool === "freehand"}
-                    icon={<Pencil size={18} />}
+                    icon={<Pencil/>}
                     title="Freehand"
                 />
                 <IconButton
@@ -636,25 +525,25 @@ function Topbar({ selectedTool, setSelectedTool }: {
                 <IconButton
                     onClick={() => setSelectedTool("rect")}
                     activated={selectedTool === "rect"}
-                    icon={<RectangleHorizontalIcon size={18} />}
+                    icon={<RectangleHorizontalIcon/>}
                     title="Rectangle"
                 />
                 <IconButton
                     onClick={() => setSelectedTool("circle")}
                     activated={selectedTool === "circle"}
-                    icon={<Circle size={18} />}
+                    icon={<Circle/>}
                     title="Circle"
                 />
                 <IconButton
                     onClick={() => setSelectedTool("text")}
                     activated={selectedTool === "text"}
-                    icon={<LetterText size={18} />}
+                    icon={<LetterText/>}
                     title="Text"
                 />
                 <IconButton
                     onClick={() => setSelectedTool("eraser")}
                     activated={selectedTool === "eraser"}
-                    icon={<Eraser size={18} />}
+                    icon={<Eraser/>}
                     title="Eraser"
                 />
             </div>
