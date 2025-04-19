@@ -5,10 +5,10 @@ export function generateId(): string {
 export function getShapeBounds(shape: any): { x: number; y: number; width: number; height: number } | null {
     if (shape.type === "rect") {
         return { x: shape.x, y: shape.y, width: shape.width, height: shape.height };
-    } else if (shape.type === "circle") {
+    } else if (shape.type === "circleOrOval") {
         return {
-            x: shape.centerX - shape.radius,
-            y: shape.centerY - shape.radius,
+            x: shape.centerX - shape.radiusX,
+            y: shape.centerY - shape.radiusY,
             width: shape.radius * 2,
             height: shape.radius * 2
         };

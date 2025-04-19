@@ -1,5 +1,5 @@
 import { drawRectangle, isPointInRectangle, resizeRectangle } from './canavashape/Rectangle';
-import { drawCircle, isPointInCircle, resizeCircle } from './canavashape/Circle';
+import { drawCircleOrOVal, isPointInCircleOrOval, resizeCircleOrOval } from './canavashape/Circle';
 import { drawLine, isPointNearLine, resizeLine } from './canavashape/Line';
 import { drawFreehand, isPointNearFreehand, resizeFreehand } from './canavashape/Freehand';
 import { generateId, getShapeBounds } from './utils';
@@ -13,10 +13,11 @@ export type Shape = {
     height: number;
     id?: string;
 } | {
-    type: "circle";
+    type: "circleOrOval";
     centerX: number;
     centerY: number;
-    radius: number;
+    radiusX: number;
+    radiusY: number;
     id?: string;
 } | {
     type: "line";
@@ -44,7 +45,7 @@ export type Shape = {
     id?: string;
 }
 
-export type Tool = "select" | "freehand" | "line" | "rect" | "circle" | "eraser" | "text";
+export type Tool = "select" | "freehand" | "line" | "rect" | "circleOrOval" | "eraser" | "text";
 
 export class CanvasEngine {
     public canvas: HTMLCanvasElement;
@@ -97,8 +98,8 @@ export class CanvasEngine {
         this.shapes.forEach((shape) => {
             if (shape.type === "rect") {
                 drawRectangle(this.ctx, shape);
-            } else if (shape.type === "circle") {
-                drawCircle(this.ctx, shape);
+            } else if (shape.type === "circleOrOval") {
+                drawCircleOrOVal(this.ctx, shape);
             } else if (shape.type === "line") {
                 drawLine(this.ctx, shape);
             } else if (shape.type === "freehand") {
@@ -122,7 +123,7 @@ export class CanvasEngine {
             const shape = this.shapes[i];
             if (shape.type === "rect" && isPointInRectangle(adjustedX, adjustedY, shape, eraserBuffer)) {
                 return shape;
-            } else if (shape.type === "circle" && isPointInCircle(adjustedX, adjustedY, shape, eraserBuffer)) {
+            } else if (shape.type === "circleOrOval" && isPointInCircleOrOval(adjustedX, adjustedY, shape, eraserBuffer)) {
                 return shape;
             } else if (shape.type === "line" && isPointNearLine(adjustedX, adjustedY, shape)) {
                 return shape;
@@ -193,8 +194,8 @@ export class CanvasEngine {
     resizeShape(shape: Shape, handleIdx: number, px: number, py: number) {
         if (shape.type === "rect") {
             resizeRectangle(shape, handleIdx, px, py);
-        } else if (shape.type === "circle") {
-            resizeCircle(shape, px, py);
+        } else if (shape.type === "circleOrOval") {
+            resizeCircleOrOval(shape, handleIdx, px, py);
         } else if (shape.type === "line") {
             resizeLine(shape, handleIdx, px, py);
         } else if (shape.type === "freehand") {

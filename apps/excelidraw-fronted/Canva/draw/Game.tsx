@@ -8,7 +8,7 @@ export class Game {
     public roomId: string;
     public socket: WebSocket;
     public readOnly: boolean = false;
-    public selectedTool: Tool = "circle";
+    public selectedTool: Tool = "circleOrOval";
     public clicked: boolean = false;
     public startX = 0;
     public startY = 0;
@@ -119,7 +119,7 @@ export class Game {
                 }
             }
         }
-        if (["rect", "circle", "line", "freehand"].includes(this.selectedTool)) {
+        if (["rect", "circleOrOval", "line", "freehand"].includes(this.selectedTool)) {
             this.clicked = true;
             this.startX = x;
             this.startY = y;
@@ -192,7 +192,7 @@ export class Game {
         const width = endX - this.startX;
         const height = endY - this.startY;
         let shape = null;
-        if (["line", "rect", "circle"].includes(this.selectedTool)) {
+        if (["line", "rect", "circleOrOval"].includes(this.selectedTool)) {
             if (Math.abs(width) < 2 && Math.abs(height) < 2) return;
             if (this.selectedTool === "rect") {
                 shape = {
@@ -202,15 +202,15 @@ export class Game {
                     height,
                     width
                 };
-            } else if (this.selectedTool === "circle") {
-                const radius = Math.max(Math.abs(width), Math.abs(height)) / 2;
+            } else if (this.selectedTool === "circleOrOval") {
                 const centerX = this.startX + width / 2;
                 const centerY = this.startY + height / 2;
                 shape = {
-                    type: "circle" as const,
-                    radius: radius,
-                    centerX: centerX,
-                    centerY: centerY
+                    type: "circleOrOval" as const,
+                    centerX,
+                    centerY,
+                    radiusX: Math.abs(width) / 2,
+                    radiusY: Math.abs(height) / 2
                 };
             } else if (this.selectedTool === "line") {
                 shape = {
@@ -345,7 +345,7 @@ export class Game {
                     if (shape.type === "rect") {
                         shape.x += dx;
                         shape.y += dy;
-                    } else if (shape.type === "circle") {
+                    } else if (shape.type === "circleOrOval") {
                         shape.centerX += dx;
                         shape.centerY += dy;
                     } else if (shape.type === "line") {
@@ -400,12 +400,11 @@ export class Game {
         this.engine.ctx.strokeStyle = "rgba(255, 255, 255, 1)";
         if (this.selectedTool === "rect") {
             this.engine.ctx.strokeRect(this.startX, this.startY, width, height);
-        } else if (this.selectedTool === "circle") {
-            const radius = Math.max(Math.abs(width), Math.abs(height)) / 2;
+        } else if (this.selectedTool === "circleOrOval") {
             const centerX = this.startX + width / 2;
             const centerY = this.startY + height / 2;
             this.engine.ctx.beginPath();
-            this.engine.ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+            this.engine.ctx.ellipse(centerX, centerY, Math.abs(width) / 2, Math.abs(height) / 2, 0, 0, Math.PI * 2);
             this.engine.ctx.stroke();
             this.engine.ctx.closePath();
         } else if (this.selectedTool === "line") {

@@ -48,7 +48,7 @@ export function Canvas({
         if (canvasRef.current && !gameRef.current) {
             const g = new Game(canvasRef.current, roomId, socket, readOnly);
             // Set up callback to switch to select tool after drawing
-            g.onShapeDrawn = (newShapeId: string) => {
+            g.onShapeDrawn = () => {
                 setSelectedTool("select");
             };
             gameRef.current = g;
@@ -170,7 +170,7 @@ export function Canvas({
             let cursor = getCursorForTool(selectedTool);
             // Check for handle hover if a shape is selected
             if (game.engine.selectedShapeId) {
-                const selected = game.engine.shapes.find((s: any) => s.id === game.engine.selectedShapeId);
+                const selected = game.engine.shapes.find((s) => s.id && s.id === game.engine.selectedShapeId);
                 if (selected) {
                     const handleIdx = game.engine.getHandleAtPoint(selected, x, y);
                     if (handleIdx !== null) {
@@ -242,7 +242,10 @@ export function Canvas({
             if ('fontBoundingBoxAscent' in metrics && 'fontBoundingBoxDescent' in metrics) {
                 textHeight = (metrics.fontBoundingBoxAscent || 0) + (metrics.fontBoundingBoxDescent || 0);
             } else if ('actualBoundingBoxAscent' in metrics && 'actualBoundingBoxDescent' in metrics) {
-                const m = metrics as any;
+                const m = metrics as TextMetrics & {
+                    actualBoundingBoxAscent?: number;
+                    actualBoundingBoxDescent?: number;
+                };
                 textHeight = (m.actualBoundingBoxAscent || 0) + (m.actualBoundingBoxDescent || 0);
             } else {
                 textHeight = fontSize;
@@ -300,6 +303,7 @@ export function Canvas({
 
     // Inline text input rendering (textarea for editing)
     
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     {editingTextId && editingTextBox && (
         <div
             style={{
@@ -612,8 +616,8 @@ function Topbar({ selectedTool, setSelectedTool }: {
     setSelectedTool: (s: Tool) => void
 }) {
     return (
-        <div className="fixed top-2 left-1/2 -translate-x-1/2 z-10 flex justify-center w-full pointer-events-none">
-            <div className="flex gap-1 bg-gray-800 p-1 rounded-md pointer-events-auto shadow-md border border-gray-700 cursor-pointer">
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex justify-center w-full pointer-events-none">
+            <div className="flex gap-1 bg-gray-800 p-1 rounded-lg pointer-events-auto shadow-lg border border-gray-700 cursor-pointer">
                 <IconButton
                     onClick={() => setSelectedTool("select")}
                     activated={selectedTool === "select"}
@@ -639,8 +643,8 @@ function Topbar({ selectedTool, setSelectedTool }: {
                     title="Rectangle"
                 />
                 <IconButton
-                    onClick={() => setSelectedTool("circle")}
-                    activated={selectedTool === "circle"}
+                    onClick={() => setSelectedTool("circleOrOval")}
+                    activated={selectedTool === "circleOrOval"}
                     image="/circle.svg"
                     title="Circle"
                 />
@@ -666,7 +670,7 @@ function getCursorForTool(tool: Tool) {
         case "freehand":
         case "line":
         case "rect":
-        case "circle":
+        case "circleOrOval":
             return "crosshair";
         case "text":
             return "text";
