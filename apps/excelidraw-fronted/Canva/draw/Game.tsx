@@ -1,7 +1,6 @@
 import { CanvasEngine, Shape, Tool } from "./CanvasEngine";
 import { getExistingShapes } from "./http";
 import { getShapeBounds } from "./utils";
-import { generateId } from "./utils";
 
 export class Game {
     public canvas: HTMLCanvasElement;

@@ -72,7 +72,7 @@ const Index = () => {
                 <h3 className="text-xl font-semibold text-gray-100">Multiplayer Editing</h3>
               </div>
               <div className="mt-4 text-gray-300">
-                Multiple users can edit the same canvas simultaneously. See who's drawing what in real-time.
+                Multiple users can edit the same canvas simultaneously. See who&apos; drawing what in real-time.
               </div>
             </Card>
 

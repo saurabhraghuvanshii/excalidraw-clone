@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { IconButton } from "../components/ui/IconButton";
+import { IconButton } from "@/components/ui/IconButton";
 import { Circle, Pencil, RectangleHorizontalIcon, Eraser, MousePointer2, LetterText } from "lucide-react";
-import { Tool } from "@/Canva/draw/CanvasEngine";
-import { Game } from "@/Canva/draw/Game";
+import { Tool } from "./draw/CanvasEngine";
+import { Game } from "./draw/Game";
 import ZoomControl from "./canvaFuncationality/ZoomControl";
 import { EraserCursor } from "./canvaFuncationality/eraser";
 import { isAuthenticated } from "@/utils/auth";
@@ -513,7 +513,7 @@ export function Canvas({
     }
 
     return (
-        <div className="h-screen overflow-hidden relative bg-black">
+        <div className="h-screen w-screen relative bg-black">
             <PanHandler
                 canvasRef={canvasRef as React.RefObject<HTMLCanvasElement>}
                 offset={offset}
