@@ -131,3 +131,15 @@
     }
   }
 }
+
+html, body, #__next {
+  height: 100%;
+}
+
+.no-scroll {
+  overflow: hidden !important;
+}
+
+body {
+  min-height: 100vh;
+}

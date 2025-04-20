@@ -22,7 +22,7 @@ export default function ZoomControl({
     };
 
     return (
-        <div className="fixed z-10 bottom-4 left-4 rounded-lg flex items-center bg-gray-800 shadow-lg">
+        <div className="absolute z-50 bottom-4 left-2 rounded-lg flex items-center bg-gray-800 shadow-lg">
             <TooltipProvider delayDuration={0}>
                 <Tooltip>
                     <TooltipTrigger asChild>

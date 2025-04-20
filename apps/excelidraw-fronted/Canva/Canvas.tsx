@@ -7,6 +7,14 @@ import { EraserCursor } from "./canvaFuncationality/eraser";
 import { isAuthenticated } from "@/utils/auth";
 import { PanHandler } from "./canvaFuncationality/PanHandler";
 
+let ResizeObserverImpl: typeof ResizeObserver;
+if (typeof window !== 'undefined' && 'ResizeObserver' in window) {
+  ResizeObserverImpl = window.ResizeObserver;
+} else {
+  // @ts-ignore
+  ResizeObserverImpl = require('resize-observer-polyfill');
+}
+
 export function Canvas({
     roomId,
     socket,
@@ -21,8 +29,8 @@ export function Canvas({
     const [selectedTool, setSelectedTool] = useState<Tool>("select");
     const [scale, setScale] = useState<number>(1);
     const [dimensions, setDimensions] = useState({
-        width: window.innerWidth,
-        height: window.innerHeight
+        width: 0,
+        height: 0
     });
     const [offset, setOffset] = useState({ x: 0, y: 0 });
     const [isDragging, setIsDragging] = useState(false);
@@ -108,35 +116,33 @@ export function Canvas({
         };
     }, []);
 
-    // Set up window resize handling with debounce
+    // Responsive canvas using ResizeObserver
     useEffect(() => {
-        let resizeTimer: number | null = null;
-        function handleResize() {
-            if (resizeTimer) {
-                window.clearTimeout(resizeTimer);
-            }
-            const newWidth = window.innerWidth;
-            const newHeight = window.innerHeight;
-            setDimensions({
-                width: newWidth,
-                height: newHeight
-            });
-            if (canvasRef.current) {
-                canvasRef.current.width = newWidth;
-                canvasRef.current.height = newHeight;
-            }
-            resizeTimer = window.setTimeout(() => {
+        const parent = canvasRef.current?.parentElement;
+        if (!parent) return;
+        const observer = new ResizeObserverImpl((entries: ResizeObserverEntry[]) => {
+            for (let entry of entries) {
+                const { width, height } = entry.contentRect;
+                setDimensions({ width, height });
+                if (canvasRef.current) {
+                    canvasRef.current.width = width;
+                    canvasRef.current.height = height;
+                }
                 if (gameRef.current) {
                     gameRef.current.handleResize();
                 }
-            }, 100);
-        }
-        window.addEventListener('resize', handleResize);
-        return () => {
-            window.removeEventListener('resize', handleResize);
-            if (resizeTimer) {
-                window.clearTimeout(resizeTimer);
             }
+        });
+        observer.observe(parent);
+        // Set initial size
+        if (parent && canvasRef.current) {
+            const { width, height } = parent.getBoundingClientRect();
+            setDimensions({ width, height });
+            canvasRef.current.width = width;
+            canvasRef.current.height = height;
+        }
+        return () => {
+            observer.disconnect();
         };
     }, []);
 
@@ -500,7 +506,7 @@ export function Canvas({
     
     if (canEdit && !isAuthenticated()) {
         return (
-            <div className="w-screen h-screen flex items-center justify-center bg-gray-900 text-white">
+            <div className="relative min-h-screen flex items-center justify-center bg-gray-900 text-white">
                 <div className="text-center">
                     <h2 className="text-2xl font-bold mb-4">Authentication Required</h2>
                     <p className="text-red-500">You must be signed in to edit the canvas.</p>
@@ -516,97 +522,99 @@ export function Canvas({
     }
 
     return (
-        <div className="h-screen w-screen relative bg-black">
-            <PanHandler
-                canvasRef={canvasRef as React.RefObject<HTMLCanvasElement>}
-                offset={offset}
-                setOffset={setOffset}
-                isDragging={isDragging}
-                setIsDragging={setIsDragging}
-            />
-            <canvas
-                ref={canvasRef}
-                width={dimensions.width}
-                height={dimensions.height}
-                className="absolute top-0 left-0"
-                onMouseEnter={() => setIsCanvasHovered(true)}
-                onMouseLeave={() => setIsCanvasHovered(false)}
-            />
-            {selectedTool === "eraser" && isCanvasHovered && <EraserCursor size={eraserSize} isActive />}
-            {editingTextId && editingTextBox && (
-            <textarea
-                value={editingTextValue}
-                autoFocus
-                style={{
-                    position: "absolute",
-                    left: editingTextBox.x * scale + offset.x,
-                    top: editingTextBox.y * scale + offset.y,
-                    width: editingTextBox.width * scale,
-                    height: editingTextBox.height * scale,
-                    fontSize: ((editingTextBox.fontSize || 24) * scale) + "px",
-                    fontFamily: editingTextBox.fontFamily || "Nunito",
-                    color: editingTextBox.color || "#fff",
-                    background: "rgba(0, 0, 0, 0.3)",
-                    border: "1px solid rgba(255, 255, 255, 0.3)",
-                    zIndex: 20,
-                    padding: "2px",
-                    outline: "none",
-                    resize: "none",
-                    minWidth: "40px",
-                    minHeight: "24px",
-                    boxSizing: "border-box",
-                    caretColor: editingTextBox.color || "#fff",
-                    overflow: "hidden",
-                    whiteSpace: "nowrap"
-                }}
-                onChange={e => {
-                    setEditingTextValue(e.target.value);
-                    // Auto-resize the textarea width and height to fit content
-                    e.target.style.width = 'auto';
-                    e.target.style.width = e.target.scrollWidth + 'px';
-                    e.target.style.height = 'auto';
-                    e.target.style.height = e.target.scrollHeight + 'px';
-                }}
-                onBlur={() => {
-                    if (!gameRef.current) return;
-                    const found = gameRef.current.engine.shapes.find(s => s.id === editingTextId);
-                    if (found && found.type === "text") {
-                        found.text = editingTextValue;
-                        gameRef.current.engine.updateShape(found);
-                        if (socket) {
-                            socket.send(
-                                JSON.stringify({
-                                    type: "chat",
-                                    message: JSON.stringify({ shape: found }),
-                                    roomId
-                                })
-                            );
-                        }
-                    }
-                    setEditingTextId(null);
-                    setEditingTextValue("");
-                    setEditingTextBox(null);
-                }}
-                onKeyDown={e => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                        e.preventDefault();
-                        // Insert newline at cursor position
-                        const textarea = e.target as HTMLTextAreaElement;
-                        const cursorPos = textarea.selectionStart;
-                        const textBefore = editingTextValue.substring(0, cursorPos);
-                        const textAfter = editingTextValue.substring(cursorPos);
-                        setEditingTextValue(textBefore + '\n' + textAfter);
-                        // Move cursor after the newline
-                        setTimeout(() => {
-                            textarea.selectionStart = cursorPos + 1;
-                            textarea.selectionEnd = cursorPos + 1;
-                        }, 0);
-                    }
-                }}
-            />
-        )}
+        <div className="relative min-h-screen flex-auto w-full bg-black no-scroll">
+                    <PanHandler
+                        canvasRef={canvasRef as React.RefObject<HTMLCanvasElement>}
+                        offset={offset}
+                        setOffset={setOffset}
+                        isDragging={isDragging}
+                        setIsDragging={setIsDragging}
+                    />
+                    <canvas
+                        ref={canvasRef}
+                        width={dimensions.width}
+                        height={dimensions.height}
+                        className="absolute top-0 left-0 w-full h-full bg-black"
+                        onMouseEnter={() => setIsCanvasHovered(true)}
+                        onMouseLeave={() => setIsCanvasHovered(false)}
+                    />
+                    {selectedTool === "eraser" && isCanvasHovered && <EraserCursor size={eraserSize} isActive />}
+                    {editingTextId && editingTextBox && (
+                    <textarea
+                        value={editingTextValue}
+                        autoFocus
+                        style={{
+                            position: "absolute",
+                            left: editingTextBox.x * scale + offset.x,
+                            top: editingTextBox.y * scale + offset.y,
+                            width: editingTextBox.width * scale,
+                            height: editingTextBox.height * scale,
+                            fontSize: ((editingTextBox.fontSize || 24) * scale) + "px",
+                            fontFamily: editingTextBox.fontFamily || "Nunito",
+                            color: editingTextBox.color || "#fff",
+                            background: "rgba(0, 0, 0, 0.3)",
+                            border: "1px solid rgba(255, 255, 255, 0.3)",
+                            zIndex: 20,
+                            padding: "2px",
+                            outline: "none",
+                            resize: "none",
+                            minWidth: "40px",
+                            minHeight: "24px",
+                            boxSizing: "border-box",
+                            caretColor: editingTextBox.color || "#fff",
+                            overflow: "hidden",
+                            whiteSpace: "nowrap"
+                        }}
+                        onChange={e => {
+                            setEditingTextValue(e.target.value);
+                            e.target.style.width = 'auto';
+                            e.target.style.width = e.target.scrollWidth + 'px';
+                            e.target.style.height = 'auto';
+                            e.target.style.height = e.target.scrollHeight + 'px';
+                        }}
+                        onBlur={() => {
+                            if (!gameRef.current) return;
+                            const found = gameRef.current.engine.shapes.find(s => s.id === editingTextId);
+                            if (found && found.type === "text") {
+                                found.text = editingTextValue;
+                                gameRef.current.engine.updateShape(found);
+                                if (socket) {
+                                    socket.send(
+                                        JSON.stringify({
+                                            type: "chat",
+                                            message: JSON.stringify({ shape: found }),
+                                            roomId
+                                        })
+                                    );
+                                }
+                            }
+                            setEditingTextId(null);
+                            setEditingTextValue("");
+                            setEditingTextBox(null);
+                        }}
+                        onKeyDown={e => {
+                            if (e.key === "Enter" && !e.shiftKey) {
+                                e.preventDefault();
+                                const textarea = e.target as HTMLTextAreaElement;
+                                const cursorPos = textarea.selectionStart;
+                                const textBefore = editingTextValue.substring(0, cursorPos);
+                                const textAfter = editingTextValue.substring(cursorPos);
+                                setEditingTextValue(textBefore + '\n' + textAfter);
+                                setTimeout(() => {
+                                    textarea.selectionStart = cursorPos + 1;
+                                    textarea.selectionEnd = cursorPos + 1;
+                                }, 0);
+                            }
+                        }}
+                    />
+                )}
+            <div className="absolute w-full flex justify-center items-center pb-2 z-50`">
             <Topbar setSelectedTool={setSelectedTool} selectedTool={selectedTool} />
-            <ZoomControl scale={scale} setScale={setScale} />
+            </div>
+            <div className="absolute bottom-11 left-4 z-10">
+               <ZoomControl scale={scale} setScale={setScale} />
+            </div>
+            
         </div>
     );
 }
@@ -616,8 +624,8 @@ function Topbar({ selectedTool, setSelectedTool }: {
     setSelectedTool: (s: Tool) => void
 }) {
     return (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex justify-center w-full pointer-events-none">
-            <div className="flex gap-1 bg-gray-800 p-1 rounded-lg pointer-events-auto shadow-lg border border-gray-700 cursor-pointer">
+        <div className="flex justify-center items-center mt-2 pb-2 z-50 rounded-lg">
+            <div className="flex gap-1  p-2 rounded-lg pointer-events-auto shadow-lg border border-gray-800 cursor-pointer">
                 <IconButton
                     onClick={() => setSelectedTool("select")}
                     activated={selectedTool === "select"}

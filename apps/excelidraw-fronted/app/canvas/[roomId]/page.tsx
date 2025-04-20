@@ -25,7 +25,7 @@ export default function CanvasPage({ params }: { params: Promise<RoomParams> }) 
     }, []);
 
     return (
-        <main className="relative h-full w-full">
+        <div className="relative min-h-screen flex flex-col w-full no-scroll">
             <div className="absolute top-4 left-4 z-20">
                 <Link href="/">
                     <button className="bg-gray-800 hover:bg-gray-700 rounded-full p-2 shadow-md">
@@ -33,10 +33,10 @@ export default function CanvasPage({ params }: { params: Promise<RoomParams> }) 
                     </button>
                 </Link>
             </div>
-            <div className="absolute top-4 right-4 z-20">
+            <div className="absolute top-4 right-4 z-20 hidden sm:block">
                 <ShareRoomButton roomId={roomId} />
             </div>
             <RoomCanvas roomId={roomId} readOnly={!isAuth} />
-        </main>
+        </div>
     );
 }

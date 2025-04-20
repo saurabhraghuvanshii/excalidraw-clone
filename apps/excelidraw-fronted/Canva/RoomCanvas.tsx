@@ -47,7 +47,7 @@ export function RoomCanvas({ roomId, readOnly = false }: { roomId: string; readO
 
     if (error) {
         return (
-            <div className="w-screen h-screen flex items-center justify-center bg-gray-900 text-white">
+            <div className="relative min-h-screen flex items-center justify-center bg-gray-900 text-white">
                 <div className="text-center">
                     <h2 className="text-2xl font-bold mb-4">Error</h2>
                     <p className="text-red-500">{error}</p>
@@ -64,7 +64,7 @@ export function RoomCanvas({ roomId, readOnly = false }: { roomId: string; readO
 
     if (!socket) {
         return (
-            <div className="w-screen h-screen flex items-center justify-center bg-gray-900 text-white">
+            <div className="relative min-h-screen flex items-center justify-center bg-gray-900 text-white">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
                     <p>Connecting to server...</p>
@@ -74,13 +74,10 @@ export function RoomCanvas({ roomId, readOnly = false }: { roomId: string; readO
     }
 
     return (
-        <div className="relative w-screen h-screen bg-gray-900">
-            <div className="absolute top-4 right-4 flex gap-2">
-                <div className="bg-gray-800 text-white px-4 py-2 rounded-lg">
-                    Room ID: {roomId}
-                </div>
+        <div className="relative min-h-screen flex-auto w-full bg-gray-900">
+            <div className="flex-auto">
+                <Canvas roomId={roomId} socket={socket as WebSocket} readOnly={readOnly} />
             </div>
-            <Canvas roomId={roomId} socket={socket as WebSocket} readOnly={readOnly} />
         </div>
     );
 }
