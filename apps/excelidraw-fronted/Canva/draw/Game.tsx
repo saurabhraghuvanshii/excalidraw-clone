@@ -1,6 +1,7 @@
 import { CanvasEngine, Shape, Tool } from "./CanvasEngine";
 import { getExistingShapes } from "./http";
 import { getShapeBounds } from "./utils";
+import { drawSelectionFrameAndHandles as drawFrameHandles } from '../canvaFuncationality/FrameHandles';
 
 export class Game {
     public canvas: HTMLCanvasElement;
@@ -438,36 +439,7 @@ export class Game {
     }
 
     drawSelectionFrameAndHandles(shape: Shape) {
-        this.engine.ctx.save();
-        this.engine.ctx.strokeStyle = "#60A5FA";
-        this.engine.ctx.lineWidth = 2;
-        let bounds = getShapeBounds(shape);
-        if (!bounds) return;
-        const { x, y, width, height } = bounds;
-        this.engine.ctx.strokeRect(x, y, width, height);
-        if (shape.type === "text") {
-            this.engine.ctx.save();
-            this.engine.ctx.strokeStyle = "red";
-            this.engine.ctx.setLineDash([4, 2]);
-            this.engine.ctx.strokeRect(x, y, width, height);
-            this.engine.ctx.setLineDash([]);
-            this.engine.ctx.restore();
-        }
-        const hs = this.handleSize;
-        const handles = [
-            [x, y],
-            [x + width / 2, y],
-            [x + width, y],
-            [x + width, y + height / 2],
-            [x + width, y + height],
-            [x + width / 2, y + height],
-            [x, y + height],
-            [x, y + height / 2],
-        ];
-        this.engine.ctx.fillStyle = "#60A5FA";
-        for (let [hx, hy] of handles) {
-            this.engine.ctx.fillRect(hx - hs / 2, hy - hs / 2, hs, hs);
-        }
-        this.engine.ctx.restore();
+        drawFrameHandles(this.engine.ctx, shape, this.handleSize);
     }
+    
 }

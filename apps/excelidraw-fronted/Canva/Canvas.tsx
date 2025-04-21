@@ -227,7 +227,7 @@ export function Canvas({
         };
     }, [offset, scale]);
 
-    // Text tool: click to create text box and edit
+    // Click to create text box and edit
     useEffect(() => {
         if (selectedTool !== "text" || !canEdit) return;
         const canvas = canvasRef.current;
@@ -238,7 +238,6 @@ export function Canvas({
             const rect = c.getBoundingClientRect();
             const x = (e.clientX - rect.left - offset.x) / scale;
             const y = (e.clientY - rect.top - offset.y) / scale;
-            // Measure text size for bounding box
             const ctx = c.getContext("2d")!;
             const fontSize = 24;
             const fontFamily = "Nunito";
@@ -266,6 +265,8 @@ export function Canvas({
                 text: "",
                 fontSize,
                 fontFamily,
+                fontStyle: "normal",
+                textAlign: "left",
                 color: "#fff"
             };
             gameRef.current.engine.addShape(shape);
@@ -273,7 +274,17 @@ export function Canvas({
             gameRef.current.engine.selectedShapeId = addedShape.id ?? null;
             setEditingTextId(addedShape.id ?? null);
             setEditingTextValue("");
-            setEditingTextBox({ x, y, width: 120, height: textHeight, fontSize, fontFamily, color: "#fff" });
+            setEditingTextBox({
+                x,
+                y,
+                width: 120,
+                height: textHeight,
+                fontSize,
+                fontFamily,
+                fontStyle: "normal",
+                textAlign: "left",
+                color: "#fff"
+            });
             setSelectedTool("select");
         }
         canvas.addEventListener("click", handleTextClick);
@@ -282,7 +293,6 @@ export function Canvas({
         };
     }, [selectedTool, offset, scale, canEdit]);
 
-    // Double-click to edit text again
     useEffect(() => {
         const canvas = canvasRef.current;
         if (!canvas || !gameRef.current) return;
@@ -298,7 +308,17 @@ export function Canvas({
             if (found && found.type === "text") {
                 setEditingTextId(found.id ?? null);
                 setEditingTextValue(found.text);
-                setEditingTextBox({ x: found.x, y: found.y, width: found.width, height: found.height, fontSize: found.fontSize, fontFamily: found.fontFamily, color: found.color });
+                setEditingTextBox({
+                    x: found.x,
+                    y: found.y,
+                    width: found.width,
+                    height: found.height,
+                    fontSize: found.fontSize,
+                    fontFamily: found.fontFamily,
+                    fontStyle: found.fontStyle,
+                    textAlign: found.textAlign,
+                    color: found.color
+                });
             }
         }
         canvas.addEventListener("dblclick", handleDoubleClick);
@@ -379,99 +399,6 @@ export function Canvas({
         />
     );
 
-    useEffect(() => {
-        if (selectedTool !== "text" || !canEdit) return;
-        const canvas = canvasRef.current;
-        if (!canvas || !gameRef.current) return;
-        
-        function handleTextClick(e: MouseEvent) {
-            const c = canvasRef.current;
-            if (!c || !gameRef.current) return;
-            const rect = c.getBoundingClientRect();
-            const x = (e.clientX - rect.left - offset.x) / scale;
-            const y = (e.clientY - rect.top - offset.y) / scale;
-            
-            // Create a new text shape
-            const shape = {
-                type: "text" as const,
-                x,
-                y,
-                width: 100,
-                height: 24,
-                text: "",
-                fontSize: 24,
-                fontFamily: "Nunito",
-                fontStyle: "normal",
-                textAlign: "left",
-                color: "#fff"
-            };
-            
-            gameRef.current.engine.addShape(shape);
-            const addedShape = gameRef.current.engine.shapes[gameRef.current.engine.shapes.length - 1];
-            gameRef.current.engine.selectedShapeId = addedShape.id ?? null;
-            
-            setEditingTextId(addedShape.id ?? null);
-            setEditingTextValue("");
-            setEditingTextBox({
-                x, 
-                y, 
-                width: 100, 
-                height: 24, 
-                fontSize: 24, 
-                fontFamily: "Nunito",
-                fontStyle: "normal",
-                textAlign: "left",
-                color: "#fff"
-            });
-            
-            setSelectedTool("select");
-        }
-        
-        canvas.addEventListener("click", handleTextClick);
-        return () => {
-            canvas.removeEventListener("click", handleTextClick);
-        };
-    }, [selectedTool, offset, scale, canEdit]);
-    
-    // Update the double-click handler for text editing
-    useEffect(() => {
-        const canvas = canvasRef.current;
-        if (!canvas || !gameRef.current) return;
-        
-        function handleDoubleClick(e: MouseEvent) {
-            const c = canvasRef.current;
-            if (!c || !gameRef.current) return;
-            const rect = c.getBoundingClientRect();
-            const x = (e.clientX - rect.left - offset.x) / scale;
-            const y = (e.clientY - rect.top - offset.y) / scale;
-            
-            const found = gameRef.current.engine.findShapeUnderPoint
-                ? gameRef.current.engine.findShapeUnderPoint(x, y)
-                : null;
-                
-            if (found && found.type === "text") {
-                setEditingTextId(found.id ?? null);
-                setEditingTextValue(found.text);
-                setEditingTextBox({
-                    x: found.x,
-                    y: found.y,
-                    width: found.width,
-                    height: found.height,
-                    fontSize: found.fontSize,
-                    fontFamily: found.fontFamily,
-                    fontStyle: found.fontStyle,
-                    textAlign: found.textAlign,
-                    color: found.color
-                });
-            }
-        }
-        
-        canvas.addEventListener("dblclick", handleDoubleClick);
-        return () => {
-            canvas.removeEventListener("dblclick", handleDoubleClick);
-        };
-    }, [offset, scale]);
-    
     // Handle clicks outside the text area to finish editing
     useEffect(() => {
         if (!editingTextId) return;
@@ -529,10 +456,10 @@ export function Canvas({
             <div className="fixed w-full flex justify-center items-center pb-2 z-50`">
                <Topbar setSelectedTool={setSelectedTool} selectedTool={selectedTool} />
             </div>
-            <div className="fixed z-10 bottom-4 left-4 rounded-lg flex items-center bg-gray-800 shadow-lg">
-                <ZoomControl scale={scale} setScale={setScale} /> 
+            <div className="fixed z-50 bottom-4 left-4 flex items-center bg-gray-800 shadow-lg">
+                <ZoomControl scale={scale} setScale={setScale} />
             </div>
-            {selectedTool === "eraser" && isCanvasHovered && <EraserCursor size={eraserSize} isActive />}
+            {selectedTool === "eraser" && isCanvasHovered && <EraserCursor size={eraserSize * scale * 10} isActive />}
         </div>
     );
 }

@@ -30,10 +30,12 @@ export function EraserCursor({ size = 10, isActive = false }: { size: number; is
     <div
       className="pointer-events-none fixed z-50 border-2 border-white rounded-full transform -translate-x-1/2 -translate-y-1/2"
       style={{
-        width: `${size * 10}px`,
-        height: `${size * 10}px`,
+        width: `${size}px`,
+        height: `${size}px`,
         left: position.x,
-        top: position.y
+        top: position.y,
+        background: "rgba(0,0,0,0.15)",
+        boxShadow: "0 0 0 2px #fff, 0 0 8px #000"
       }}
     />
   );

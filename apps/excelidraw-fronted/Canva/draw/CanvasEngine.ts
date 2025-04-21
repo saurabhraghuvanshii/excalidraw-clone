@@ -4,6 +4,7 @@ import { drawLine, isPointNearLine, resizeLine } from './canavashape/Line';
 import { drawFreehand, isPointNearFreehand, resizeFreehand } from './canavashape/Freehand';
 import { generateId, getShapeBounds } from './utils';
 import { drawText, isPointInText, resizeText } from './canavashape/Text';
+import { drawSelectionFrameAndHandles as drawFrameHandles } from '../canvaFuncationality/FrameHandles';
 
 export type Shape = {
     type: "rect";
@@ -137,29 +138,7 @@ export class CanvasEngine {
     }
 
     drawSelectionFrameAndHandles(shape: Shape) {
-        this.ctx.save();
-        this.ctx.strokeStyle = "#60A5FA";
-        this.ctx.lineWidth = 2;
-        let bounds = getShapeBounds(shape);
-        if (!bounds) return;
-        const { x, y, width, height } = bounds;
-        this.ctx.strokeRect(x, y, width, height);
-        const hs = this.handleSize;
-        const handles = [
-            [x, y],
-            [x + width / 2, y],
-            [x + width, y],
-            [x + width, y + height / 2],
-            [x + width, y + height],
-            [x + width / 2, y + height],
-            [x, y + height],
-            [x, y + height / 2],
-        ];
-        this.ctx.fillStyle = "#60A5FA";
-        for (let [hx, hy] of handles) {
-            this.ctx.fillRect(hx - hs / 2, hy - hs / 2, hs, hs);
-        }
-        this.ctx.restore();
+        drawFrameHandles(this.ctx, shape, this.handleSize);
     }
 
     getHandleAtPoint(shape: Shape, px: number, py: number): number | null {

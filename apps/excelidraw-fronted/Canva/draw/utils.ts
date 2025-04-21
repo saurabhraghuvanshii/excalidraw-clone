@@ -1,3 +1,4 @@
+
 export function generateId(): string {
     return Date.now().toString(36) + Math.random().toString(36).substring(2);
 }
@@ -9,8 +10,8 @@ export function getShapeBounds(shape: any): { x: number; y: number; width: numbe
         return {
             x: shape.centerX - shape.radiusX,
             y: shape.centerY - shape.radiusY,
-            width: shape.radius * 2,
-            height: shape.radius * 2
+            width: shape.radiusX * 2,
+            height: shape.radiusY * 2
         };
     } else if (shape.type === "line") {
         const x = Math.min(shape.startX, shape.endX);
