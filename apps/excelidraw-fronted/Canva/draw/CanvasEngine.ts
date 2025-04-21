@@ -64,11 +64,13 @@ export class CanvasEngine {
     }
 
     setScale(scale: number) {
+        if (this.scale === scale) return;
         this.scale = scale;
         this.clearCanvas();
     }
 
     setOffset(x: number, y: number) {
+        if (this.offsetX === x && this.offsetY === y) return;
         this.offsetX = x;
         this.offsetY = y;
         this.clearCanvas();
@@ -95,20 +97,28 @@ export class CanvasEngine {
 
     drawShapes() {
         if (!this.shapes || this.shapes.length === 0) return;
+        
         this.ctx.strokeStyle = "rgba(255, 255, 255, 1)";
-        this.shapes.forEach((shape) => {
-            if (shape.type === "rect") {
-                drawRectangle(this.ctx, shape);
-            } else if (shape.type === "circleOrOval") {
-                drawCircleOrOVal(this.ctx, shape);
-            } else if (shape.type === "line") {
-                drawLine(this.ctx, shape);
-            } else if (shape.type === "freehand") {
-                drawFreehand(this.ctx, shape);
-            } else if (shape.type === "text") {
-                drawText(this.ctx, shape);
+        
+        for (const shape of this.shapes) {
+            switch (shape.type) {
+                case "rect":
+                    drawRectangle(this.ctx, shape);
+                    break;
+                case "circleOrOval":
+                    drawCircleOrOVal(this.ctx, shape);
+                    break;
+                case "line":
+                    drawLine(this.ctx, shape);
+                    break;
+                case "freehand":
+                    drawFreehand(this.ctx, shape);
+                    break;
+                case "text":
+                    drawText(this.ctx, shape);
+                    break;
             }
-        });
+        }
     }
 
     eraseShapeById(id: string) {
@@ -120,20 +130,35 @@ export class CanvasEngine {
         const adjustedX = (x - this.offsetX) / this.scale;
         const adjustedY = (y - this.offsetY) / this.scale;
         const eraserBuffer = 10;
+       
         for (let i = this.shapes.length - 1; i >= 0; i--) {
             const shape = this.shapes[i];
-            if (shape.type === "rect" && isPointInRectangle(adjustedX, adjustedY, shape, eraserBuffer)) {
-                return shape;
-            } else if (shape.type === "circleOrOval" && isPointInCircleOrOval(adjustedX, adjustedY, shape, eraserBuffer)) {
-                return shape;
-            } else if (shape.type === "line" && isPointNearLine(adjustedX, adjustedY, shape)) {
-                return shape;
-            } else if (shape.type === "freehand" && isPointNearFreehand(adjustedX, adjustedY, shape)) {
-                return shape;
-            }  else if (shape.type === "text" && isPointInText(adjustedX, adjustedY, shape, eraserBuffer)) {
+            
+            let isUnderPoint = false;
+            
+            switch (shape.type) {
+                case "rect":
+                    isUnderPoint = isPointInRectangle(adjustedX, adjustedY, shape, eraserBuffer);
+                    break;
+                case "circleOrOval":
+                    isUnderPoint = isPointInCircleOrOval(adjustedX, adjustedY, shape, eraserBuffer);
+                    break;
+                case "line":
+                    isUnderPoint = isPointNearLine(adjustedX, adjustedY, shape);
+                    break;
+                case "freehand":
+                    isUnderPoint = isPointNearFreehand(adjustedX, adjustedY, shape);
+                    break;
+                case "text":
+                    isUnderPoint = isPointInText(adjustedX, adjustedY, shape, eraserBuffer);
+                    break;
+            }
+            
+            if (isUnderPoint) {
                 return shape;
             }
         }
+        
         return null;
     }
 
@@ -144,8 +169,10 @@ export class CanvasEngine {
     getHandleAtPoint(shape: Shape, px: number, py: number): number | null {
         const bounds = getShapeBounds(shape);
         if (!bounds) return null;
+
         const { x, y, width, height } = bounds;
         const hs = this.handleSize;
+
         const handles = [
             [x, y],
             [x + width / 2, y],
@@ -156,6 +183,7 @@ export class CanvasEngine {
             [x, y + height],
             [x, y + height / 2],
         ];
+
         for (let i = 0; i < handles.length; i++) {
             const [hx, hy] = handles[i];
             if (
@@ -171,16 +199,22 @@ export class CanvasEngine {
     }
 
     resizeShape(shape: Shape, handleIdx: number, px: number, py: number) {
-        if (shape.type === "rect") {
-            resizeRectangle(shape, handleIdx, px, py);
-        } else if (shape.type === "circleOrOval") {
-            resizeCircleOrOval(shape, handleIdx, px, py);
-        } else if (shape.type === "line") {
-            resizeLine(shape, handleIdx, px, py);
-        } else if (shape.type === "freehand") {
-            resizeFreehand(shape, handleIdx, px, py);
-        } else if (shape.type === "text") {
-            resizeText(shape, handleIdx, px, py);
+        switch (shape.type) {
+            case "rect":
+                resizeRectangle(shape, handleIdx, px, py);
+                break;
+            case "circleOrOval":
+                resizeCircleOrOval(shape, handleIdx, px, py);
+                break;
+            case "line":
+                resizeLine(shape, handleIdx, px, py);
+                break;
+            case "freehand":
+                resizeFreehand(shape, handleIdx, px, py);
+                break;
+            case "text":
+                resizeText(shape, handleIdx, px, py);
+                break;
         }
     }
 

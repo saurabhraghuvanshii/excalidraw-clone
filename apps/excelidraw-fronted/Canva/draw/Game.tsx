@@ -94,9 +94,11 @@ export class Game {
     }
 
     mouseDownHandler = (e: MouseEvent) => {
+        if (this.readOnly) return;
+
         const x = (e.clientX - this.engine.offsetX) / this.engine.scale;
         const y = (e.clientY - this.engine.offsetY) / this.engine.scale;
-        if (this.readOnly) return;
+
         if (this.selectedTool === "eraser") {
             this.eraserActive = true;
             const shape = this.engine.findShapeUnderPoint(e.clientX, e.clientY);
@@ -120,30 +122,34 @@ export class Game {
                 }
             }
         }
+
         if (["rect", "circleOrOval", "line", "freehand"].includes(this.selectedTool)) {
             this.clicked = true;
             this.startX = x;
             this.startY = y;
+
             if (this.selectedTool === "freehand") {
                 this.freehandDrawing = true;
                 this.freehandPoints = [{ x, y }];
             }
             return;
         }
+
         if (this.engine.selectedShapeId) {
             const selected = this.engine.shapes.find(s => s.id === this.engine.selectedShapeId);
             if (selected) {
                 const bounds = getShapeBounds(selected);
                 if (bounds && x >= bounds.x && x <= bounds.x + bounds.width && y >= bounds.y && y <= bounds.y + bounds.height) {
-                    this.draggingShapeId = (typeof selected.id === 'string' ? selected.id : null);
+                    this.draggingShapeId = selected.id || null;
                     this.dragOffset = { x: x - bounds.x, y: y - bounds.y };
                     return;
                 }
             }
         }
-        const shape = this.engine.findShapeUnderPoint(x, y);
+
+        const shape = this.engine.findShapeUnderPoint(e.clientX, e.clientY);
         if (shape) {
-            this.engine.selectedShapeId = (typeof shape.id === 'string' ? shape.id : null);
+            this.engine.selectedShapeId = shape.id || null;
             this.engine.clearCanvas();
         } else {
             this.engine.selectedShapeId = null;
@@ -152,9 +158,13 @@ export class Game {
     }
 
     mouseUpHandler = (e: MouseEvent) => {
+        if (this.readOnly) return;
+
         if (this.selectedTool === "eraser") {
             this.eraserActive = false;
+            return;
         }
+
         if (this.resizeHandle !== null && this.engine.selectedShapeId) {
             const shape = this.engine.shapes.find(s => s.id === this.engine.selectedShapeId);
             if (shape) {
@@ -170,6 +180,7 @@ export class Game {
             this.engine.clearCanvas();
             return;
         }
+
         if (this.draggingShapeId) {
             const shape = this.engine.shapes.find(s => s.id === this.draggingShapeId);
             if (shape) {
@@ -186,48 +197,62 @@ export class Game {
             this.engine.clearCanvas();
             return;
         }
+
         if (!this.clicked) return;
         this.clicked = false;
+
         const endX = (e.clientX - this.engine.offsetX) / this.engine.scale;
         const endY = (e.clientY - this.engine.offsetY) / this.engine.scale;
         const width = endX - this.startX;
         const height = endY - this.startY;
-        let shape = null;
+
+        
+
         if (["line", "rect", "circleOrOval"].includes(this.selectedTool)) {
+
             if (Math.abs(width) < 2 && Math.abs(height) < 2) return;
-            if (this.selectedTool === "rect") {
-                shape = {
-                    type: "rect" as const,
-                    x: this.startX,
-                    y: this.startY,
-                    height,
-                    width
-                };
-            } else if (this.selectedTool === "circleOrOval") {
-                const centerX = this.startX + width / 2;
-                const centerY = this.startY + height / 2;
-                shape = {
-                    type: "circleOrOval" as const,
-                    centerX,
-                    centerY,
-                    radiusX: Math.abs(width) / 2,
-                    radiusY: Math.abs(height) / 2
-                };
-            } else if (this.selectedTool === "line") {
-                shape = {
-                    type: "line" as const,
-                    startX: this.startX,
-                    startY: this.startY,
-                    endX: endX,
-                    endY: endY
-                };
+
+            let shape: Shape | null = null;
+
+            switch (this.selectedTool) {
+                case "rect":
+                    shape = {
+                        type: "rect",
+                        x: this.startX,
+                        y: this.startY,
+                        height,
+                        width
+                    };
+                    break;
+                case "circleOrOval":
+                    shape = {
+                        type: "circleOrOval",
+                        centerX: this.startX + width / 2,
+                        centerY: this.startY + height / 2,
+                        radiusX: Math.abs(width) / 2,
+                        radiusY: Math.abs(height) / 2
+                    };
+                    break;
+                case "line":
+                    shape = {
+                        type: "line",
+                        startX: this.startX,
+                        startY: this.startY,
+                        endX,
+                        endY
+                    };
+                    break;
             }
+
             if (!shape) return;
+
             this.engine.addShape(shape);
             const addedShape = this.engine.shapes[this.engine.shapes.length - 1];
             const shapeId = addedShape.id;
+
             this.engine.selectedShapeId = shapeId ?? null;
             if (this.onShapeDrawn && shapeId) this.onShapeDrawn(shapeId);
+
             this.socket.send(
                 JSON.stringify({
                     type: "chat",
@@ -238,26 +263,33 @@ export class Game {
             this.engine.clearCanvas();
         } else if (this.selectedTool === "freehand" && this.freehandDrawing) {
             this.freehandDrawing = false;
+
             if (this.freehandPoints.length > 1) {
                 let moved = false;
+
                 for (let i = 1; i < this.freehandPoints.length; i++) {
                     const dx = this.freehandPoints[i].x - this.freehandPoints[0].x;
                     const dy = this.freehandPoints[i].y - this.freehandPoints[0].y;
+
                     if (Math.abs(dx) > 2 || Math.abs(dy) > 2) {
                         moved = true;
                         break;
                     }
                 }
+
                 if (moved) {
                     const freehandShape = {
                         type: "freehand" as const,
                         points: [...this.freehandPoints]
                     };
+
                     this.engine.addShape(freehandShape);
                     const addedShape = this.engine.shapes[this.engine.shapes.length - 1];
                     const shapeId = addedShape.id;
+
                     this.engine.selectedShapeId = shapeId ?? null;
                     if (this.onShapeDrawn && shapeId) this.onShapeDrawn(shapeId);
+
                     this.socket.send(
                         JSON.stringify({
                             type: "chat",
@@ -267,15 +299,18 @@ export class Game {
                     );
                 }
             }
+
             this.freehandPoints = [];
         } else if (this.selectedTool === "text" && this.textToAdd) {
             const ctx = this.engine.ctx;
             ctx.save();
+
             const fontSize = 24;
             const fontFamily = "Nunito";
             ctx.font = `${fontSize}px ${fontFamily}`;
             const metrics = ctx.measureText(this.textToAdd);
             const textWidth = metrics.width;
+
             let textHeight;
             if ('fontBoundingBoxAscent' in metrics && 'fontBoundingBoxDescent' in metrics) {
                 textHeight = (metrics.fontBoundingBoxAscent || 0) + (metrics.fontBoundingBoxDescent || 0);
@@ -285,8 +320,10 @@ export class Game {
             } else {
                 textHeight = fontSize;
             }
+
             ctx.restore();
-            shape = {
+
+            const shape: Shape = {
                 type: "text" as const,
                 x: this.startX,
                 y: this.startY,
@@ -297,11 +334,15 @@ export class Game {
                 fontFamily,
                 color: "#fff"
             };
+
             this.engine.addShape(shape);
             const addedShape = this.engine.shapes[this.engine.shapes.length - 1];
             const shapeId = addedShape.id;
+
             this.engine.selectedShapeId = shapeId ?? null;
+
             if (this.onShapeDrawn && shapeId) this.onShapeDrawn(shapeId);
+
             this.socket.send(
                 JSON.stringify({
                     type: "chat",
@@ -315,7 +356,9 @@ export class Game {
 
     mouseMoveHandler = (e: MouseEvent) => {
         if (this.selectedTool === "eraser" && this.eraserActive) {
+
             const shape = this.engine.findShapeUnderPoint(e.clientX, e.clientY);
+
             if (shape && shape.id) {
                 this.engine.eraseShapeById(shape.id);
                 this.socket.send(JSON.stringify({
@@ -326,6 +369,7 @@ export class Game {
             }
             return;
         }
+
         if (this.resizeHandle !== null && this.engine.selectedShapeId) {
             const shape = this.engine.shapes.find(s => s.id === this.engine.selectedShapeId);
             if (shape) {
@@ -334,10 +378,13 @@ export class Game {
             }
             return;
         }
+
         if (this.draggingShapeId && this.dragOffset) {
+
             const x = (e.clientX - this.engine.offsetX) / this.engine.scale;
             const y = (e.clientY - this.engine.offsetY) / this.engine.scale;
             const shape = this.engine.shapes.find(s => s.id === this.draggingShapeId);
+
             if (shape) {
                 const bounds = getShapeBounds(shape);
                 if (bounds) {
@@ -365,16 +412,21 @@ export class Game {
             }
             return;
         }
+
         if (!this.clicked) return;
+
         const x = (e.clientX - this.engine.offsetX) / this.engine.scale;
         const y = (e.clientY - this.engine.offsetY) / this.engine.scale;
+
         if (this.selectedTool === "freehand" && this.freehandDrawing) {
             const last = this.freehandPoints[this.freehandPoints.length - 1];
             const dx = x - last.x;
             const dy = y - last.y;
+
             if (dx * dx + dy * dy > 4) {
                 this.freehandPoints.push({ x, y });
             }
+
             this.engine.clearCanvas();
             this.engine.ctx.save();
             this.engine.ctx.translate(this.engine.offsetX, this.engine.offsetY);
@@ -382,23 +434,28 @@ export class Game {
             this.engine.ctx.strokeStyle = "rgba(255,255,255,1)";
             this.engine.ctx.beginPath();
             this.engine.ctx.moveTo(this.freehandPoints[0].x, this.freehandPoints[0].y);
+
             for (let i = 1; i < this.freehandPoints.length; i++) {
                 this.engine.ctx.lineTo(this.freehandPoints[i].x, this.freehandPoints[i].y);
             }
+
             this.engine.ctx.stroke();
             this.engine.ctx.closePath();
             this.engine.ctx.restore();
             return;
         }
+
         const endX = x;
         const endY = y;
         const width = endX - this.startX;
         const height = endY - this.startY;
+
         this.engine.clearCanvas();
         this.engine.ctx.save();
         this.engine.ctx.translate(this.engine.offsetX, this.engine.offsetY);
         this.engine.ctx.scale(this.engine.scale, this.engine.scale);
         this.engine.ctx.strokeStyle = "rgba(255, 255, 255, 1)";
+        
         if (this.selectedTool === "rect") {
             this.engine.ctx.strokeRect(this.startX, this.startY, width, height);
         } else if (this.selectedTool === "circleOrOval") {

@@ -431,7 +431,7 @@ export function Canvas({
                 <Topbar setSelectedTool={setSelectedTool} selectedTool={selectedTool} />
             </div>
             
-            <div className="fixed z-50 bottom-4 left-4 flex items-center bg-gray-800 shadow-lg">
+            <div className="fixed z-[100] bottom-4 left-4 flex items-center bg-gray-800 shadow-lg p-1 rounded-lg border-2 border-white">
                 <ZoomControl scale={scale} setScale={setScale} />
             </div>
             

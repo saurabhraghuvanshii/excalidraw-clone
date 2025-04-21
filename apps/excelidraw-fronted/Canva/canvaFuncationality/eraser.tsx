@@ -9,19 +9,21 @@ export function EraserCursor({ size = 10, isActive = false }: { size: number; is
   const [position, setPosition] = useState<CursorPosition>({ x: 0, y: 0 });
 
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setPosition({ x: e.clientX, y: e.clientY });
-    };
-
+    
     if (isActive) {
+      const handleMouseMove = (e: MouseEvent) => {
+        setPosition({ x: e.clientX, y: e.clientY });
+      };
+  
       document.addEventListener("mousemove", handleMouseMove);
       document.body.style.cursor = "none";
+  
+      return () => {
+        document.removeEventListener("mousemove", handleMouseMove);
+        document.body.style.cursor = "default";
+      };
     }
 
-    return () => {
-      document.removeEventListener("mousemove", handleMouseMove);
-      document.body.style.cursor = "default";
-    };
   }, [isActive]);
 
   if (!isActive) return null;
