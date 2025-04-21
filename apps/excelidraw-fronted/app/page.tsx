@@ -17,7 +17,7 @@ const Index = () => {
   }, []);
 
   return (
-    <main className="min-h-screen bg-[#121212] text-white">
+    <div className="min-h-screen bg-[#121212] text-white">
       <SignOutButton />
 
       <header className="relative overflow-hidden">
@@ -135,7 +135,7 @@ const Index = () => {
           </div>
         </div>
       </footer>
-    </main>
+    </div>
   );
 };
 
