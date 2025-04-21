@@ -7,11 +7,6 @@ import { EraserCursor } from "./canvaFuncationality/eraser";
 import { isAuthenticated } from "@/utils/auth";
 import { PanHandler } from "./canvaFuncationality/PanHandler";
 
-// Use a single ResizeObserver import with polyfill fallback
-const ResizeObserverImpl = typeof window !== 'undefined' && 'ResizeObserver' in window
-  ? window.ResizeObserver
-  : require('resize-observer-polyfill');
-
 export function Canvas({
     roomId,
     socket,
@@ -25,7 +20,7 @@ export function Canvas({
     const gameRef = useRef<Game | null>(null);
     const [selectedTool, setSelectedTool] = useState<Tool>("select");
     const [scale, setScale] = useState<number>(1);
-    const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+    const [dimensions, setDimensions] = useState({ width: window.innerWidth, height: window.innerHeight });
     const [offset, setOffset] = useState({ x: 0, y: 0 });
     const [isDragging, setIsDragging] = useState(false);
     const [eraserSize, setEraserSize] = useState(2);
@@ -103,27 +98,24 @@ export function Canvas({
         return () => canvas.removeEventListener('wheel', handleWheel);
     }, []);
 
-    // Responsive canvas using ResizeObserver
+    // Responsive canvas using window resize
     useEffect(() => {
-        const parent = canvasRef.current?.parentElement;
-        if (!parent) return;
-        
-        const updateDimensions = () => {
-            const { width, height } = parent.getBoundingClientRect();
-            setDimensions({ width, height });
-            if (canvasRef.current) {
-                canvasRef.current.width = width;
-                canvasRef.current.height = height;
-                if (gameRef.current) gameRef.current.handleResize();
-            }
+        const handleResize = () => {
+            setDimensions({ width: window.innerWidth, height: window.innerHeight });
         };
-        
-        const observer = new ResizeObserverImpl(updateDimensions);
-        observer.observe(parent);
-        updateDimensions(); // Set initial size
-        
-        return () => observer.disconnect();
+        window.addEventListener('resize', handleResize);
+        handleResize();
+        return () => window.removeEventListener('resize', handleResize);
     }, []);
+
+    // Sync canvas element size and redraw on dimensions change
+    useEffect(() => {
+        if (canvasRef.current) {
+            canvasRef.current.width = dimensions.width;
+            canvasRef.current.height = dimensions.height;
+            if (gameRef.current) gameRef.current.handleResize();
+        }
+    }, [dimensions]);
 
     // Handle eraser size with keyboard shortcuts
     useEffect(() => {
@@ -392,10 +384,15 @@ export function Canvas({
                 ref={canvasRef}
                 width={dimensions.width}
                 height={dimensions.height}
-                className="absolute top-0 left-0 w-full h-full bg-black"
+                style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    background: "black",
+                    cursor: getCursorForTool(selectedTool),
+                }}
                 onMouseEnter={() => setIsCanvasHovered(true)}
                 onMouseLeave={() => setIsCanvasHovered(false)}
-                style={{ cursor: getCursorForTool(selectedTool) }}
             />
             
             {editingText.id && editingText.box && (
