@@ -1,4 +1,3 @@
-
 export function generateId(): string {
     return Date.now().toString(36) + Math.random().toString(36).substring(2);
 }
@@ -29,6 +28,14 @@ export function getShapeBounds(shape: any): { x: number; y: number; width: numbe
         return { x, y, width, height };
     } else if (shape.type === "text") {
         return { x: shape.x, y: shape.y, width: shape.width, height: shape.height };
+    } else if (shape.type === "diamond") {
+        return { x: shape.x, y: shape.y, width: shape.width, height: shape.height };
+    } else if (shape.type === "arrow") {
+        const x = Math.min(shape.startX, shape.endX);
+        const y = Math.min(shape.startY, shape.endY);
+        const width = Math.abs(shape.endX - shape.startX);
+        const height = Math.abs(shape.endY - shape.startY);
+        return { x, y, width, height };
     }
     return null;
 } 

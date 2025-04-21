@@ -468,10 +468,22 @@ function Topbar({ selectedTool, setSelectedTool }: {
                     title="Line"
                 />
                 <IconButton
+                    onClick={() => setSelectedTool("arrow")}
+                    activated={selectedTool === "arrow"}
+                    image="/arrow.svg"
+                    title="Arrow"
+                />
+                <IconButton
                     onClick={() => setSelectedTool("rect")}
                     activated={selectedTool === "rect"}
                     image="/rectangle.svg"
                     title="Rectangle"
+                />
+                <IconButton
+                    onClick={() => setSelectedTool("diamond")}
+                    activated={selectedTool === "diamond"}
+                    image="/diamond.svg"
+                    title="Diamond"
                 />
                 <IconButton
                     onClick={() => setSelectedTool("circleOrOval")}
@@ -502,6 +514,8 @@ function getCursorForTool(tool: Tool) {
         case "line":
         case "rect":
         case "circleOrOval":
+        case "diamond":
+        case "arrow":
             return "crosshair";
         case "text":
             return "text";

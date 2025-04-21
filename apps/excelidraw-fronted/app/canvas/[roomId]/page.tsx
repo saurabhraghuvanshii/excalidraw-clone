@@ -13,11 +13,11 @@ interface RoomParams {
 export default function CanvasPage({ params }: { params: Promise<RoomParams> }) {
   const { roomId } = use(params);
   const [isAuth, setIsAuth] = useState<boolean>(false);
-  
+
   useEffect(() => {
     setIsAuth(isAuthenticated());
   }, []);
-  
+
   return (
     <div className="relative min-h-screen flex flex-col w-full no-scroll">
       <div className="absolute top-4 left-4 z-20">

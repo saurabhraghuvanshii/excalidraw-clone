@@ -123,7 +123,7 @@ export class Game {
             }
         }
 
-        if (["rect", "circleOrOval", "line", "freehand"].includes(this.selectedTool)) {
+        if (["rect", "circleOrOval", "line", "freehand", "diamond", "arrow"].includes(this.selectedTool)) {
             this.clicked = true;
             this.startX = x;
             this.startY = y;
@@ -206,12 +206,9 @@ export class Game {
         const width = endX - this.startX;
         const height = endY - this.startY;
 
-        
-
-        if (["line", "rect", "circleOrOval"].includes(this.selectedTool)) {
-
+    
+        if (["line", "rect", "circleOrOval", "diamond", "arrow"].includes(this.selectedTool)) {
             if (Math.abs(width) < 2 && Math.abs(height) < 2) return;
-
             let shape: Shape | null = null;
 
             switch (this.selectedTool) {
@@ -242,8 +239,26 @@ export class Game {
                         endY
                     };
                     break;
+                case "arrow":
+                    shape = {
+                        type: "arrow",
+                        startX: this.startX,
+                        startY: this.startY,
+                        endX,
+                        endY
+                    };
+                    break;
+                case "diamond":
+                    shape = {
+                        type: "diamond",
+                        x: this.startX,
+                        y: this.startY,
+                        width,
+                        height
+                    };
+                    break;
             }
-
+            
             if (!shape) return;
 
             this.engine.addShape(shape);
@@ -401,11 +416,19 @@ export class Game {
                         shape.startY += dy;
                         shape.endX += dx;
                         shape.endY += dy;
+                    } else if (shape.type === "arrow") {
+                        shape.startX += dx;
+                        shape.startY += dy;
+                        shape.endX += dx;
+                        shape.endY += dy;
                     } else if (shape.type === "freehand") {
                         for (let pt of shape.points) {
                             pt.x += dx;
                             pt.y += dy;
                         }
+                    } else if (shape.type === "diamond") {
+                        shape.x += dx;
+                        shape.y += dy;
                     }
                 }
                 this.engine.clearCanvas();
@@ -471,6 +494,36 @@ export class Game {
             this.engine.ctx.lineTo(endX, endY);
             this.engine.ctx.stroke();
             this.engine.ctx.closePath();
+        } else if (this.selectedTool === "arrow") {
+            this.engine.ctx.beginPath();
+            this.engine.ctx.moveTo(this.startX, this.startY);
+            this.engine.ctx.lineTo(endX, endY);
+            this.engine.ctx.stroke();
+            // Draw arrowhead
+            const headlen = 18;
+            const angle = Math.atan2(endY - this.startY, endX - this.startX);
+            this.engine.ctx.beginPath();
+            this.engine.ctx.moveTo(endX, endY);
+            this.engine.ctx.lineTo(
+                endX - headlen * Math.cos(angle - Math.PI / 7),
+                endY - headlen * Math.sin(angle - Math.PI / 7)
+            );
+            this.engine.ctx.moveTo(endX, endY);
+            this.engine.ctx.lineTo(
+                endX - headlen * Math.cos(angle + Math.PI / 7),
+                endY - headlen * Math.sin(angle + Math.PI / 7)
+            );
+            this.engine.ctx.stroke();
+        } else if (this.selectedTool === "diamond") {
+            this.engine.ctx.beginPath();
+            this.engine.ctx.lineJoin = 'round';
+            this.engine.ctx.lineCap = 'round';
+            this.engine.ctx.moveTo(this.startX + width / 2, this.startY); // Top
+            this.engine.ctx.lineTo(this.startX + width, this.startY + height / 2); // Right
+            this.engine.ctx.lineTo(this.startX + width / 2, this.startY + height); // Bottom
+            this.engine.ctx.lineTo(this.startX, this.startY + height / 2); // Left
+            this.engine.ctx.closePath();
+            this.engine.ctx.stroke();
         }
         this.engine.ctx.restore();
     }

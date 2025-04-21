@@ -5,6 +5,8 @@ import { drawFreehand, isPointNearFreehand, resizeFreehand } from './canavashape
 import { generateId, getShapeBounds } from './utils';
 import { drawText, isPointInText, resizeText } from './canavashape/Text';
 import { drawSelectionFrameAndHandles as drawFrameHandles } from '../canvaFuncationality/FrameHandles';
+import { drawDiamond, isPointInDiamond, resizeDiamond } from './canavashape/Diamond';
+import { drawArrow, isPointNearArrow, resizeArrow } from './canavashape/Arrow';
 
 export type Shape = {
     type: "rect";
@@ -44,9 +46,23 @@ export type Shape = {
     fontStyle?: string;
     color?: string;
     id?: string;
+} | {
+    type: "diamond";
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    id?: string;
+} | {
+    type: "arrow";
+    startX: number;
+    startY: number;
+    endX: number;
+    endY: number;
+    id?: string;
 }
 
-export type Tool = "select" | "freehand" | "line" | "rect" | "circleOrOval" | "eraser" | "text";
+export type Tool = "select" | "freehand" | "line" | "rect" | "circleOrOval" | "eraser" | "text" | "diamond" | "arrow";
 
 export class CanvasEngine {
     public canvas: HTMLCanvasElement;
@@ -111,11 +127,17 @@ export class CanvasEngine {
                 case "line":
                     drawLine(this.ctx, shape);
                     break;
+                case "arrow":
+                    drawArrow(this.ctx, shape);
+                    break;
                 case "freehand":
                     drawFreehand(this.ctx, shape);
                     break;
                 case "text":
                     drawText(this.ctx, shape);
+                    break;
+                case "diamond":
+                    drawDiamond(this.ctx, shape);
                     break;
             }
         }
@@ -146,11 +168,17 @@ export class CanvasEngine {
                 case "line":
                     isUnderPoint = isPointNearLine(adjustedX, adjustedY, shape);
                     break;
+                case "arrow":
+                    isUnderPoint = isPointNearArrow(adjustedX, adjustedY, shape);
+                    break;
                 case "freehand":
                     isUnderPoint = isPointNearFreehand(adjustedX, adjustedY, shape);
                     break;
                 case "text":
                     isUnderPoint = isPointInText(adjustedX, adjustedY, shape, eraserBuffer);
+                    break;
+                case "diamond":
+                    isUnderPoint = isPointInDiamond(adjustedX, adjustedY, shape, eraserBuffer);
                     break;
             }
             
@@ -209,11 +237,17 @@ export class CanvasEngine {
             case "line":
                 resizeLine(shape, handleIdx, px, py);
                 break;
+            case "arrow":
+                resizeArrow(shape, handleIdx, px, py);
+                break;
             case "freehand":
                 resizeFreehand(shape, handleIdx, px, py);
                 break;
             case "text":
                 resizeText(shape, handleIdx, px, py);
+                break;
+            case "diamond":
+                resizeDiamond(shape, handleIdx, px, py);
                 break;
         }
     }
