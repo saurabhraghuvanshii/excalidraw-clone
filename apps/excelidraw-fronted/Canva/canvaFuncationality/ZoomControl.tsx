@@ -22,7 +22,7 @@ export default function ZoomControl({
     };
 
     return (
-        <div className="inline-flex items-center bg-gray-800 rounded-lg">
+        <div className="fixed inline-flex items-center bg-gray-800 rounded-lg bottom-4 left-4 z-[100]">
             <TooltipProvider delayDuration={0}>
             <Tooltip>
                 <TooltipTrigger asChild>
@@ -30,7 +30,7 @@ export default function ZoomControl({
                     variant="ghost"
                     size="sm"
                     onClick={zoomOut}
-                    className="w-8 h-8 rounded-l-full text-white hover:bg-gray-700"
+                    className="w-8 h-8 rounded-lg text-white hover:bg-gray-700"
                 >
                     <Minus className="h-4 w-4" />
                 </Button>
@@ -62,7 +62,7 @@ export default function ZoomControl({
                     variant="ghost"
                     size="sm"
                     onClick={zoomIn}
-                    className="w-8 h-8 rounded-r-full text-white hover:bg-gray-700"
+                    className="w-8 h-8 rounded-lg text-white hover:bg-gray-700"
                 >
                     <Plus className="h-4 w-4" />
                 </Button>

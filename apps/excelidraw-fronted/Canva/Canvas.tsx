@@ -20,7 +20,7 @@ export function Canvas({
     const gameRef = useRef<Game | null>(null);
     const [selectedTool, setSelectedTool] = useState<Tool>("select");
     const [scale, setScale] = useState<number>(1);
-    const [dimensions, setDimensions] = useState({ width:2000, height:2000 });
+    const [dimensions, setDimensions] = useState({ width: window.innerWidth, height: window.innerHeight });
     const [offset, setOffset] = useState({ x: 0, y: 0 });
     const [isDragging, setIsDragging] = useState(false);
     const [eraserSize, setEraserSize] = useState(2);
@@ -427,14 +427,10 @@ export function Canvas({
                         onKeyDown={handleTextKeyDown}
                     />
                 )}
-
-                <div className="fixed w-full flex justify-center items-center pb-2 z-50">
-                    <Topbar setSelectedTool={setSelectedTool} selectedTool={selectedTool} />
-                </div>
+               <Topbar setSelectedTool={setSelectedTool} selectedTool={selectedTool} />
                 {selectedTool === "eraser" && isCanvasHovered && (
-                    <EraserCursor size={eraserSize * scale * 10} isActive />
+                    <EraserCursor size={eraserSize * scale } isActive />
                 )}
-
             </div>
             <ZoomControl scale={scale} setScale={setScale} />
         </div>
@@ -446,8 +442,8 @@ function Topbar({ selectedTool, setSelectedTool }: {
     setSelectedTool: (s: Tool) => void
 }) {
     return (
-        <div className="fixed flex justify-center items-center mt-4 pb-2 z-50 rounded-lg">
-            <div className="flex gap-1  p-2 rounded-lg pointer-events-auto shadow-lg border border-gray-800 cursor-pointer">
+        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 flex justify-center items-center pb-2 z-50 rounded-lg">
+            <div className="flex gap-1 p-2 rounded-lg pointer-events-auto shadow-lg border border-gray-800 cursor-pointer">
                 <IconButton
                     onClick={() => setSelectedTool("select")}
                     activated={selectedTool === "select"}

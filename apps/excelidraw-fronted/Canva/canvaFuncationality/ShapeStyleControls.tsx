@@ -48,7 +48,6 @@ export function StyleConfigurator({
     setFontSize,
     textAlign,
     setTextAlign,
-    isMobile = false
 }: StyleConfiguratorProps) {
     const strokeWidths = [1, 2, 3, 4, 5];
     const strokeEdges = ["round", "square"];
