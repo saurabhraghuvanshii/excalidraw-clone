@@ -19,7 +19,7 @@ export default function CanvasPage({ params }: { params: Promise<RoomParams> }) 
   }, []);
 
   return (
-    <div className="relative min-h-screen flex flex-col w-full no-scroll">
+    <div className="relative h-screen w-full no-scroll">
       <div className="absolute top-4 left-4 z-20">
         <Link href="/">
           <button className="bg-gray-800 hover:bg-gray-700 rounded-full p-2 shadow-md transition-colors">

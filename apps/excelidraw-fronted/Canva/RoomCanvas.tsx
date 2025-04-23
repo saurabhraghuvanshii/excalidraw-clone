@@ -83,7 +83,7 @@ export function RoomCanvas({ roomId, readOnly = false }: { roomId: string; readO
   }
   
   return (
-    <div className="relative min-h-screen flex-auto w-full bg-black">
+    <div className="h-screen w-full overflow-hidden bg-black">
       <Canvas roomId={roomId} socket={socket} readOnly={readOnly} />
     </div>
   );

@@ -30,14 +30,21 @@ export function EraserCursor({ size = 10, isActive = false }: { size: number; is
 
   return (
     <div
-      className="pointer-events-none fixed z-50 border-2 border-white rounded-full transform -translate-x-1/2 -translate-y-1/2"
+      className="pointer-events-none fixed z-50 border-2 border-white rounded-full"
       style={{
         width: `${size}px`,
         height: `${size}px`,
-        left: position.x,
-        top: position.y,
-        background: "rgba(0,0,0,0.15)",
+        transform: 'translate(-50%, -50%)',
+        left: 0,
+        top: 0,
+        opacity: 0.7,
+        background: 'rgba(255, 255, 255, 0.1)',
         boxShadow: "0 0 0 2px #fff, 0 0 8px #000"
+      }}
+      onMouseMove={(e) => {
+        const cursor = e.currentTarget;
+        cursor.style.left = `${e.clientX}px`;
+        cursor.style.top = `${e.clientY}px`;
       }}
     />
   );

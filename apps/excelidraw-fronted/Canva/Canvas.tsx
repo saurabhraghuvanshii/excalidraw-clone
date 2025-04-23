@@ -20,7 +20,7 @@ export function Canvas({
     const gameRef = useRef<Game | null>(null);
     const [selectedTool, setSelectedTool] = useState<Tool>("select");
     const [scale, setScale] = useState<number>(1);
-    const [dimensions, setDimensions] = useState({ width: window.innerWidth, height: window.innerHeight });
+    const [dimensions, setDimensions] = useState({ width:2000, height:2000 });
     const [offset, setOffset] = useState({ x: 0, y: 0 });
     const [isDragging, setIsDragging] = useState(false);
     const [eraserSize, setEraserSize] = useState(2);
@@ -371,73 +371,72 @@ export function Canvas({
     }
 
     return (
-        <div className="fixed inset-0 min-h-screen w-screen bg-black no-scroll">
-            <PanHandler
-                canvasRef={canvasRef  as React.RefObject<HTMLCanvasElement>}
-                offset={offset}
-                setOffset={setOffset}
-                isDragging={isDragging}
-                setIsDragging={setIsDragging}
-            />
-            
-            <canvas
-                ref={canvasRef}
-                width={dimensions.width}
-                height={dimensions.height}
-                style={{
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    background: "black",
-                    cursor: getCursorForTool(selectedTool),
-                }}
-                onMouseEnter={() => setIsCanvasHovered(true)}
-                onMouseLeave={() => setIsCanvasHovered(false)}
-            />
-            
-            {editingText.id && editingText.box && (
-                <textarea
-                    value={editingText.value}
-                    autoFocus
+        <div className="h-full w-screen overflow-hidden">
+            <div className="absolute inset-0 bg-black">
+                <PanHandler
+                    canvasRef={canvasRef  as React.RefObject<HTMLCanvasElement>}
+                    offset={offset}
+                    setOffset={setOffset}
+                    isDragging={isDragging}
+                    setIsDragging={setIsDragging}
+                />
+                
+                <canvas
+                    ref={canvasRef}
+                    width={dimensions.width}
+                    height={dimensions.height}
                     style={{
                         position: "absolute",
-                        left: editingText.box.x * scale + offset.x,
-                        top: editingText.box.y * scale + offset.y,
-                        width: editingText.box.width * scale,
-                        height: editingText.box.height * scale,
-                        fontSize: ((editingText.box.fontSize || 24) * scale) + "px",
-                        fontFamily: editingText.box.fontFamily || "Nunito",
-                        color: editingText.box.color || "#fff",
-                        background: "rgba(0, 0, 0, 0.3)",
-                        border: "1px solid rgba(255, 255, 255, 0.3)",
-                        zIndex: 20,
-                        padding: "2px",
-                        outline: "none",
-                        resize: "none",
-                        minWidth: "40px",
-                        minHeight: "24px",
-                        boxSizing: "border-box",
-                        caretColor: editingText.box.color || "#fff",
-                        overflow: "hidden",
-                        whiteSpace: "nowrap"
+                        top: 0,
+                        left: 0,
+                        background: "black",
+                        cursor: getCursorForTool(selectedTool),
                     }}
-                    onChange={handleTextChange}
-                    onBlur={completeTextEditing}
-                    onKeyDown={handleTextKeyDown}
+                    onMouseEnter={() => setIsCanvasHovered(true)}
+                    onMouseLeave={() => setIsCanvasHovered(false)}
                 />
-            )}
-            
-            <div className="fixed w-full flex justify-center items-center pb-2 z-50">
-                <Topbar setSelectedTool={setSelectedTool} selectedTool={selectedTool} />
+                
+                {editingText.id && editingText.box && (
+                    <textarea
+                        value={editingText.value}
+                        autoFocus
+                        style={{
+                            position: "absolute",
+                            left: editingText.box.x * scale + offset.x,
+                            top: editingText.box.y * scale + offset.y,
+                            width: editingText.box.width * scale,
+                            height: editingText.box.height * scale,
+                            fontSize: ((editingText.box.fontSize || 24) * scale) + "px",
+                            fontFamily: editingText.box.fontFamily || "Nunito",
+                            color: editingText.box.color || "#fff",
+                            background: "rgba(0, 0, 0, 0.3)",
+                            border: "1px solid rgba(255, 255, 255, 0.3)",
+                            zIndex: 20,
+                            padding: "2px",
+                            outline: "none",
+                            resize: "none",
+                            minWidth: "40px",
+                            minHeight: "24px",
+                            boxSizing: "border-box",
+                            caretColor: editingText.box.color || "#fff",
+                            overflow: "hidden",
+                            whiteSpace: "nowrap"
+                        }}
+                        onChange={handleTextChange}
+                        onBlur={completeTextEditing}
+                        onKeyDown={handleTextKeyDown}
+                    />
+                )}
+
+                <div className="fixed w-full flex justify-center items-center pb-2 z-50">
+                    <Topbar setSelectedTool={setSelectedTool} selectedTool={selectedTool} />
+                </div>
+                {selectedTool === "eraser" && isCanvasHovered && (
+                    <EraserCursor size={eraserSize * scale * 10} isActive />
+                )}
+
             </div>
-            
-            <div className="fixed z-[100] bottom-4 left-4 flex items-center bg-gray-800 shadow-lg p-1 rounded-lg border-2 border-white">
-                <ZoomControl scale={scale} setScale={setScale} />
-            </div>
-            
-            {selectedTool === "eraser" && isCanvasHovered && (
-                <EraserCursor size={eraserSize * scale * 10} isActive />
-            )}
+            <ZoomControl scale={scale} setScale={setScale} />
         </div>
     );
 }

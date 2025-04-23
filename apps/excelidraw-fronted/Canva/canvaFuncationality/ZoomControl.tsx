@@ -22,54 +22,54 @@ export default function ZoomControl({
     };
 
     return (
-        <div className="flex items-center">
+        <div className="inline-flex items-center bg-gray-800 rounded-lg">
             <TooltipProvider delayDuration={0}>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={zoomOut}
-                            className="w-8 h-8 rounded-l-lg rounded-r-none text-white hover:bg-gray-700"
-                        >
-                            <Minus className="h-4 w-4" />
-                        </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Zoom Out</TooltipContent>
-                </Tooltip>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={zoomOut}
+                    className="w-8 h-8 rounded-l-full text-white hover:bg-gray-700"
+                >
+                    <Minus className="h-4 w-4" />
+                </Button>
+                </TooltipTrigger>
+                <TooltipContent>Zoom Out</TooltipContent>
+            </Tooltip>
             </TooltipProvider>
-
+        
             <TooltipProvider delayDuration={0}>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={resetScale}
-                            className="w-12 px-1 h-8 rounded-none text-white hover:bg-gray-700 text-xs sm:text-sm"
-                        >
-                            {Math.round(scale * 100)}%
-                        </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Reset Scale</TooltipContent>
-                </Tooltip>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={resetScale}
+                    className="w-12 h-8 px-1 rounded-none text-white hover:bg-gray-700 text-xs sm:text-sm"
+                >
+                    {Math.round(scale * 100)}%
+                </Button>
+                </TooltipTrigger>
+                <TooltipContent>Reset Scale</TooltipContent>
+            </Tooltip>
             </TooltipProvider>
-
+        
             <TooltipProvider delayDuration={0}>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={zoomIn}
-                            className="w-8 h-8 rounded-r-lg rounded-l-none text-white hover:bg-gray-700"
-                        >
-                            <Plus className="h-4 w-4" />
-                        </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Zoom In</TooltipContent>
-                </Tooltip>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={zoomIn}
+                    className="w-8 h-8 rounded-r-full text-white hover:bg-gray-700"
+                >
+                    <Plus className="h-4 w-4" />
+                </Button>
+                </TooltipTrigger>
+                <TooltipContent>Zoom In</TooltipContent>
+            </Tooltip>
             </TooltipProvider>
-        </div>
+        </div> 
     );
 }
