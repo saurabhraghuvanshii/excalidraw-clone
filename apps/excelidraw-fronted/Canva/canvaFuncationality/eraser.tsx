@@ -5,47 +5,59 @@ type CursorPosition = {
   y: number;
 };
 
-export function EraserCursor({ size = 10, isActive = false }: { size: number; isActive: boolean }) {
-  const [position, setPosition] = useState<CursorPosition>({ x: 0, y: 0 });
+type EraserCursorProps = {
+  size?: number;
+  isActive?: boolean;
+  color?: string;
+  opacity?: number;
+};
 
+export function EraserCursor({
+  size = 20,
+  isActive = false,
+  color = "white",
+  opacity = 0.7
+}: EraserCursorProps) {
+  const [position, setPosition] = useState<CursorPosition>({ x: 0, y: 0 });
+  
   useEffect(() => {
-    
     if (isActive) {
       const handleMouseMove = (e: MouseEvent) => {
         setPosition({ x: e.clientX, y: e.clientY });
       };
-  
+      
+      // Store the original cursor style
+      const originalCursor = document.body.style.cursor;
+      
+      // Add event listener and hide default cursor
       document.addEventListener("mousemove", handleMouseMove);
       document.body.style.cursor = "none";
-  
+      
       return () => {
+        // Clean up event listener and restore original cursor
         document.removeEventListener("mousemove", handleMouseMove);
-        document.body.style.cursor = "default";
+        document.body.style.cursor = originalCursor;
       };
     }
-
   }, [isActive]);
-
+  
   if (!isActive) return null;
-
+  
   return (
     <div
-      className="pointer-events-none fixed z-50 border-2 border-white rounded-full"
+      className="pointer-events-none fixed z-50 rounded-full flex items-center justify-center"
       style={{
         width: `${size}px`,
         height: `${size}px`,
-        transform: 'translate(-50%, -50%)',
-        left: 0,
-        top: 0,
-        opacity: 0.7,
-        background: 'rgba(255, 255, 255, 0.1)',
-        boxShadow: "0 0 0 2px #fff, 0 0 8px #000"
+        transform: "translate(-50%, -50%)",
+        left: `${position.x}px`,
+        top: `${position.y}px`,
+        opacity,
+        background: "rgba(255, 255, 255, 0.1)",
+        boxShadow: `0 0 0 2px ${color}, 0 0 8px rgba(0, 0, 0, 0.6)`,
       }}
-      onMouseMove={(e) => {
-        const cursor = e.currentTarget;
-        cursor.style.left = `${e.clientX}px`;
-        cursor.style.top = `${e.clientY}px`;
-      }}
-    />
+    >
+      <div className="w-1/4 h-1/4 rounded-full bg-white opacity-50" />
+    </div>
   );
 }
