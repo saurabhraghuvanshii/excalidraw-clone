@@ -55,7 +55,7 @@ export function Canvas({
 	const [strokeEdge, setStrokeEdge] = useState("round");
 	const [strokeStyle, setStrokeStyle] = useState("solid");
 	const [roughStyle, setRoughStyle] = useState(0);
-	const [fillStyle, setFillStyle] = useState("solid");
+	const [fillStyle, setFillStyle] = useState("architect");
 	const [fontFamily, setFontFamily] = useState("Nunito");
 	const [fontSize, setFontSize] = useState(20);
 	const [textAlign, setTextAlign] = useState("left");
