@@ -79,40 +79,16 @@ export function StyleConfigurator({
 				/>
 			</div>
 
-			{/* Background Fill */}
-			<div className="Background-Fill-Picker">
-				<div className="text-sm font-medium mb-2">Background</div>
-				<div className="flex flex-wrap gap-2">
-					{[
-						{ label: "Transparent", value: "transparent" },
-						{ label: "vivid red", value: "#e03131" },
-						{ label: "mint Green", value: "#b2f2bb" },
-						{ label: "Light sky blue", value: "#a5d8ff" },
-						{ label: "Pastel Gold", value: "#ffec99" },
-					].map((color) => (
-						<button
-							key={color.value}
-							className={`w-7 h-7 rounded-full border-2 flex items-center justify-center ${bgFill === color.value ? "border-blue-500" : "border-gray-400"}`}
-							style={{
-								background:
-									color.value === "transparent"
-										? "linear-gradient(45deg, black, gray)"
-										: color.value,
-							}}
-							onClick={() => setBgFill(color.value)}
-							title={color.label}
-						>
-							{color.value === "transparent" && (
-								<span className="block w-4 h-4 bg-white border border-gray-300 rounded-full relative">
-									<span
-										className="absolute left-0 top-1/2 w-4 h-0.5 bg-red-400 rotate-[-20deg]"
-										style={{ transform: "translateY(-50%) rotate(-20deg)" }}
-									/>
-								</span>
-							)}
-						</button>
-					))}
-				</div>
+			{/* Background Color */}
+			<div className="Background-Color-Picker mb-2">
+				<ColorBoard
+					mode="CanvasSheet"
+					strokeFill={strokeFill}
+					setStrokeFill={setStrokeFill}
+					bgFill={bgFill}
+					setBgFill={setBgFill}
+					activeTool={activeTool}
+				/>
 			</div>
 
 			{/* Stroke Width */}
@@ -192,7 +168,7 @@ export function StyleConfigurator({
 				</div>
 			</div>
 
-			{/* Fill Style */}
+			{/* Slopiness */}
 			<div className="Slopiness-Picker">
 				<div className="text-sm font-medium mb-2">Slopiness</div>
 				<div className="flex flex-wrap gap-2">
@@ -238,11 +214,7 @@ export function StyleConfigurator({
 						{fontFamilies.map((family) => (
 							<button
 								key={family}
-								className={`px-3 py-1 rounded ${
-									fontFamily === family
-										? "bg-blue-500 text-white"
-										: "bg-gray-700 text-gray-200"
-								}`}
+								className={`px-3 py-1 rounded ${fontFamily === family ? "bg-blue-500 text-white" : "bg-gray-700 text-gray-200"}`}
 								onClick={() => setFontFamily(family)}
 							>
 								{family}
@@ -260,11 +232,7 @@ export function StyleConfigurator({
 						{fontSizes.map((size) => (
 							<button
 								key={size}
-								className={`px-3 py-1 rounded ${
-									fontSize === size
-										? "bg-blue-500 text-white"
-										: "bg-gray-700 text-gray-200"
-								}`}
+								className={`px-3 py-1 rounded ${fontSize === size ? "bg-blue-500 text-white" : "bg-gray-700 text-gray-200"}`}
 								onClick={() => setFontSize(size)}
 							>
 								{size}
@@ -282,11 +250,7 @@ export function StyleConfigurator({
 						{textAligns.map((align) => (
 							<button
 								key={align}
-								className={`px-3 py-1 rounded ${
-									textAlign === align
-										? "bg-blue-500 text-white"
-										: "bg-gray-700 text-gray-200"
-								}`}
+								className={`px-3 py-1 rounded ${textAlign === align ? "bg-blue-500 text-white" : "bg-gray-700 text-gray-200"}`}
 								onClick={() => setTextAlign(align)}
 							>
 								{align}

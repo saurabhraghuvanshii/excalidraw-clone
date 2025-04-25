@@ -17,8 +17,8 @@ export function ColorBoard({
     bgFill,
     setBgFill,
 }: ColorBoardProps) {
-    const strokeFills: string[] = ["#1971c2", "#1e1e1e", "#2f9e44", "#e03131", "#f08c00", "#ffffff"];
-    const bgFills: string[] = ["#00000000", "#a5d8ff", "#b2f2bb", "#ffc9c9", "#ffec99", "#ffffff"];
+    const strokeFills: string[] = ["#1e1e1e", "#2f9e44", "#e03131","#1971c2", "#f08c00","#0c8599", "#ffffff", "#e8590c", "#099268"];
+    const bgFills: string[] = ["#00000000", "#a5d8ff", "#b2f2bb", "#ffc9c9", "#ffec99", "#ffffff", "#1e1e1e", "#99e9f2", "#e9ecef", "#eebefa"];
 
     return (
         <div className="flex flex-col gap-y-3">
