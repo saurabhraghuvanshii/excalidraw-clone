@@ -81,7 +81,7 @@ export function RoomCanvas({
 
 	if (!socket) {
 		return (
-			<div className="relative min-h-screen flex items-center justify-center bg-black text-white">
+			<div className="relative min-h-screen flex items-center justify-center bg-gray-800 text-white">
 				<div className="text-center">
 					<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
 					<p>Loading scene...</p>
@@ -91,7 +91,7 @@ export function RoomCanvas({
 	}
 
 	return (
-		<div className="h-screen w-full overflow-hidden bg-black">
+		<div className="h-screen w-full overflow-hidden bg-gray-700">
 			<Canvas roomId={roomId} socket={socket} readOnly={readOnly} />
 		</div>
 	);

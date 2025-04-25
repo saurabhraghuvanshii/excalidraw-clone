@@ -513,7 +513,7 @@ export function Canvas({
 
 	return (
 		<div className="h-full w-screen overflow-hidden">
-			<div className="absolute inset-0 bg-black">
+			<div className="absolute inset-0 bg-gray-500">
 				<PanHandler
 					canvasRef={canvasRef as React.RefObject<HTMLCanvasElement>}
 					offset={offset}
@@ -530,7 +530,7 @@ export function Canvas({
 						position: "absolute",
 						top: 0,
 						left: 0,
-						background: "black",
+						background: "#f3f4f6",
 						cursor: getCursorForTool(selectedTool),
 					}}
 					onMouseEnter={() => setIsCanvasHovered(true)}
@@ -624,8 +624,8 @@ function Topbar({
 	setSelectedTool: (s: Tool) => void;
 }) {
 	return (
-		<div className="fixed top-4 left-1/2 transform -translate-x-1/2 flex justify-center items-center pb-2 z-50 rounded-lg">
-			<div className="flex gap-1 p-2 rounded-lg pointer-events-auto shadow-lg border border-gray-800 cursor-pointer">
+		<div className="fixed top-4 left-1/2 transform -translate-x-1/2 flex justify-center items-center z-50 rounded-lg bg-gray-900">
+			<div className="flex gap-1 p-1 rounded-lg pointer-events-auto cursor-pointer">
 				<IconButton
 					onClick={() => setSelectedTool("select")}
 					activated={selectedTool === "select"}

@@ -20,7 +20,7 @@ export function IconButton({
             onClick={onClick}
             title={title}
             className={`p-2 rounded hover:bg-white-700 transition-colors ${
-                activated ? 'bg-gray-700' : ''
+                activated ? 'bg-sky-900' : ''
             }`}
         >
             {image ? (

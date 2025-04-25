@@ -26,7 +26,7 @@ export default function CanvasPage({
 		<div className="relative h-screen w-full no-scroll">
 			<div className="absolute top-4 left-4 z-20">
 				<Link href="/">
-					<button className="hover:bg-gray-700 rounded-full p-1 shadow-md transition-colors">
+					<button className="hover:bg-gray-700 rounded-full p-1 shadow-md transition-colors hidden sm:block">
 						<Home className="text-white" />
 					</button>
 				</Link>
