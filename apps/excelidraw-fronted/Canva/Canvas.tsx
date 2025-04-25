@@ -49,8 +49,8 @@ export function Canvas({
 		box: null,
 	});
 	const canEdit = !readOnly;
-	const [strokeFill, setStrokeFill] = useState("#000000");
-	const [bgFill, setBgFill] = useState("#ffffff");
+	const [strokeFill, setStrokeFill] = useState("#ffffff");
+	const [bgFill, setBgFill] = useState("transparent");
 	const [strokeWidth, setStrokeWidth] = useState(2);
 	const [strokeEdge, setStrokeEdge] = useState("round");
 	const [strokeStyle, setStrokeStyle] = useState("solid");

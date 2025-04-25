@@ -12,7 +12,7 @@ function getLineHeight(fontSize: number): number {
 
 export function drawText(
     ctx: CanvasRenderingContext2D,
-    shape: Shape
+    shape: Shape & { type: 'text' }
 ) {
     if (shape.type !== 'text') return;
     ctx.save();
@@ -69,14 +69,16 @@ export function isPointInText(
 ): boolean {
     if (shape.type !== 'text') return false;
 
-    const bounds = getShapeBounds(shape);
-    if (!bounds) return false;
+    const boundsX = shape.x;
+    const boundsY = shape.y;
+    const boundsWidth = shape.width;
+    const boundsHeight = shape.height;
 
     return (
-        x >= bounds.x - buffer &&
-        x <= bounds.x + bounds.width + buffer &&
-        y >= bounds.y - buffer &&
-        y <= bounds.y + bounds.height + buffer
+        x >= boundsX - buffer &&
+        x <= boundsX + boundsWidth + buffer &&
+        y >= boundsY - buffer &&
+        y <= boundsY + boundsHeight + buffer
     );
 }
 
@@ -89,94 +91,83 @@ export function resizeText(
     const minWidth = 40;
     const minHeight = 20;
 
-    let originalFontSize = shape.fontSize || 24;
-    let originalHeight = shape.height;
+    let { x, y, width, height, fontSize } = shape;
 
-    let changedHeight = false;
+    let newX = x, newY = y, newWidth = width, newHeight = height;
 
     switch (handleIdx) {
         case 0: // top-left
-            const newWidth1 = shape.width - (px - shape.x);
-            const newHeight1 = shape.height - (py - shape.y);
-            if (newWidth1 > minWidth) {
-                shape.width = newWidth1;
-                shape.x = px;
-            }
-            if (newHeight1 > minHeight) {
-                shape.height = newHeight1;
-                shape.y = py;
-                changedHeight = true;
-            }
+            newX = px;
+            newY = py;
+            newWidth = x + width - px;
+            newHeight = y + height - py;
             break;
         case 1: // top-center
-            const newHeight2 = shape.height - (py - shape.y);
-            if (newHeight2 > minHeight) {
-                shape.height = newHeight2;
-                shape.y = py;
-                changedHeight = true;
-            }
+            newY = py;
+            newHeight = y + height - py;
             break;
         case 2: // top-right
-            const newWidth3 = px - shape.x;
-            const newHeight3 = shape.height - (py - shape.y);
-            if (newWidth3 > minWidth) {
-                shape.width = newWidth3;
-            }
-            if (newHeight3 > minHeight) {
-                shape.height = newHeight3;
-                shape.y = py;
-                changedHeight = true;
-            }
+            newY = py;
+            newWidth = px - x;
+            newHeight = y + height - py;
             break;
         case 3: // right-center
-            const newWidth4 = px - shape.x;
-            if (newWidth4 > minWidth) {
-                shape.width = newWidth4;
-            }
+            newWidth = px - x;
             break;
         case 4: // bottom-right
-            const newWidth5 = px - shape.x;
-            const newHeight5 = py - shape.y;
-            if (newWidth5 > minWidth) {
-                shape.width = newWidth5;
-            }
-            if (newHeight5 > minHeight) {
-                shape.height = newHeight5;
-                changedHeight = true;
-            }
+            newWidth = px - x;
+            newHeight = py - y;
             break;
         case 5: // bottom-center
-            const newHeight6 = py - shape.y;
-            if (newHeight6 > minHeight) {
-                shape.height = newHeight6;
-                changedHeight = true;
-            }
+            newHeight = py - y;
             break;
         case 6: // bottom-left
-            const newWidth7 = shape.width - (px - shape.x);
-            const newHeight7 = py - shape.y;
-            if (newWidth7 > minWidth) {
-                shape.width = newWidth7;
-                shape.x = px;
-            }
-            if (newHeight7 > minHeight) {
-                shape.height = newHeight7;
-                changedHeight = true;
-            }
+            newX = px;
+            newWidth = x + width - px;
+            newHeight = py - y;
             break;
         case 7: // left-center
-            const newWidth8 = shape.width - (px - shape.x);
-            if (newWidth8 > minWidth) {
-                shape.width = newWidth8;
-                shape.x = px;
-            }
+            newX = px;
+            newWidth = x + width - px;
             break;
     }
 
-    // Only update font size if height changed
-    if (changedHeight && originalHeight > 0) {
+    newWidth = Math.max(newWidth, minWidth);
+    newHeight = Math.max(newHeight, minHeight);
+
+    // Apply clamped width/height and potentially adjusted x/y
+    if (newWidth !== width) {
+        shape.width = newWidth;
+
+        if ((handleIdx === 0 || handleIdx === 6 || handleIdx === 7) && newWidth === minWidth && width > minWidth) {
+            shape.x = x + (width - minWidth);
+        } else {
+            shape.x = newX;
+        }
+    } else {
+       shape.x = newX;
+    }
+
+    if (newHeight !== height) {
+        shape.height = newHeight;
+
+        if ((handleIdx === 0 || handleIdx === 1 || handleIdx === 2) && newHeight === minHeight && height > minHeight) {
+            shape.y = y + (height - minHeight);
+        } else {
+            shape.y = newY;
+        }
+    } else {
+        shape.y = newY;
+    }
+
+    const originalHeight = height;
+    const originalFontSize = fontSize || 24;
+
+    if (originalHeight > 0 && shape.height !== originalHeight) {
         const scaleFactor = shape.height / originalHeight;
         const newFontSize = Math.floor(originalFontSize * scaleFactor);
-        shape.fontSize = Math.max(Math.min(newFontSize, 120), 10); // clamp
+        shape.fontSize = Math.max(Math.min(newFontSize, 120), 10); // clamp font size
+    } else if (originalHeight === 0 && shape.height > 0) {
+        shape.fontSize = Math.max(originalFontSize, 10);
     }
 }

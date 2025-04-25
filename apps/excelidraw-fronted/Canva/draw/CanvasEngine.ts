@@ -16,6 +16,8 @@ export type Shape = {
     height: number;
     strokeWidth?: number;
  	strokeColor?: string;
+    strokeEdge?: string;
+    strokeStyle?: string;
  	fillColor?: string;
     id?: string;
 } | {
@@ -26,6 +28,8 @@ export type Shape = {
     radiusY: number;
     strokeWidth?: number;
     strokeColor?: string;
+    strokeEdge?: string;
+    strokeStyle?: string;
     fillColor?: string;
     id?: string;
 } | {
@@ -36,6 +40,8 @@ export type Shape = {
     endY: number;
     strokeWidth?: number;
     strokeColor?: string;
+    strokeEdge?: string;
+    strokeStyle?: string;
     fillColor?: string;
     id?: string;
 } | {
@@ -43,6 +49,8 @@ export type Shape = {
     points: { x: number; y: number }[];
     strokeWidth?: number;
     strokeColor?: string;
+	strokeEdge?: string;
+    strokeStyle?: string;
     fillColor?: string;
     id?: string;
 } | {
@@ -68,6 +76,8 @@ export type Shape = {
     height: number;
     strokeWidth?: number;
     strokeColor?: string;
+    strokeEdge?: string;
+    strokeStyle?: string;
     fillColor?: string;
     id?: string;
 } | {
@@ -78,6 +88,8 @@ export type Shape = {
     endY: number;
     strokeWidth?: number;
     strokeColor?: string;
+    strokeEdge?: string;
+    strokeStyle?: string;
     fillColor?: string;
     id?: string;
 }
@@ -164,14 +176,20 @@ export class CanvasEngine {
 	}
 
 	eraseShapeById(id: string) {
+		const initialLength = this.shapes.length;
 		this.shapes = this.shapes.filter((shape) => shape.id !== id);
-		this.clearCanvas();
+		if (this.selectedShapeId === id) {
+			this.selectedShapeId = null; // Deselect if the erased shape was selected
+		}
+		if (this.shapes.length < initialLength) {
+			this.clearCanvas(); // Only redraw if a shape was actually removed
+		}
 	}
 
-    findShapeUnderPoint(x: number, y: number): Shape | null {
-        const adjustedX = (x - this.offsetX) / this.scale;
-        const adjustedY = (y - this.offsetY) / this.scale;
-        const eraserBuffer = 10;
+    findShapeUnderPoint(clientX: number, clientY: number): Shape | null {
+        const adjustedX = (clientX - this.offsetX) / this.scale;
+        const adjustedY = (clientY - this.offsetY) / this.scale;
+        const hitBuffer = 10 / this.scale;
        
         for (let i = this.shapes.length - 1; i >= 0; i--) {
             const shape = this.shapes[i];
@@ -180,10 +198,10 @@ export class CanvasEngine {
             
             switch (shape.type) {
                 case "rect":
-                    isUnderPoint = isPointInRectangle(adjustedX, adjustedY, shape, eraserBuffer);
+                    isUnderPoint = isPointInRectangle(adjustedX, adjustedY, shape, hitBuffer);
                     break;
                 case "circleOrOval":
-                    isUnderPoint = isPointInCircleOrOval(adjustedX, adjustedY, shape, eraserBuffer);
+                    isUnderPoint = isPointInCircleOrOval(adjustedX, adjustedY, shape, hitBuffer);
                     break;
                 case "line":
                     isUnderPoint = isPointNearLine(adjustedX, adjustedY, shape);
@@ -195,10 +213,10 @@ export class CanvasEngine {
                     isUnderPoint = isPointNearFreehand(adjustedX, adjustedY, shape);
                     break;
                 case "text":
-                    isUnderPoint = isPointInText(adjustedX, adjustedY, shape, eraserBuffer);
+                    isUnderPoint = isPointInText(adjustedX, adjustedY, shape, hitBuffer);
                     break;
                 case "diamond":
-                    isUnderPoint = isPointInDiamond(adjustedX, adjustedY, shape, eraserBuffer);
+                    isUnderPoint = isPointInDiamond(adjustedX, adjustedY, shape, hitBuffer);
                     break;
             }
             
@@ -211,7 +229,7 @@ export class CanvasEngine {
     }
 
 	drawSelectionFrameAndHandles(shape: Shape) {
-		drawFrameHandles(this.ctx, shape, this.handleSize);
+		drawFrameHandles(this.ctx, shape, this.handleSize / this.scale);
 	}
 
 	getHandleAtPoint(shape: Shape, px: number, py: number): number | null {
@@ -219,7 +237,7 @@ export class CanvasEngine {
 		if (!bounds) return null;
 
 		const { x, y, width, height } = bounds;
-		const hs = this.handleSize;
+		const hs = this.handleSize / this.scale;
 
 		const handles = [
 			[x, y],
@@ -234,11 +252,13 @@ export class CanvasEngine {
 
 		for (let i = 0; i < handles.length; i++) {
 			const [hx, hy] = handles[i];
+			const buffer = hs / 2;
+
 			if (
-				px >= hx - hs / 2 &&
-				px <= hx + hs / 2 &&
-				py >= hy - hs / 2 &&
-				py <= hy + hs / 2
+				px >= hx - buffer &&
+				px <= hx + buffer &&
+				py >= hy - buffer &&
+				py <= hy + buffer
 			) {
 				return i;
 			}
@@ -274,14 +294,17 @@ export class CanvasEngine {
 
 	addShape(shape: Shape) {
 		if (!shape.id) shape.id = generateId();
+		if ("strokeEdge" in shape && shape.strokeEdge === undefined)
+			shape.strokeEdge = "round";
+		if ("strokeStyle" in shape && shape.strokeStyle === undefined)
+			shape.strokeStyle = "solid";
 		this.shapes.push(shape);
-		this.clearCanvas();
 	}
 
-	updateShape(shape: Shape) {
-		const idx = this.shapes.findIndex((s) => s.id === shape.id);
+	updateShape(updateShape: Shape) {
+		const idx = this.shapes.findIndex((s) => s.id === updateShape.id);
 		if (idx !== -1) {
-			this.shapes[idx] = shape;
+			this.shapes[idx] = updateShape;
 			this.clearCanvas();
 		}
 	}

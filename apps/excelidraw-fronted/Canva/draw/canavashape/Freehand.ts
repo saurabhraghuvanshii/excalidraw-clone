@@ -1,14 +1,34 @@
 import { Shape } from '../CanvasEngine';
 
 export function drawFreehand(ctx: CanvasRenderingContext2D, shape: Shape) {
-    if (shape.type !== 'freehand' || shape.points.length < 2) return;
+    if (shape.type !== 'freehand' || !shape.points.length) return;
+
+    ctx.save();
+
+    // Set stroke style
+    ctx.strokeStyle = shape.strokeColor || '#1e1e1e';
+    ctx.lineWidth = shape.strokeWidth || 2;
+    if (shape.strokeEdge) {
+        ctx.lineJoin = shape.strokeEdge as CanvasLineJoin;
+        ctx.lineCap = shape.strokeEdge as CanvasLineCap;
+    }
+    if (shape.strokeStyle === "dashed") {
+        ctx.setLineDash([8, 6]);
+    } else if (shape.strokeStyle === "dotted") {
+        ctx.setLineDash([2, 6]);
+    } else {
+        ctx.setLineDash([]);
+    }
+
     ctx.beginPath();
     ctx.moveTo(shape.points[0].x, shape.points[0].y);
+
     for (let i = 1; i < shape.points.length; i++) {
         ctx.lineTo(shape.points[i].x, shape.points[i].y);
     }
+
     ctx.stroke();
-    ctx.closePath();
+    ctx.restore();
 }
 
 export function isPointNearFreehand(x: number, y: number, shape: Shape): boolean {

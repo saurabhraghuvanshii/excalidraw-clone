@@ -2,16 +2,35 @@ import { Shape } from '../CanvasEngine';
 
 export function drawLine(ctx: CanvasRenderingContext2D, shape: Shape) {
     if (shape.type !== 'line') return;
+    ctx.save();
+
+    // Set stroke style
+    ctx.strokeStyle = shape.strokeColor || '#1e1e1e';
+    ctx.lineWidth = shape.strokeWidth || 2;
+    if (shape.strokeEdge) {
+        ctx.lineJoin = shape.strokeEdge as CanvasLineJoin;
+        ctx.lineCap = shape.strokeEdge as CanvasLineCap;
+    }
+    if (shape.strokeStyle === "dashed") {
+        ctx.setLineDash([8, 6]);
+    } else if (shape.strokeStyle === "dotted") {
+        ctx.setLineDash([2, 6]);
+    } else {
+        ctx.setLineDash([]);
+    }
+
     ctx.beginPath();
     ctx.moveTo(shape.startX, shape.startY);
     ctx.lineTo(shape.endX, shape.endY);
     ctx.stroke();
     ctx.closePath();
+
+    ctx.restore();
 }
 
 export function isPointNearLine(x: number, y: number, shape: Shape): boolean {
     if (shape.type !== 'line') return false;
-    
+
     const A = x - shape.startX;
     const B = y - shape.startY;
     const C = shape.endX - shape.startX;

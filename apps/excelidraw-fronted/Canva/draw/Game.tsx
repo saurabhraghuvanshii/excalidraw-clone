@@ -29,17 +29,17 @@ export class Game {
 	public textToAdd: string | undefined;
 	public getDrawingStyle:
 		| (() => {
-				strokeFill: string;
-				bgFill: string;
-				strokeWidth: number;
-				strokeEdge: string;
-				strokeStyle: string;
-				roughStyle: number;
-				fillStyle: string;
-				fontFamily: string;
-				fontSize: number;
-				textAlign: string;
-		  })
+			strokeFill: string;
+			bgFill: string;
+			strokeWidth: number;
+			strokeEdge: string;
+			strokeStyle: string;
+			roughStyle: number;
+			fillStyle: string;
+			fontFamily: string;
+			fontSize: number;
+			textAlign: string;
+		})
 		| null = null;
 
 	constructor(
@@ -257,17 +257,17 @@ export class Game {
 			const style = this.getDrawingStyle
 				? this.getDrawingStyle()
 				: {
-						strokeFill: "#000000",
-						bgFill: "#ffffff",
-						strokeWidth: 2,
-						strokeEdge: "round",
-						strokeStyle: "solid",
-						roughStyle: 0,
-						fillStyle: "solid",
-						fontFamily: "Nunito",
-						fontSize: 20,
-						textAlign: "left",
-					};
+					strokeFill: "#000000",
+					bgFill: "#ffffff",
+					strokeWidth: 2,
+					strokeEdge: "round",
+					strokeStyle: "solid",
+					roughStyle: 0,
+					fillStyle: "solid",
+					fontFamily: "Nunito",
+					fontSize: 20,
+					textAlign: "left",
+				};
 			switch (this.selectedTool) {
 				case "rect":
 					shape = {
@@ -279,6 +279,8 @@ export class Game {
 						strokeWidth: style.strokeWidth,
 						strokeColor: style.strokeFill,
 						fillColor: style.bgFill,
+						strokeEdge: style.strokeEdge,
+						strokeStyle: style.strokeStyle,
 					};
 					break;
 				case "circleOrOval":
@@ -291,6 +293,8 @@ export class Game {
 						strokeWidth: style.strokeWidth,
 						strokeColor: style.strokeFill,
 						fillColor: style.bgFill,
+						strokeEdge: style.strokeEdge,
+						strokeStyle: style.strokeStyle,
 					};
 					break;
 				case "line":
@@ -302,6 +306,8 @@ export class Game {
 						endY,
 						strokeWidth: style.strokeWidth,
 						strokeColor: style.strokeFill,
+						strokeEdge: style.strokeEdge,
+						strokeStyle: style.strokeStyle,
 					};
 					break;
 				case "arrow":
@@ -313,6 +319,8 @@ export class Game {
 						endY,
 						strokeWidth: style.strokeWidth,
 						strokeColor: style.strokeFill,
+						strokeEdge: style.strokeEdge,
+						strokeStyle: style.strokeStyle,
 					};
 					break;
 				case "diamond":
@@ -325,6 +333,8 @@ export class Game {
 						strokeWidth: style.strokeWidth,
 						strokeColor: style.strokeFill,
 						fillColor: style.bgFill,
+						strokeEdge: style.strokeEdge,
+						strokeStyle: style.strokeStyle,
 					};
 					break;
 			}
@@ -366,14 +376,18 @@ export class Game {
 					const style = this.getDrawingStyle
 						? this.getDrawingStyle()
 						: {
-								strokeFill: "#000000",
-								strokeWidth: 2,
-							};
+							strokeFill: "#000000",
+							strokeWidth: 2,
+							strokeEdge: "round",
+							strokeStyle: "solid",
+						};
 					const freehandShape = {
 						type: "freehand" as const,
 						points: [...this.freehandPoints],
 						strokeWidth: style.strokeWidth,
 						strokeColor: style.strokeFill,
+						strokeEdge: style.strokeEdge,
+						strokeStyle: style.strokeStyle,
 					};
 
 					this.engine.addShape(freehandShape);
@@ -401,11 +415,11 @@ export class Game {
 			const style = this.getDrawingStyle
 				? this.getDrawingStyle()
 				: {
-						fontSize: 24,
-						fontFamily: "Nunito",
-						textAlign: "left",
-						strokeFill: "#000000",
-					};
+					fontSize: 24,
+					fontFamily: "Nunito",
+					textAlign: "left",
+					strokeFill: "#000000",
+				};
 			const fontSize = style.fontSize || 24;
 			const fontFamily = style.fontFamily || "Nunito";
 			ctx.font = `${fontSize}px ${fontFamily}`;
@@ -447,6 +461,7 @@ export class Game {
 				fontFamily,
 				textAlign: style.textAlign,
 				color: style.strokeFill,
+				strokeColor: style.strokeFill,
 			};
 
 			this.engine.addShape(shape);
@@ -560,7 +575,9 @@ export class Game {
 			this.engine.ctx.save();
 			this.engine.ctx.translate(this.engine.offsetX, this.engine.offsetY);
 			this.engine.ctx.scale(this.engine.scale, this.engine.scale);
-			this.engine.ctx.strokeStyle = "rgba(255,255,255,1)";
+			const style = this.getDrawingStyle ? this.getDrawingStyle() : { strokeFill: "#ffffff", strokeWidth: 2 };
+			this.engine.ctx.strokeStyle = style.strokeFill;
+			this.engine.ctx.lineWidth = style.strokeWidth;
 			this.engine.ctx.beginPath();
 			this.engine.ctx.moveTo(this.freehandPoints[0].x, this.freehandPoints[0].y);
 
@@ -583,7 +600,9 @@ export class Game {
 		this.engine.ctx.save();
 		this.engine.ctx.translate(this.engine.offsetX, this.engine.offsetY);
 		this.engine.ctx.scale(this.engine.scale, this.engine.scale);
-		this.engine.ctx.strokeStyle = "rgba(255, 255, 255, 1)";
+		const style = this.getDrawingStyle ? this.getDrawingStyle() : { strokeFill: "#ffffff", strokeWidth: 2 };
+		this.engine.ctx.strokeStyle = style.strokeFill;
+		this.engine.ctx.lineWidth = style.strokeWidth;
 
 		if (this.selectedTool === "rect") {
 			this.engine.ctx.strokeRect(this.startX, this.startY, width, height);

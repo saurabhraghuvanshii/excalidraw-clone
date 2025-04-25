@@ -3,14 +3,34 @@ import { Shape } from '../CanvasEngine';
 export function drawArrow(ctx: CanvasRenderingContext2D, shape: Shape & { type: 'arrow' }) {
     if (shape.type !== 'arrow') return;
     const { startX, startY, endX, endY } = shape;
+
     ctx.save();
+
+    // Set stroke style
+    ctx.strokeStyle = shape.strokeColor || '#1e1e1e';
+    ctx.lineWidth = shape.strokeWidth || 2;
+    if (shape.strokeEdge) {
+        ctx.lineJoin = shape.strokeEdge as CanvasLineJoin;
+        ctx.lineCap = shape.strokeEdge as CanvasLineCap;
+    }
+    if (shape.strokeStyle === "dashed") {
+        ctx.setLineDash([8, 6]);
+    } else if (shape.strokeStyle === "dotted") {
+        ctx.setLineDash([2, 6]);
+    } else {
+        ctx.setLineDash([]);
+    }
+
+    // Draw main line
     ctx.beginPath();
     ctx.moveTo(startX, startY);
     ctx.lineTo(endX, endY);
     ctx.stroke();
 
+    // Draw arrowhead
     const headlen = 18; // length of head in pixels
     const angle = Math.atan2(endY - startY, endX - startX);
+
     ctx.beginPath();
     ctx.moveTo(endX, endY);
     ctx.lineTo(
@@ -23,6 +43,7 @@ export function drawArrow(ctx: CanvasRenderingContext2D, shape: Shape & { type: 
         endY - headlen * Math.sin(angle + Math.PI / 7)
     );
     ctx.stroke();
+
     ctx.restore();
 }
 
@@ -81,11 +102,11 @@ export function resizeArrow(shape: Shape & { type: 'arrow' }, handleIdx: number,
         x: centerX + (x - centerX) * scaleX,
         y: centerY + (y - centerY) * scaleY,
     });
-    
+
     const newStart = scalePoint(shape.startX, shape.startY);
     const newEnd = scalePoint(shape.endX, shape.endY);
     shape.startX = newStart.x;
     shape.startY = newStart.y;
     shape.endX = newEnd.x;
     shape.endY = newEnd.y;
-} 
+}

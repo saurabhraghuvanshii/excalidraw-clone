@@ -27,6 +27,13 @@ interface StyleConfiguratorProps {
 	isMobile?: boolean;
 }
 
+// Helper for tooltip
+const Tooltip = ({ label }: { label: string }) => (
+	<span className="pointer-events-none absolute left-1/2 -translate-x-1/2 mt-2 px-2 py-1 rounded bg-gray-800 text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity z-50 whitespace-nowrap">
+		{label}
+	</span>
+);
+
 export function StyleConfigurator({
 	activeTool,
 	strokeFill,
@@ -59,15 +66,18 @@ export function StyleConfigurator({
 		<div className="flex flex-col gap-y-3 p-2">
 			<div className="text-lg font-semibold mb-2">Style</div>
 
-			{/* Color Picker */}
-			<ColorBoard
-				mode="Shape"
-				strokeFill={strokeFill}
-				setStrokeFill={setStrokeFill}
-				bgFill={bgFill}
-				setBgFill={setBgFill}
-				activeTool={activeTool}
-			/>
+			{/* Stroke Color */}
+			<div className="Stroke-Color-Picker mb-2">
+				<div className="text-sm font-medium mb-2">Stroke Color</div>
+				<ColorBoard
+					mode="Shape"
+					strokeFill={strokeFill}
+					setStrokeFill={setStrokeFill}
+					bgFill={bgFill}
+					setBgFill={setBgFill}
+					activeTool={activeTool}
+				/>
+			</div>
 
 			{/* Background Fill */}
 			<div className="Background-Fill-Picker">
@@ -84,7 +94,10 @@ export function StyleConfigurator({
 							key={color.value}
 							className={`w-7 h-7 rounded-full border-2 flex items-center justify-center ${bgFill === color.value ? "border-blue-500" : "border-gray-400"}`}
 							style={{
-								background: color.value === "transparent" ? "linear-gradient(45deg, black, gray)" : color.value,
+								background:
+									color.value === "transparent"
+										? "linear-gradient(45deg, black, gray)"
+										: color.value,
 							}}
 							onClick={() => setBgFill(color.value)}
 							title={color.label}
@@ -109,8 +122,9 @@ export function StyleConfigurator({
 					{[1, 2, 3].map((width, idx) => (
 						<button
 							key={width}
-							className={`p-1 rounded ${strokeWidth === width ? "bg-blue-500" : "bg-gray-700"}`}
+							className={`p-1 rounded group relative ${strokeWidth === width ? "bg-blue-500" : "bg-gray-700"}`}
 							onClick={() => setStrokeWidth(width)}
+							title={idx === 0 ? "Thin" : idx === 1 ? "Bold" : "Extra Bold"}
 						>
 							{idx === 0 && (
 								<Image src="/Thinline.svg" alt="Thin" width={24} height={24} />
@@ -121,6 +135,9 @@ export function StyleConfigurator({
 							{idx === 2 && (
 								<Image src="/Extrabold.svg" alt="Extra Bold" width={24} height={24} />
 							)}
+							<Tooltip
+								label={idx === 0 ? "Thin" : idx === 1 ? "Bold" : "Extra Bold"}
+							/>
 						</button>
 					))}
 				</div>
@@ -130,15 +147,20 @@ export function StyleConfigurator({
 			<div className="Stroke-Edge-Picker">
 				<div className="text-sm font-medium mb-2">Stroke Edge</div>
 				<div className="flex flex-wrap gap-2">
-					{strokeEdges.map((edge) => (
+					{strokeEdges.map((edge, idx) => (
 						<button
 							key={edge}
-							className={`h-9 px-5 bg-gradient-to-r from-violet-500 to-purple-500 text-white text-sm font-medium rounded-md shadow-lg shadow-violet-500/20 border border-white/20 flex items-center gap-2 hover:scale-105 active:scale-95 hover:from-violet-600 hover:to-purple-600 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed ${
-                                strokeEdge === edge ? "bg-blue-500 text-white" : "bg-gray-700 text-gray-200"
-                            }`}
-                            onClick={() => setStrokeEdge(edge)}
+							className={`p-1 rounded flex flex-col items-center group relative ${strokeEdge === edge ? "bg-blue-500" : "bg-gray-700"}`}
+							onClick={() => setStrokeEdge(edge)}
+							title={edge === "round" ? "Rounded" : "Sharp"}
 						>
-							{edge}
+							{edge === "round" && (
+								<Image src="/rounded.svg" alt="Rounded" width={24} height={24} />
+							)}
+							{edge === "square" && (
+								<Image src="/sharp.svg" alt="Sharp" width={24} height={24} />
+							)}
+							<Tooltip label={edge === "round" ? "Rounded" : "Sharp"} />
 						</button>
 					))}
 				</div>
@@ -151,8 +173,9 @@ export function StyleConfigurator({
 					{["solid", "dashed", "dotted"].map((style, idx) => (
 						<button
 							key={style}
-							className={`p-1 rounded ${strokeStyle === style ? "bg-blue-500" : "bg-gray-700"}`}
+							className={`p-1 rounded group relative ${strokeStyle === style ? "bg-blue-500" : "bg-gray-700"}`}
 							onClick={() => setStrokeStyle(style)}
+							title={idx === 0 ? "Solid" : idx === 1 ? "Dashed" : "Dotted"}
 						>
 							{idx === 0 && (
 								<Image src="/Solid.svg" alt="Solid" width={24} height={24} />
@@ -163,6 +186,7 @@ export function StyleConfigurator({
 							{idx === 2 && (
 								<Image src="/Dotted.svg" alt="Dotted" width={24} height={24} />
 							)}
+							<Tooltip label={idx === 0 ? "Solid" : idx === 1 ? "Dashed" : "Dotted"} />
 						</button>
 					))}
 				</div>
@@ -175,8 +199,9 @@ export function StyleConfigurator({
 					{["architect", "artist", "cartoonist"].map((style, idx) => (
 						<button
 							key={style}
-							className={`p-1 rounded ${fillStyle === style ? "bg-blue-500" : "bg-gray-700"}`}
+							className={`p-1 rounded group relative ${fillStyle === style ? "bg-blue-500" : "bg-gray-700"}`}
 							onClick={() => setFillStyle(style)}
+							title={idx === 0 ? "Architect" : idx === 1 ? "Artist" : "Cartoonist"}
 						>
 							{idx === 0 && (
 								<Image
@@ -197,6 +222,9 @@ export function StyleConfigurator({
 									height={24}
 								/>
 							)}
+							<Tooltip
+								label={idx === 0 ? "Architect" : idx === 1 ? "Artist" : "Cartoonist"}
+							/>
 						</button>
 					))}
 				</div>
