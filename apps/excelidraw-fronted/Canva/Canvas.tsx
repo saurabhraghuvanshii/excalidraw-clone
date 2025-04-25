@@ -404,6 +404,35 @@ export function Canvas({
 		[editingText.value]
 	);
 
+	// After the initial gameRef.current creation useEffect, add:
+	useEffect(() => {
+		if (gameRef.current) {
+			gameRef.current.getDrawingStyle = () => ({
+				strokeFill,
+				bgFill,
+				strokeWidth,
+				strokeEdge,
+				strokeStyle,
+				roughStyle,
+				fillStyle,
+				fontFamily,
+				fontSize,
+				textAlign,
+			});
+		}
+	}, [
+		strokeFill,
+		bgFill,
+		strokeWidth,
+		strokeEdge,
+		strokeStyle,
+		roughStyle,
+		fillStyle,
+		fontFamily,
+		fontSize,
+		textAlign,
+	]);
+
 	// Render authentication required message if not authenticated
 	if (canEdit && !isAuthenticated()) {
 		return (
