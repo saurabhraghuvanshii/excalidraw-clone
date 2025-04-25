@@ -1,6 +1,68 @@
 import { Shape } from "../CanvasEngine";
 import { getShapeBounds } from "../utils";
 
+function drawRoundedDiamond(
+	ctx: CanvasRenderingContext2D,
+	x: number,
+	y: number,
+	width: number,
+	height: number,
+	radius: number
+) {
+	// Handle negative dimensions by converting to absolute values
+	const absWidth = Math.abs(width);
+	const absHeight = Math.abs(height);
+
+	// Return early if dimensions are too small
+	if (absWidth < 2 || absHeight < 2) {
+		return;
+	}
+
+	// Calculate center point and half dimensions
+	const centerX = x + absWidth / 2;
+	const centerY = y + absHeight / 2;
+	const halfWidth = absWidth / 2;
+	const halfHeight = absHeight / 2;
+
+	// Ensure radius is positive and appropriately limited
+	const maxRadius = Math.max(1, Math.min(halfWidth, halfHeight) * 0.2);
+	const r = Math.max(0.1, Math.min(Math.abs(radius), maxRadius));
+
+	// Define the four points of the diamond
+	const topPoint = { x: centerX, y: centerY - halfHeight };
+	const rightPoint = { x: centerX + halfWidth, y: centerY };
+	const bottomPoint = { x: centerX, y: centerY + halfHeight };
+	const leftPoint = { x: centerX - halfWidth, y: centerY };
+
+	// Begin drawing the path
+	ctx.beginPath();
+
+	const distLeftTop = Math.max(
+		1,
+		Math.sqrt(
+			Math.pow(leftPoint.x - topPoint.x, 1) + Math.pow(leftPoint.y - topPoint.y, 2)
+		)
+	);
+
+	const offsetRatio = Math.min(r / distLeftTop, 0.3); // Limit to 30% of distance
+
+	// Calculate starting point
+	const startX = leftPoint.x + (topPoint.x - leftPoint.x) * offsetRatio;
+	const startY = leftPoint.y + (topPoint.y - leftPoint.y) * offsetRatio;
+
+	// Start drawing
+	ctx.moveTo(startX, startY);
+
+	// Use safer arc drawing with direct control points
+	ctx.arcTo(topPoint.x, topPoint.y, rightPoint.x, rightPoint.y, r);
+	ctx.arcTo(rightPoint.x, rightPoint.y, bottomPoint.x, bottomPoint.y, r);
+	ctx.arcTo(bottomPoint.x, bottomPoint.y, leftPoint.x, leftPoint.y, r);
+	ctx.arcTo(leftPoint.x, leftPoint.y, topPoint.x, topPoint.y, r);
+
+	// Close the path
+	ctx.closePath();
+}
+
 export function drawDiamond(ctx: CanvasRenderingContext2D, shape: Shape) {
 	if (shape.type !== "diamond") return;
 	ctx.save();
@@ -8,9 +70,12 @@ export function drawDiamond(ctx: CanvasRenderingContext2D, shape: Shape) {
 	// Set stroke style
 	ctx.strokeStyle = shape.strokeColor || "#1e1e1e";
 	ctx.lineWidth = shape.strokeWidth || 2;
-	if (shape.strokeEdge) {
-		ctx.lineJoin = shape.strokeEdge as CanvasLineJoin;
-		ctx.lineCap = shape.strokeEdge as CanvasLineCap;
+	if (shape.strokeEdge === "round") {
+		ctx.lineJoin = "round";
+		ctx.lineCap = "round";
+	} else {
+		ctx.lineJoin = "miter";
+		ctx.lineCap = "butt";
 	}
 	if (shape.strokeStyle === "dashed") {
 		ctx.setLineDash([8, 6]);
@@ -20,12 +85,16 @@ export function drawDiamond(ctx: CanvasRenderingContext2D, shape: Shape) {
 		ctx.setLineDash([]);
 	}
 
-	ctx.beginPath();
-	ctx.moveTo(shape.x + shape.width / 2, shape.y); // Top
-	ctx.lineTo(shape.x + shape.width, shape.y + shape.height / 2); // Right
-	ctx.lineTo(shape.x + shape.width / 2, shape.y + shape.height); // Bottom
-	ctx.lineTo(shape.x, shape.y + shape.height / 2); // Left
-	ctx.closePath();
+	if (shape.strokeEdge === "round") {
+		drawRoundedDiamond(ctx, shape.x, shape.y, shape.width, shape.height, 16);
+	} else {
+		ctx.beginPath();
+		ctx.moveTo(shape.x + shape.width / 2, shape.y); // Top
+		ctx.lineTo(shape.x + shape.width, shape.y + shape.height / 2); // Right
+		ctx.lineTo(shape.x + shape.width / 2, shape.y + shape.height); // Bottom
+		ctx.lineTo(shape.x, shape.y + shape.height / 2); // Left
+		ctx.closePath();
+	}
 
 	// Draw fill if specified
 	if (shape.fillColor && shape.fillColor !== "transparent") {
