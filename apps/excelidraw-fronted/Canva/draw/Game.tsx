@@ -2,6 +2,11 @@ import { CanvasEngine, Shape, Tool } from "./CanvasEngine";
 import { getExistingShapes } from "./http";
 import { getShapeBounds } from "./utils";
 import { drawSelectionFrameAndHandles as drawFrameHandles } from "../canvaFuncationality/FrameHandles";
+import { drawRectangle } from "./canavashape/Rectangle";
+import { drawDiamond } from "./canavashape/Diamond";
+import { drawCircleOrOVal } from "./canavashape/Circle";
+import { drawLine } from "./canavashape/Line";
+import { drawArrow } from "./canavashape/Arrow";
 
 export class Game {
 	public canvas: HTMLCanvasElement;
@@ -29,17 +34,17 @@ export class Game {
 	public textToAdd: string | undefined;
 	public getDrawingStyle:
 		| (() => {
-			strokeFill: string;
-			bgFill: string;
-			strokeWidth: number;
-			strokeEdge: string;
-			strokeStyle: string;
-			roughStyle: number;
-			fillStyle: string;
-			fontFamily: string;
-			fontSize: number;
-			textAlign: string;
-		})
+				strokeFill: string;
+				bgFill: string;
+				strokeWidth: number;
+				strokeEdge: string;
+				strokeStyle: string;
+				roughStyle: number;
+				fillStyle: string;
+				fontFamily: string;
+				fontSize: number;
+				textAlign: string;
+		  })
 		| null = null;
 
 	constructor(
@@ -257,17 +262,17 @@ export class Game {
 			const style = this.getDrawingStyle
 				? this.getDrawingStyle()
 				: {
-					strokeFill: "#000000",
-					bgFill: "#ffffff",
-					strokeWidth: 2,
-					strokeEdge: "round",
-					strokeStyle: "solid",
-					roughStyle: 0,
-					fillStyle: "solid",
-					fontFamily: "Nunito",
-					fontSize: 20,
-					textAlign: "left",
-				};
+						strokeFill: "#000000",
+						bgFill: "#ffffff",
+						strokeWidth: 2,
+						strokeEdge: "round",
+						strokeStyle: "solid",
+						roughStyle: 0,
+						fillStyle: "solid",
+						fontFamily: "Nunito",
+						fontSize: 20,
+						textAlign: "left",
+					};
 			switch (this.selectedTool) {
 				case "rect":
 					shape = {
@@ -376,11 +381,11 @@ export class Game {
 					const style = this.getDrawingStyle
 						? this.getDrawingStyle()
 						: {
-							strokeFill: "#000000",
-							strokeWidth: 2,
-							strokeEdge: "round",
-							strokeStyle: "solid",
-						};
+								strokeFill: "#000000",
+								strokeWidth: 2,
+								strokeEdge: "round",
+								strokeStyle: "solid",
+							};
 					const freehandShape = {
 						type: "freehand" as const,
 						points: [...this.freehandPoints],
@@ -415,11 +420,11 @@ export class Game {
 			const style = this.getDrawingStyle
 				? this.getDrawingStyle()
 				: {
-					fontSize: 24,
-					fontFamily: "Nunito",
-					textAlign: "left",
-					strokeFill: "#000000",
-				};
+						fontSize: 24,
+						fontFamily: "Nunito",
+						textAlign: "left",
+						strokeFill: "#000000",
+					};
 			const fontSize = style.fontSize || 24;
 			const fontFamily = style.fontFamily || "Nunito";
 			ctx.font = `${fontSize}px ${fontFamily}`;
@@ -575,7 +580,9 @@ export class Game {
 			this.engine.ctx.save();
 			this.engine.ctx.translate(this.engine.offsetX, this.engine.offsetY);
 			this.engine.ctx.scale(this.engine.scale, this.engine.scale);
-			const style = this.getDrawingStyle ? this.getDrawingStyle() : { strokeFill: "#ffffff", strokeWidth: 2 };
+			const style = this.getDrawingStyle
+				? this.getDrawingStyle()
+				: { strokeFill: "#ffffff", strokeWidth: 2 };
 			this.engine.ctx.strokeStyle = style.strokeFill;
 			this.engine.ctx.lineWidth = style.strokeWidth;
 			this.engine.ctx.beginPath();
@@ -600,63 +607,85 @@ export class Game {
 		this.engine.ctx.save();
 		this.engine.ctx.translate(this.engine.offsetX, this.engine.offsetY);
 		this.engine.ctx.scale(this.engine.scale, this.engine.scale);
-		const style = this.getDrawingStyle ? this.getDrawingStyle() : { strokeFill: "#ffffff", strokeWidth: 2 };
-		this.engine.ctx.strokeStyle = style.strokeFill;
-		this.engine.ctx.lineWidth = style.strokeWidth;
+		const style = this.getDrawingStyle
+			? this.getDrawingStyle()
+			: {
+					strokeFill: "#ffffff",
+					strokeWidth: 2,
+					bgFill: "transparent",
+					strokeEdge: "round",
+					strokeStyle: "solid",
+				};
 
 		if (this.selectedTool === "rect") {
-			this.engine.ctx.strokeRect(this.startX, this.startY, width, height);
+			const tempShape = {
+				type: "rect" as const,
+				x: this.startX,
+				y: this.startY,
+				width,
+				height,
+				strokeWidth: style.strokeWidth,
+				strokeColor: style.strokeFill,
+				fillColor: style.bgFill,
+				strokeEdge: style.strokeEdge,
+				strokeStyle: style.strokeStyle,
+			};
+			drawRectangle(this.engine.ctx, tempShape);
 		} else if (this.selectedTool === "circleOrOval") {
-			const centerX = this.startX + width / 2;
-			const centerY = this.startY + height / 2;
-			this.engine.ctx.beginPath();
-			this.engine.ctx.ellipse(
-				centerX,
-				centerY,
-				Math.abs(width) / 2,
-				Math.abs(height) / 2,
-				0,
-				0,
-				Math.PI * 2
-			);
-			this.engine.ctx.stroke();
-			this.engine.ctx.closePath();
+			const tempShape = {
+				type: "circleOrOval" as const,
+				centerX: this.startX + width / 2,
+				centerY: this.startY + height / 2,
+				radiusX: Math.abs(width) / 2,
+				radiusY: Math.abs(height) / 2,
+				strokeWidth: style.strokeWidth,
+				strokeColor: style.strokeFill,
+				fillColor: style.bgFill,
+				strokeEdge: style.strokeEdge,
+				strokeStyle: style.strokeStyle,
+			};
+			drawCircleOrOVal(this.engine.ctx, tempShape);
 		} else if (this.selectedTool === "line") {
-			this.engine.ctx.beginPath();
-			this.engine.ctx.moveTo(this.startX, this.startY);
-			this.engine.ctx.lineTo(endX, endY);
-			this.engine.ctx.stroke();
-			this.engine.ctx.closePath();
+			const tempShape = {
+				type: "line" as const,
+				startX: this.startX,
+				startY: this.startY,
+				endX,
+				endY,
+				strokeWidth: style.strokeWidth,
+				strokeColor: style.strokeFill,
+				strokeEdge: style.strokeEdge,
+				strokeStyle: style.strokeStyle,
+			};
+			drawLine(this.engine.ctx, tempShape);
 		} else if (this.selectedTool === "arrow") {
-			this.engine.ctx.beginPath();
-			this.engine.ctx.moveTo(this.startX, this.startY);
-			this.engine.ctx.lineTo(endX, endY);
-			this.engine.ctx.stroke();
-			// Draw arrowhead
-			const headlen = 18;
-			const angle = Math.atan2(endY - this.startY, endX - this.startX);
-			this.engine.ctx.beginPath();
-			this.engine.ctx.moveTo(endX, endY);
-			this.engine.ctx.lineTo(
-				endX - headlen * Math.cos(angle - Math.PI / 7),
-				endY - headlen * Math.sin(angle - Math.PI / 7)
-			);
-			this.engine.ctx.moveTo(endX, endY);
-			this.engine.ctx.lineTo(
-				endX - headlen * Math.cos(angle + Math.PI / 7),
-				endY - headlen * Math.sin(angle + Math.PI / 7)
-			);
-			this.engine.ctx.stroke();
+			const tempShape = {
+				type: "arrow" as const,
+				startX: this.startX,
+				startY: this.startY,
+				endX,
+				endY,
+				strokeWidth: style.strokeWidth,
+				strokeColor: style.strokeFill,
+				strokeEdge: style.strokeEdge,
+				strokeStyle: style.strokeStyle,
+				fillColor: style.bgFill,
+			};
+			drawArrow(this.engine.ctx, tempShape);
 		} else if (this.selectedTool === "diamond") {
-			this.engine.ctx.beginPath();
-			this.engine.ctx.lineJoin = "round";
-			this.engine.ctx.lineCap = "round";
-			this.engine.ctx.moveTo(this.startX + width / 2, this.startY); // Top
-			this.engine.ctx.lineTo(this.startX + width, this.startY + height / 2); // Right
-			this.engine.ctx.lineTo(this.startX + width / 2, this.startY + height); // Bottom
-			this.engine.ctx.lineTo(this.startX, this.startY + height / 2); // Left
-			this.engine.ctx.closePath();
-			this.engine.ctx.stroke();
+			const tempShape = {
+				type: "diamond" as const,
+				x: this.startX,
+				y: this.startY,
+				width,
+				height,
+				strokeWidth: style.strokeWidth,
+				strokeColor: style.strokeFill,
+				fillColor: style.bgFill,
+				strokeEdge: style.strokeEdge,
+				strokeStyle: style.strokeStyle,
+			};
+			drawDiamond(this.engine.ctx, tempShape);
 		}
 		this.engine.ctx.restore();
 	};
