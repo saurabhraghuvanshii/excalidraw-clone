@@ -722,4 +722,23 @@ export class Game {
 	drawSelectionFrameAndHandles(shape: Shape) {
 		drawFrameHandles(this.engine.ctx, shape, this.handleSize);
 	}
+
+	updateSelectedShapeStyle(newStyle: Partial<Shape>) {
+		if (!this.engine.selectedShapeId) return;
+		const shape = this.engine.shapes.find(
+			(s) => s.id === this.engine.selectedShapeId
+		);
+		if (shape) {
+			Object.assign(shape, newStyle);
+			this.engine.updateShape(shape);
+			// Optionally, send update to server
+			this.socket.send(
+				JSON.stringify({
+					type: "chat",
+					message: JSON.stringify({ shape }),
+					roomId: this.roomId,
+				})
+			);
+		}
+	}
 }

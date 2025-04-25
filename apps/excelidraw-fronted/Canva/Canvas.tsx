@@ -59,6 +59,7 @@ export function Canvas({
 	const [fontFamily, setFontFamily] = useState("Nunito");
 	const [fontSize, setFontSize] = useState(20);
 	const [textAlign, setTextAlign] = useState("left");
+	const [selectedShapeId, setSelectedShapeId] = useState<string | null>(null);
 
 	// Helper function to convert screen to canvas coordinates
 	const screenToCanvasCoords = useCallback(
@@ -284,6 +285,11 @@ export function Canvas({
 			const shape = gameRef.current.engine.findShapeUnderPoint?.(x, y);
 			if (shape) {
 				gameRef.current.engine.selectedShapeId = shape.id || null;
+				setSelectedShapeId(shape.id || null);
+				gameRef.current.engine.clearCanvas();
+			} else {
+				gameRef.current.engine.selectedShapeId = null;
+				setSelectedShapeId(null);
 				gameRef.current.engine.clearCanvas();
 			}
 		}
@@ -433,6 +439,60 @@ export function Canvas({
 		textAlign,
 	]);
 
+	// Handler functions to update selected shape style if a shape is selected
+	const handleStrokeFillChange = (color: string) => {
+		setStrokeFill(color);
+		if (gameRef.current?.engine.selectedShapeId) {
+			gameRef.current.updateSelectedShapeStyle({ strokeColor: color });
+		}
+	};
+	const handleBgFillChange = (color: string) => {
+		setBgFill(color);
+		if (gameRef.current?.engine.selectedShapeId) {
+			gameRef.current.updateSelectedShapeStyle({ fillColor: color });
+		}
+	};
+	const handleStrokeWidthChange = (width: number) => {
+		setStrokeWidth(width);
+		if (gameRef.current?.engine.selectedShapeId) {
+			gameRef.current.updateSelectedShapeStyle({ strokeWidth: width });
+		}
+	};
+	const handleStrokeEdgeChange = (edge: string) => {
+		setStrokeEdge(edge);
+		if (gameRef.current?.engine.selectedShapeId) {
+			gameRef.current.updateSelectedShapeStyle({ strokeEdge: edge });
+		}
+	};
+	const handleStrokeStyleChange = (style: string) => {
+		setStrokeStyle(style);
+		if (gameRef.current?.engine.selectedShapeId) {
+			gameRef.current.updateSelectedShapeStyle({ strokeStyle: style });
+		}
+	};
+	const handleFillStyleChange = (style: string) => {
+		setFillStyle(style);
+		// fillStyle is not a property of Shape, so do not update selected shape
+	};
+	const handleFontFamilyChange = (family: string) => {
+		setFontFamily(family);
+		if (gameRef.current?.engine.selectedShapeId) {
+			gameRef.current.updateSelectedShapeStyle({ fontFamily: family });
+		}
+	};
+	const handleFontSizeChange = (size: number) => {
+		setFontSize(size);
+		if (gameRef.current?.engine.selectedShapeId) {
+			gameRef.current.updateSelectedShapeStyle({ fontSize: size });
+		}
+	};
+	const handleTextAlignChange = (align: string) => {
+		setTextAlign(align);
+		if (gameRef.current?.engine.selectedShapeId) {
+			gameRef.current.updateSelectedShapeStyle({ textAlign: align });
+		}
+	};
+
 	// Render authentication required message if not authenticated
 	if (canEdit && !isAuthenticated()) {
 		return (
@@ -512,39 +572,40 @@ export function Canvas({
 				{selectedTool === "eraser" && isCanvasHovered && (
 					<EraserCursor size={eraserSize * scale} isActive />
 				)}
-				{[
-					"rect",
-					"circleOrOval",
-					"diamond",
-					"line",
-					"arrow",
-					"freehand",
-					"text",
-				].includes(selectedTool) && (
+				{(selectedShapeId ||
+					[
+						"rect",
+						"circleOrOval",
+						"diamond",
+						"line",
+						"arrow",
+						"freehand",
+						"text",
+					].includes(selectedTool)) && (
 					<div className="fixed left-6 top-20 z-50 w-56 h-[calc(100vh-150px)] overflow-y-auto overflow-x-hidden rounded-lg transition-transform duration-300 ease-in-out bg-gray-900 text-gray-100 shadow-md dark-custom-scrollbar">
 						<div className="ColorBoard flex flex-col gap-y-3">
 							<StyleConfigurator
 								activeTool={selectedTool}
 								strokeFill={strokeFill}
-								setStrokeFill={setStrokeFill}
+								setStrokeFill={handleStrokeFillChange}
 								strokeWidth={strokeWidth}
-								setStrokeWidth={setStrokeWidth}
+								setStrokeWidth={handleStrokeWidthChange}
 								bgFill={bgFill}
-								setBgFill={setBgFill}
+								setBgFill={handleBgFillChange}
 								strokeEdge={strokeEdge}
-								setStrokeEdge={setStrokeEdge}
+								setStrokeEdge={handleStrokeEdgeChange}
 								strokeStyle={strokeStyle}
-								setStrokeStyle={setStrokeStyle}
+								setStrokeStyle={handleStrokeStyleChange}
 								roughStyle={roughStyle}
 								setRoughStyle={setRoughStyle}
 								fillStyle={fillStyle}
-								setFillStyle={setFillStyle}
+								setFillStyle={handleFillStyleChange}
 								fontFamily={fontFamily}
-								setFontFamily={setFontFamily}
+								setFontFamily={handleFontFamilyChange}
 								fontSize={fontSize}
-								setFontSize={setFontSize}
+								setFontSize={handleFontSizeChange}
 								textAlign={textAlign}
-								setTextAlign={setTextAlign}
+								setTextAlign={handleTextAlignChange}
 							/>
 						</div>
 					</div>
