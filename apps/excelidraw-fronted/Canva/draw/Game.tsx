@@ -18,6 +18,7 @@ export class Game {
 	public clicked: boolean = false;
 	public startX = 0;
 	public startY = 0;
+	public scale = 1;
 	public eraserActive = false;
 	public freehandDrawing = false;
 	public freehandPoints: { x: number; y: number }[] = [];
@@ -286,6 +287,7 @@ export class Game {
 						fillColor: style.bgFill,
 						strokeEdge: style.strokeEdge,
 						strokeStyle: style.strokeStyle,
+						fillStyle: style.fillStyle,
 					};
 					break;
 				case "circleOrOval":
@@ -300,6 +302,7 @@ export class Game {
 						fillColor: style.bgFill,
 						strokeEdge: style.strokeEdge,
 						strokeStyle: style.strokeStyle,
+						fillStyle: style.fillStyle,
 					};
 					break;
 				case "line":
@@ -340,6 +343,7 @@ export class Game {
 						fillColor: style.bgFill,
 						strokeEdge: style.strokeEdge,
 						strokeStyle: style.strokeStyle,
+						fillStyle: style.fillStyle,
 					};
 					break;
 			}
@@ -720,7 +724,7 @@ export class Game {
 	}
 
 	drawSelectionFrameAndHandles(shape: Shape) {
-		drawFrameHandles(this.engine.ctx, shape, this.handleSize);
+		drawFrameHandles(this.engine.ctx, shape, this.handleSize / this.scale);
 	}
 
 	updateSelectedShapeStyle(newStyle: Partial<Shape>) {

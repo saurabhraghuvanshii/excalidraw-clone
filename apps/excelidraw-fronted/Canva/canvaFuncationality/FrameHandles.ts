@@ -8,25 +8,29 @@ export function drawSelectionFrameAndHandles(ctx: CanvasRenderingContext2D, shap
     let bounds = getShapeBounds(shape);
     if (!bounds) return;
     const { x, y, width, height } = bounds;
-    ctx.strokeRect(x, y, width, height);
+
+    const margin = 8;
+
+    ctx.strokeRect(x - margin, y - margin, width + margin * 2, height + margin * 2);
+
     if (shape.type === "text") {
         ctx.save();
         ctx.strokeStyle = "red";
         ctx.setLineDash([4, 2]);
-        ctx.strokeRect(x, y, width, height);
+        ctx.strokeRect(x - margin, y - margin, width + margin * 2, height + margin * 2);
         ctx.setLineDash([]);
         ctx.restore();
     }
-    const hs = handleSize;
+    const hs = handleSize / 1;
     const handles = [
-        [x, y],
-        [x + width / 2, y],
-        [x + width, y],
-        [x + width, y + height / 2],
-        [x + width, y + height],
-        [x + width / 2, y + height],
-        [x, y + height],
-        [x, y + height / 2],
+        [x - margin, y - margin],
+        [x + (width / 2), y - margin],
+        [x + width + margin, y - margin],
+        [x + width + margin, y + (height / 2)],
+        [x + width + margin, y + height + margin],
+        [x + (width / 2), y + height + margin],
+        [x - margin, y + height + margin],
+        [x - margin, y + (height / 2)],
     ];
     ctx.fillStyle = "#60A5FA";
     for (let [hx, hy] of handles) {

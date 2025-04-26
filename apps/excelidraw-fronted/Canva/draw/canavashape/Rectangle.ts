@@ -1,4 +1,5 @@
 import { Shape } from "../CanvasEngine";
+import rough from "roughjs/bin/rough";
 
 function drawRoundedRect(
 	ctx: CanvasRenderingContext2D,
@@ -21,9 +22,30 @@ function drawRoundedRect(
 	ctx.closePath();
 }
 
-export function drawRectangle(ctx: CanvasRenderingContext2D, shape: Shape) {
+export function drawRectangle(
+	ctx: CanvasRenderingContext2D,
+	shape: Shape & { fillStyle?: string }
+) {
 	if (shape.type !== "rect") return;
 	ctx.save();
+
+	const fillStyle = shape.fillStyle || "architect";
+	if (fillStyle === "artist" || fillStyle === "cartoonist") {
+		const rc = rough.canvas(ctx.canvas);
+		const options: any = {
+			stroke: shape.strokeColor || "#1e1e1e",
+			strokeWidth: shape.strokeWidth || 2,
+			fill:
+				shape.fillColor && shape.fillColor !== "transparent"
+					? shape.fillColor
+					: undefined,
+			fillStyle: fillStyle === "artist" ? "hachure" : "zigzag",
+			roughness: fillStyle === "artist" ? 2 : 3.5,
+		};
+		rc.rectangle(shape.x, shape.y, shape.width, shape.height, options);
+		ctx.restore();
+		return;
+	}
 
 	// Set stroke style
 	ctx.strokeStyle = shape.strokeColor || "#1e1e1e";

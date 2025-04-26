@@ -1,100 +1,111 @@
-import { drawRectangle, isPointInRectangle, resizeRectangle } from './canavashape/Rectangle';
-import { drawCircleOrOVal, isPointInCircleOrOval, resizeCircleOrOval } from './canavashape/Circle';
-import { drawLine, isPointNearLine, resizeLine } from './canavashape/Line';
-import { drawFreehand, isPointNearFreehand, resizeFreehand } from './canavashape/Freehand';
-import { generateId, getShapeBounds } from './utils';
-import { drawText, isPointInText, resizeText } from './canavashape/Text';
-import { drawSelectionFrameAndHandles as drawFrameHandles } from '../canvaFuncationality/FrameHandles';
-import { drawDiamond, isPointInDiamond, resizeDiamond } from './canavashape/Diamond';
-import { drawArrow, isPointNearArrow, resizeArrow } from './canavashape/Arrow';
+import { drawRectangle, isPointInRectangle, resizeRectangle, } from "./canavashape/Rectangle";
+import { drawCircleOrOVal, isPointInCircleOrOval, resizeCircleOrOval, } from "./canavashape/Circle";
+import { drawLine, isPointNearLine, resizeLine } from "./canavashape/Line";
+import { drawFreehand, isPointNearFreehand, resizeFreehand, } from "./canavashape/Freehand";
+import { generateId, getShapeBounds } from "./utils";
+import { drawText, isPointInText, resizeText } from "./canavashape/Text";
+import { drawSelectionFrameAndHandles as drawFrameHandles } from "../canvaFuncationality/FrameHandles";
+import { drawDiamond, isPointInDiamond, resizeDiamond, } from "./canavashape/Diamond";
+import { drawArrow, isPointNearArrow, resizeArrow } from "./canavashape/Arrow";
 
-export type Shape = {
-    type: "rect";
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-    strokeWidth?: number;
- 	strokeColor?: string;
-    strokeEdge?: string;
-    strokeStyle?: string;
- 	fillColor?: string;
-    id?: string;
-} | {
-    type: "circleOrOval";
-    centerX: number;
-    centerY: number;
-    radiusX: number;
-    radiusY: number;
-    strokeWidth?: number;
-    strokeColor?: string;
-    strokeEdge?: string;
-    strokeStyle?: string;
-    fillColor?: string;
-    id?: string;
-} | {
-    type: "line";
-    startX: number;
-    startY: number;
-    endX: number;
-    endY: number;
-    strokeWidth?: number;
-    strokeColor?: string;
-    strokeEdge?: string;
-    strokeStyle?: string;
-    fillColor?: string;
-    id?: string;
-} | {
-    type: "freehand";
-    points: { x: number; y: number }[];
-    strokeWidth?: number;
-    strokeColor?: string;
+export type Shape =
+| {
+		type: "rect";
+		x: number;
+		y: number;
+		width: number;
+		height: number;
+		strokeWidth?: number;
+		strokeColor?: string;
+		strokeEdge?: string;
+		strokeStyle?: string;
+		fillColor?: string;
+		fillStyle?: string;
+		id?: string;
+	}
+| {
+		type: "circleOrOval";
+		centerX: number;
+		centerY: number;
+		radiusX: number;
+		radiusY: number;
+		strokeWidth?: number;
+		strokeColor?: string;
+		strokeEdge?: string;
+		strokeStyle?: string;
+		fillColor?: string;
+		fillStyle?: string;
+		id?: string;
+	}
+| {
+		type: "line";
+		startX: number;
+		startY: number;
+		endX: number;
+		endY: number;
+		strokeWidth?: number;
+		strokeColor?: string;
+		strokeEdge?: string;
+		strokeStyle?: string;
+		fillColor?: string;
+		id?: string;
+	}
+| {
+		type: "freehand";
+		points: { x: number; y: number }[];
+		strokeWidth?: number;
+		strokeColor?: string;
+		strokeEdge?: string;
+		strokeStyle?: string;
+		fillColor?: string;
+		id?: string;
+	}
+| {
+		type: "text";
+		x: number;
+		y: number;
+		width: number;
+		height: number;
+		text: string;
+		fontSize?: number;
+		fontFamily?: string;
+		textAlign?: string;
+		fontStyle?: string;
+		color?: string;
+		strokeWidth?: number;
+		strokeColor?: string;
+		id?: string;
+	}
+| {
+		type: "diamond";
+		x: number;
+		y: number;
+		width: number;
+		height: number;
+		strokeWidth?: number;
+		strokeColor?: string;
+		strokeEdge?: string;
+		strokeStyle?: string;
+		fillColor?: string;
+		fillStyle?: string;
+		id?: string;
+	}
+| {
+	type: "arrow";
+	startX: number;
+	startY: number;
+	endX: number;
+	endY: number;
+	strokeWidth?: number;
+	strokeColor?: string;
 	strokeEdge?: string;
-    strokeStyle?: string;
-    fillColor?: string;
-    id?: string;
-} | {
-    type: "text",
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-    text: string;
-    fontSize?: number;
-    fontFamily?: string;
-    textAlign?: string;
-    fontStyle?: string;
-    color?: string;
-    strokeWidth?: number;
-    strokeColor?: string;
-    id?: string;
-} | {
-    type: "diamond";
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-    strokeWidth?: number;
-    strokeColor?: string;
-    strokeEdge?: string;
-    strokeStyle?: string;
-    fillColor?: string;
-    id?: string;
-} | {
-    type: "arrow";
-    startX: number;
-    startY: number;
-    endX: number;
-    endY: number;
-    strokeWidth?: number;
-    strokeColor?: string;
-    strokeEdge?: string;
-    strokeStyle?: string;
-    fillColor?: string;
-    id?: string;
-}
+	strokeStyle?: string;
+	fillColor?: string;
+	fillStyle?: string;
+	id?: string;
+};
 
-export type Tool = "select" | "freehand" | "line" | "rect" | "circleOrOval" | "eraser" | "text" | "diamond" | "arrow";
+export type Tool = | "select" | "freehand" | "line" | "rect" | "circleOrOval" | "eraser" | "text" | "diamond"| "arrow";
 
 export class CanvasEngine {
 	public canvas: HTMLCanvasElement;
@@ -151,7 +162,10 @@ export class CanvasEngine {
 		for (const shape of this.shapes) {
 			switch (shape.type) {
 				case "rect":
-					drawRectangle(this.ctx, shape);
+					drawRectangle(this.ctx, {
+						...shape,
+						fillStyle: (shape as any).fillStyle || "architect",
+					});
 					break;
 				case "circleOrOval":
 					drawCircleOrOVal(this.ctx, shape);
@@ -186,47 +200,47 @@ export class CanvasEngine {
 		}
 	}
 
-    findShapeUnderPoint(clientX: number, clientY: number): Shape | null {
-        const adjustedX = (clientX - this.offsetX) / this.scale;
-        const adjustedY = (clientY - this.offsetY) / this.scale;
-        const hitBuffer = 10 / this.scale;
-       
-        for (let i = this.shapes.length - 1; i >= 0; i--) {
-            const shape = this.shapes[i];
-            
-            let isUnderPoint = false;
-            
-            switch (shape.type) {
-                case "rect":
-                    isUnderPoint = isPointInRectangle(adjustedX, adjustedY, shape, hitBuffer);
-                    break;
-                case "circleOrOval":
-                    isUnderPoint = isPointInCircleOrOval(adjustedX, adjustedY, shape, hitBuffer);
-                    break;
-                case "line":
-                    isUnderPoint = isPointNearLine(adjustedX, adjustedY, shape);
-                    break;
-                case "arrow":
-                    isUnderPoint = isPointNearArrow(adjustedX, adjustedY, shape);
-                    break;
-                case "freehand":
-                    isUnderPoint = isPointNearFreehand(adjustedX, adjustedY, shape);
-                    break;
-                case "text":
-                    isUnderPoint = isPointInText(adjustedX, adjustedY, shape, hitBuffer);
-                    break;
-                case "diamond":
-                    isUnderPoint = isPointInDiamond(adjustedX, adjustedY, shape, hitBuffer);
-                    break;
-            }
-            
-            if (isUnderPoint) {
-                return shape;
-            }
-        }
-        
-        return null;
-    }
+	findShapeUnderPoint(clientX: number, clientY: number): Shape | null {
+		const adjustedX = (clientX - this.offsetX) / this.scale;
+		const adjustedY = (clientY - this.offsetY) / this.scale;
+		const hitBuffer = 10 / this.scale;
+
+		for (let i = this.shapes.length - 1; i >= 0; i--) {
+			const shape = this.shapes[i];
+
+			let isUnderPoint = false;
+
+			switch (shape.type) {
+				case "rect":
+					isUnderPoint = isPointInRectangle(adjustedX, adjustedY, shape, hitBuffer);
+					break;
+				case "circleOrOval":
+					isUnderPoint = isPointInCircleOrOval(adjustedX, adjustedY, shape, hitBuffer);
+					break;
+				case "line":
+					isUnderPoint = isPointNearLine(adjustedX, adjustedY, shape);
+					break;
+				case "arrow":
+					isUnderPoint = isPointNearArrow(adjustedX, adjustedY, shape);
+					break;
+				case "freehand":
+					isUnderPoint = isPointNearFreehand(adjustedX, adjustedY, shape);
+					break;
+				case "text":
+					isUnderPoint = isPointInText(adjustedX, adjustedY, shape, hitBuffer);
+					break;
+				case "diamond":
+					isUnderPoint = isPointInDiamond(adjustedX, adjustedY, shape, hitBuffer);
+					break;
+			}
+
+			if (isUnderPoint) {
+				return shape;
+			}
+		}
+
+		return null;
+	}
 
 	drawSelectionFrameAndHandles(shape: Shape) {
 		drawFrameHandles(this.ctx, shape, this.handleSize / this.scale);
@@ -237,17 +251,18 @@ export class CanvasEngine {
 		if (!bounds) return null;
 
 		const { x, y, width, height } = bounds;
+		const margin = 8;
 		const hs = this.handleSize / this.scale;
 
 		const handles = [
-			[x, y],
-			[x + width / 2, y],
-			[x + width, y],
-			[x + width, y + height / 2],
-			[x + width, y + height],
-			[x + width / 2, y + height],
-			[x, y + height],
-			[x, y + height / 2],
+			[x - margin, y - margin],
+			[x + width / 2, y - margin],
+			[x + width + margin, y - margin],
+			[x + width + margin, y + height / 2],
+			[x + width + margin, y + height + margin],
+			[x + width / 2, y + height + margin],
+			[x - margin, y + height + margin],
+			[x - margin, y + height / 2],
 		];
 
 		for (let i = 0; i < handles.length; i++) {
