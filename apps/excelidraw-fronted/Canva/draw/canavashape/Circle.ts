@@ -4,70 +4,146 @@ import {
 	getRoughSeed,
 	shouldRegenerateRoughDrawable,
 	cacheRoughDrawable,
+	getRoughFillOptions,
 } from "../../utils/ShapeDrawUtils";
+
+// Extend Shape type locally to include roughFillDrawable and roughStrokeDrawable
+type CircleShape = Shape & {
+	fillStyle?: string;
+	roughFillDrawable?: any;
+	roughStrokeDrawable?: any;
+};
 
 export function drawCircleOrOVal(
 	ctx: CanvasRenderingContext2D,
-	shape: Shape & { fillStyle?: string }
+	shape: CircleShape
 ) {
 	if (shape.type !== "circleOrOval") return;
 	ctx.save();
 
-	const fillStyle = shape.fillStyle || "architect";
+	const strokeSlopiness = shape.strokeStyle || "architect";
+	const strokeWidth = shape.strokeWidth || 2;
+	const fillStyle = shape.fillStyle;
 
-	// Draw fill if specified
+	// --- FILL ---
 	if (shape.fillColor && shape.fillColor !== "transparent") {
-		ctx.fillStyle = shape.fillColor;
-		ctx.beginPath();
-		ctx.ellipse(
-			shape.centerX,
-			shape.centerY,
-			Math.abs(shape.radiusX),
-			Math.abs(shape.radiusY),
-			0,
-			0,
-			Math.PI * 2
-		);
-		ctx.fill();
+		if (fillStyle === "hachure" || fillStyle === "zigzag") {
+			ctx.save();
+			// Clip to the circle path
+			ctx.beginPath();
+			ctx.ellipse(
+				shape.centerX,
+				shape.centerY,
+				Math.abs(shape.radiusX),
+				Math.abs(shape.radiusY),
+				0,
+				0,
+				Math.PI * 2
+			);
+			ctx.clip();
+			const rc = rough.canvas(ctx.canvas);
+			const fillKeys = [
+				"centerX",
+				"centerY",
+				"radiusX",
+				"radiusY",
+				"fillColor",
+				"fillStyle",
+			];
+			const shouldRegenFill = shouldRegenerateRoughDrawable(
+				shape,
+				fillKeys,
+				"fill-" + fillStyle,
+				"roughFillDrawable"
+			);
+			if (shouldRegenFill) {
+				const generator = rough.generator();
+				shape.roughFillDrawable = generator.ellipse(
+					shape.centerX,
+					shape.centerY,
+					Math.abs(shape.radiusX) * 2,
+					Math.abs(shape.radiusY) * 2,
+					getRoughFillOptions(fillStyle, shape)
+				);
+				cacheRoughDrawable(
+					shape,
+					fillKeys,
+					"fill-" + fillStyle,
+					"roughFillDrawable"
+				);
+			}
+			if (shape.roughFillDrawable) {
+				rc.draw(shape.roughFillDrawable);
+			}
+			ctx.restore();
+		} else {
+			ctx.fillStyle = shape.fillColor;
+			ctx.beginPath();
+			ctx.ellipse(
+				shape.centerX,
+				shape.centerY,
+				Math.abs(shape.radiusX),
+				Math.abs(shape.radiusY),
+				0,
+				0,
+				Math.PI * 2
+			);
+			ctx.fill();
+		}
 	}
 
-	if (fillStyle === "artist" || fillStyle === "cartoonist") {
+	// --- STROKE ---
+	if (strokeSlopiness === "artist" || strokeSlopiness === "cartoonist") {
 		const rc = rough.canvas(ctx.canvas);
-		const keys = [
+		const strokeKeys = [
 			"centerX",
 			"centerY",
 			"radiusX",
 			"radiusY",
 			"strokeColor",
 			"strokeWidth",
+			"strokeStyle",
+			"strokeSlopiness",
 		];
-		const shouldRegen = shouldRegenerateRoughDrawable(shape, keys, fillStyle);
-		if (shouldRegen) {
+		const shouldRegenStroke = shouldRegenerateRoughDrawable(
+			shape,
+			strokeKeys,
+			"stroke-" + strokeSlopiness,
+			"roughStrokeDrawable"
+		);
+		if (shouldRegenStroke) {
 			const generator = rough.generator();
-			const roughness = fillStyle === "artist" ? 2 : 3.5;
-			(shape as any).roughDrawable = generator.ellipse(
+			const roughness = strokeSlopiness === "artist" ? 2 : 3.5;
+			shape.roughStrokeDrawable = generator.ellipse(
 				shape.centerX,
 				shape.centerY,
 				Math.abs(shape.radiusX) * 2,
 				Math.abs(shape.radiusY) * 2,
 				{
 					stroke: shape.strokeColor || "#1e1e1e",
-					strokeWidth: shape.strokeWidth || 2,
+					strokeWidth: strokeWidth,
 					fill: undefined,
 					roughness: roughness,
 					seed: getRoughSeed(shape.id),
 				}
 			);
-			cacheRoughDrawable(shape, keys, fillStyle);
+			cacheRoughDrawable(
+				shape,
+				strokeKeys,
+				"stroke-" + strokeSlopiness,
+				"roughStrokeDrawable"
+			);
 		}
-		rc.draw((shape as any).roughDrawable);
+		if (shape.roughStrokeDrawable) {
+			rc.draw(shape.roughStrokeDrawable);
+		}
 		ctx.restore();
 		return;
 	}
 
-	// Default architect style (clean canvas stroke)
+	// --- Default architect style (clean canvas stroke) ---
 	ctx.strokeStyle = shape.strokeColor || "#1e1e1e";
-	ctx.lineWidth = shape.strokeWidth || 2;
+	ctx.lineWidth = strokeWidth;
 	if (shape.strokeEdge) {
 		ctx.lineJoin = shape.strokeEdge as CanvasLineJoin;
 		ctx.lineCap = shape.strokeEdge as CanvasLineCap;

@@ -5,7 +5,15 @@ import {
 	getRoughSeed,
 	shouldRegenerateRoughDrawable,
 	cacheRoughDrawable,
+	getRoughFillOptions,
 } from "../../utils/ShapeDrawUtils";
+
+// Extend Shape type locally to include roughFillDrawable and roughStrokeDrawable
+type DiamondShape = Shape & {
+	fillStyle?: string;
+	roughFillDrawable?: any;
+	roughStrokeDrawable?: any;
+};
 
 function drawRoundedDiamond(
 	ctx: CanvasRenderingContext2D,
@@ -71,38 +79,102 @@ function drawRoundedDiamond(
 
 export function drawDiamond(
 	ctx: CanvasRenderingContext2D,
-	shape: Shape & { fillStyle?: string }
+	shape: DiamondShape
 ) {
 	if (shape.type !== "diamond") return;
 	ctx.save();
 
-	const fillStyle = shape.fillStyle || "architect";
+	const strokeSlopiness = shape.strokeStyle || "architect";
+	const strokeWidth = shape.strokeWidth || 2;
+	const fillStyle = shape.fillStyle;
 
-	// Always draw fill first (solid, not roughjs fill)
+	// --- FILL ---
 	if (shape.fillColor && shape.fillColor !== "transparent") {
-		ctx.fillStyle = shape.fillColor;
-		if (shape.strokeEdge === "round") {
-			drawRoundedDiamond(ctx, shape.x, shape.y, shape.width, shape.height, 16);
-			ctx.fill();
+		if (fillStyle === "hachure" || fillStyle === "zigzag") {
+			ctx.save();
+			// Clip to the diamond path
+			if (shape.strokeEdge === "round") {
+				drawRoundedDiamond(ctx, shape.x, shape.y, shape.width, shape.height, 16);
+				ctx.clip();
+			} else {
+				ctx.beginPath();
+				ctx.moveTo(shape.x + shape.width / 2, shape.y); // Top
+				ctx.lineTo(shape.x + shape.width, shape.y + shape.height / 2); // Right
+				ctx.lineTo(shape.x + shape.width / 2, shape.y + shape.height); // Bottom
+				ctx.lineTo(shape.x, shape.y + shape.height / 2); // Left
+				ctx.closePath();
+				ctx.clip();
+			}
+			const rc = rough.canvas(ctx.canvas);
+			const fillKeys = ["x", "y", "width", "height", "fillColor", "fillStyle"];
+			const shouldRegenFill = shouldRegenerateRoughDrawable(
+				shape,
+				fillKeys,
+				"fill-" + fillStyle,
+				"roughFillDrawable"
+			);
+			if (shouldRegenFill) {
+				const generator = rough.generator();
+				shape.roughFillDrawable = generator.polygon(
+					[
+						[shape.x + shape.width / 2, shape.y],
+						[shape.x + shape.width, shape.y + shape.height / 2],
+						[shape.x + shape.width / 2, shape.y + shape.height],
+						[shape.x, shape.y + shape.height / 2],
+					],
+					getRoughFillOptions(fillStyle, shape)
+				);
+				cacheRoughDrawable(
+					shape,
+					fillKeys,
+					"fill-" + fillStyle,
+					"roughFillDrawable"
+				);
+			}
+			if (shape.roughFillDrawable) {
+				rc.draw(shape.roughFillDrawable);
+			}
+			ctx.restore();
 		} else {
-			ctx.beginPath();
-			ctx.moveTo(shape.x + shape.width / 2, shape.y); // Top
-			ctx.lineTo(shape.x + shape.width, shape.y + shape.height / 2); // Right
-			ctx.lineTo(shape.x + shape.width / 2, shape.y + shape.height); // Bottom
-			ctx.lineTo(shape.x, shape.y + shape.height / 2); // Left
-			ctx.closePath();
-			ctx.fill();
+			ctx.fillStyle = shape.fillColor;
+			if (shape.strokeEdge === "round") {
+				drawRoundedDiamond(ctx, shape.x, shape.y, shape.width, shape.height, 16);
+				ctx.fill();
+			} else {
+				ctx.beginPath();
+				ctx.moveTo(shape.x + shape.width / 2, shape.y); // Top
+				ctx.lineTo(shape.x + shape.width, shape.y + shape.height / 2); // Right
+				ctx.lineTo(shape.x + shape.width / 2, shape.y + shape.height); // Bottom
+				ctx.lineTo(shape.x, shape.y + shape.height / 2); // Left
+				ctx.closePath();
+				ctx.fill();
+			}
 		}
 	}
 
-	if (fillStyle === "artist" || fillStyle === "cartoonist") {
+	// --- STROKE ---
+	if (strokeSlopiness === "artist" || strokeSlopiness === "cartoonist") {
 		const rc = rough.canvas(ctx.canvas);
-		const keys = ["x", "y", "width", "height", "strokeColor", "strokeWidth"];
-		const shouldRegen = shouldRegenerateRoughDrawable(shape, keys, fillStyle);
-		if (shouldRegen) {
+		const strokeKeys = [
+			"x",
+			"y",
+			"width",
+			"height",
+			"strokeColor",
+			"strokeWidth",
+			"strokeStyle",
+			"strokeSlopiness",
+		];
+		const shouldRegenStroke = shouldRegenerateRoughDrawable(
+			shape,
+			strokeKeys,
+			"stroke-" + strokeSlopiness,
+			"roughStrokeDrawable"
+		);
+		if (shouldRegenStroke) {
 			const generator = rough.generator();
-			const roughness = fillStyle === "artist" ? 2 : 3.5;
-			(shape as any).roughDrawable = generator.polygon(
+			const roughness = strokeSlopiness === "artist" ? 2 : 3.5;
+			shape.roughStrokeDrawable = generator.polygon(
 				[
 					[shape.x + shape.width / 2, shape.y],
 					[shape.x + shape.width, shape.y + shape.height / 2],
@@ -111,22 +183,29 @@ export function drawDiamond(
 				],
 				{
 					stroke: shape.strokeColor || "#1e1e1e",
-					strokeWidth: shape.strokeWidth || 2,
+					strokeWidth: strokeWidth,
 					fill: undefined,
 					roughness: roughness,
 					seed: getRoughSeed(shape.id),
 				}
 			);
-			cacheRoughDrawable(shape, keys, fillStyle);
+			cacheRoughDrawable(
+				shape,
+				strokeKeys,
+				"stroke-" + strokeSlopiness,
+				"roughStrokeDrawable"
+			);
 		}
-		rc.draw((shape as any).roughDrawable);
+		if (shape.roughStrokeDrawable) {
+			rc.draw(shape.roughStrokeDrawable);
+		}
 		ctx.restore();
 		return;
 	}
 
-	// Default architect style (clean canvas stroke)
+	// --- Default architect style (clean canvas stroke) ---
 	ctx.strokeStyle = shape.strokeColor || "#1e1e1e";
-	ctx.lineWidth = shape.strokeWidth || 2;
+	ctx.lineWidth = strokeWidth;
 	if (shape.strokeEdge === "round") {
 		ctx.lineJoin = "round";
 		ctx.lineCap = "round";
