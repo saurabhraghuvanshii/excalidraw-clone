@@ -99,6 +99,29 @@ export function StyleConfigurator({
 				/>
 			</div>
 
+			{/* Fill Style (Hachure/Zigzag) */}
+			<div className="Fill-Style-Picker mb-2">
+				<div className="text-sm font-medium mb-2">Fill</div>
+				<div className="flex flex-wrap gap-2">
+					<button
+						className={`p-1 rounded group relative ${fillStyle === "hachure" ? "bg-blue-500" : "bg-gray-700"}`}
+						onClick={() => handleFillStyleChange("hachure")}
+						title="Hachure"
+					>
+						<Image src="/Hachure.svg" alt="Hachure" width={24} height={24} />
+						<Tooltip label="Hachure" />
+					</button>
+					<button
+						className={`p-1 rounded group relative ${fillStyle === "zigzag" ? "bg-blue-500" : "bg-gray-700"}`}
+						onClick={() => handleFillStyleChange("zigzag")}
+						title="Cross-hatch"
+					>
+						<Image src="/Cross-hatch.svg" alt="Cross-hatch" width={24} height={24} />
+						<Tooltip label="Cross-hatch" />
+					</button>
+				</div>
+			</div>
+
 			{/* Stroke Width */}
 			<div className="Stroke-Width-Picker">
 				<div className="text-sm font-medium mb-2">Stroke Width</div>

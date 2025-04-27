@@ -8,7 +8,6 @@ import { drawCircleOrOVal } from "./canavashape/Circle";
 import { drawLine } from "./canavashape/Line";
 import { drawArrow } from "./canavashape/Arrow";
 import { drawFreehand } from "./canavashape/Freehand";
-import { drawText } from "./canavashape/Text";
 
 export class Game {
 	public canvas: HTMLCanvasElement;

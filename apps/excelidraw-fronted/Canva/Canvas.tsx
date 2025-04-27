@@ -469,9 +469,7 @@ export function Canvas({
 		if (gameRef.current?.engine.selectedShapeId) {
 			gameRef.current.updateSelectedShapeStyle({
 				strokeStyle: style,
-				fillStyle: "architect",
 			});
-			setFillStyle("architect");
 		}
 	};
 	const handleFillStyleChange = (style: string) => {
