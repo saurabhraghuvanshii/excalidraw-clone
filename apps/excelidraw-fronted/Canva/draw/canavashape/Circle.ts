@@ -1,5 +1,10 @@
 import { Shape } from "../CanvasEngine";
-import rough from "roughjs/bin/rough";
+import {
+	rough,
+	getRoughSeed,
+	shouldRegenerateRoughDrawable,
+	cacheRoughDrawable,
+} from "../../utils/ShapeDrawUtils";
 
 export function drawCircleOrOVal(
 	ctx: CanvasRenderingContext2D,
@@ -28,17 +33,16 @@ export function drawCircleOrOVal(
 
 	if (fillStyle === "artist" || fillStyle === "cartoonist") {
 		const rc = rough.canvas(ctx.canvas);
-		const shouldRegenerate =
-			!(shape as any).roughDrawable ||
-			(shape as any).roughDrawable._lastCenterX !== shape.centerX ||
-			(shape as any).roughDrawable._lastCenterY !== shape.centerY ||
-			(shape as any).roughDrawable._lastRadiusX !== shape.radiusX ||
-			(shape as any).roughDrawable._lastRadiusY !== shape.radiusY ||
-			(shape as any).roughDrawable._lastStrokeColor !== shape.strokeColor ||
-			(shape as any).roughDrawable._lastStrokeWidth !== shape.strokeWidth ||
-			(shape as any).roughDrawable._lastFillStyle !== fillStyle;
-
-		if (shouldRegenerate) {
+		const keys = [
+			"centerX",
+			"centerY",
+			"radiusX",
+			"radiusY",
+			"strokeColor",
+			"strokeWidth",
+		];
+		const shouldRegen = shouldRegenerateRoughDrawable(shape, keys, fillStyle);
+		if (shouldRegen) {
 			const generator = rough.generator();
 			const roughness = fillStyle === "artist" ? 2 : 3.5;
 			(shape as any).roughDrawable = generator.ellipse(
@@ -51,21 +55,10 @@ export function drawCircleOrOVal(
 					strokeWidth: shape.strokeWidth || 2,
 					fill: undefined,
 					roughness: roughness,
-					seed: shape.id
-						? parseInt(
-								String(shape.id).replace(/\D/g, "").substring(0, 8) || "42",
-								10
-							)
-						: 42,
+					seed: getRoughSeed(shape.id),
 				}
 			);
-			(shape as any).roughDrawable._lastCenterX = shape.centerX;
-			(shape as any).roughDrawable._lastCenterY = shape.centerY;
-			(shape as any).roughDrawable._lastRadiusX = shape.radiusX;
-			(shape as any).roughDrawable._lastRadiusY = shape.radiusY;
-			(shape as any).roughDrawable._lastStrokeColor = shape.strokeColor;
-			(shape as any).roughDrawable._lastStrokeWidth = shape.strokeWidth;
-			(shape as any).roughDrawable._lastFillStyle = fillStyle;
+			cacheRoughDrawable(shape, keys, fillStyle);
 		}
 		rc.draw((shape as any).roughDrawable);
 		ctx.restore();

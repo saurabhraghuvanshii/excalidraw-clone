@@ -1,5 +1,5 @@
 import { Shape } from "../CanvasEngine";
-import rough from "roughjs/bin/rough";
+import { rough, getRoughSeed } from "../../utils/ShapeDrawUtils";
 
 export function drawFreehand(
 	ctx: CanvasRenderingContext2D,
@@ -13,15 +13,16 @@ export function drawFreehand(
 
 	if (fillStyle === "artist" || fillStyle === "cartoonist") {
 		const rc = rough.canvas(ctx.canvas);
-		const shouldRegenerate =
+		const keys = ["points", "strokeColor", "strokeWidth"];
+		// For points, use a hash (stringify)
+		const pointsHash = JSON.stringify(shape.points);
+		const shouldRegen =
 			!(shape as any).roughDrawable ||
-			(shape as any).roughDrawable._lastPointsHash !==
-				JSON.stringify(shape.points) ||
+			(shape as any).roughDrawable._lastPointsHash !== pointsHash ||
 			(shape as any).roughDrawable._lastStrokeColor !== shape.strokeColor ||
 			(shape as any).roughDrawable._lastStrokeWidth !== shape.strokeWidth ||
 			(shape as any).roughDrawable._lastFillStyle !== fillStyle;
-
-		if (shouldRegenerate) {
+		if (shouldRegen) {
 			const generator = rough.generator();
 			const roughness = fillStyle === "artist" ? 2 : 3.5;
 			(shape as any).roughDrawable = generator.linearPath(
@@ -30,15 +31,10 @@ export function drawFreehand(
 					stroke: shape.strokeColor || "#1e1e1e",
 					strokeWidth: shape.strokeWidth || 2,
 					roughness: roughness,
-					seed: shape.id
-						? parseInt(
-								String(shape.id).replace(/\D/g, "").substring(0, 8) || "42",
-								10
-							)
-						: 42,
+					seed: getRoughSeed(shape.id),
 				}
 			);
-			(shape as any).roughDrawable._lastPointsHash = JSON.stringify(shape.points);
+			(shape as any).roughDrawable._lastPointsHash = pointsHash;
 			(shape as any).roughDrawable._lastStrokeColor = shape.strokeColor;
 			(shape as any).roughDrawable._lastStrokeWidth = shape.strokeWidth;
 			(shape as any).roughDrawable._lastFillStyle = fillStyle;

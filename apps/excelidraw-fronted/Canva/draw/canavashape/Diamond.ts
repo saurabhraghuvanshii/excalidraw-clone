@@ -1,6 +1,11 @@
 import { Shape } from "../CanvasEngine";
-import { getShapeBounds } from "../utils";
-import rough from "roughjs/bin/rough";
+import { getShapeBounds } from "../../utils/utils";
+import {
+	rough,
+	getRoughSeed,
+	shouldRegenerateRoughDrawable,
+	cacheRoughDrawable,
+} from "../../utils/ShapeDrawUtils";
 
 function drawRoundedDiamond(
 	ctx: CanvasRenderingContext2D,
@@ -92,20 +97,11 @@ export function drawDiamond(
 
 	if (fillStyle === "artist" || fillStyle === "cartoonist") {
 		const rc = rough.canvas(ctx.canvas);
-		const shouldRegenerate =
-			!(shape as any).roughDrawable ||
-			(shape as any).roughDrawable._lastX !== shape.x ||
-			(shape as any).roughDrawable._lastY !== shape.y ||
-			(shape as any).roughDrawable._lastWidth !== shape.width ||
-			(shape as any).roughDrawable._lastHeight !== shape.height ||
-			(shape as any).roughDrawable._lastStrokeColor !== shape.strokeColor ||
-			(shape as any).roughDrawable._lastStrokeWidth !== shape.strokeWidth ||
-			(shape as any).roughDrawable._lastFillStyle !== fillStyle;
-
-		if (shouldRegenerate) {
+		const keys = ["x", "y", "width", "height", "strokeColor", "strokeWidth"];
+		const shouldRegen = shouldRegenerateRoughDrawable(shape, keys, fillStyle);
+		if (shouldRegen) {
 			const generator = rough.generator();
 			const roughness = fillStyle === "artist" ? 2 : 3.5;
-			// Generate and cache the rough drawable
 			(shape as any).roughDrawable = generator.polygon(
 				[
 					[shape.x + shape.width / 2, shape.y],
@@ -118,21 +114,10 @@ export function drawDiamond(
 					strokeWidth: shape.strokeWidth || 2,
 					fill: undefined,
 					roughness: roughness,
-					seed: shape.id
-						? parseInt(
-								String(shape.id).replace(/\D/g, "").substring(0, 8) || "42",
-								10
-							)
-						: 42,
+					seed: getRoughSeed(shape.id),
 				}
 			);
-			(shape as any).roughDrawable._lastX = shape.x;
-			(shape as any).roughDrawable._lastY = shape.y;
-			(shape as any).roughDrawable._lastWidth = shape.width;
-			(shape as any).roughDrawable._lastHeight = shape.height;
-			(shape as any).roughDrawable._lastStrokeColor = shape.strokeColor;
-			(shape as any).roughDrawable._lastStrokeWidth = shape.strokeWidth;
-			(shape as any).roughDrawable._lastFillStyle = fillStyle;
+			cacheRoughDrawable(shape, keys, fillStyle);
 		}
 		rc.draw((shape as any).roughDrawable);
 		ctx.restore();

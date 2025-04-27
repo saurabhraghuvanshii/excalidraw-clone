@@ -1,5 +1,10 @@
 import { Shape } from "../CanvasEngine";
-import rough from "roughjs/bin/rough";
+import {
+	rough,
+	getRoughSeed,
+	shouldRegenerateRoughDrawable,
+	cacheRoughDrawable,
+} from "../../utils/ShapeDrawUtils";
 
 export function drawLine(
 	ctx: CanvasRenderingContext2D,
@@ -12,17 +17,16 @@ export function drawLine(
 
 	if (fillStyle === "artist" || fillStyle === "cartoonist") {
 		const rc = rough.canvas(ctx.canvas);
-		const shouldRegenerate =
-			!(shape as any).roughDrawable ||
-			(shape as any).roughDrawable._lastStartX !== shape.startX ||
-			(shape as any).roughDrawable._lastStartY !== shape.startY ||
-			(shape as any).roughDrawable._lastEndX !== shape.endX ||
-			(shape as any).roughDrawable._lastEndY !== shape.endY ||
-			(shape as any).roughDrawable._lastStrokeColor !== shape.strokeColor ||
-			(shape as any).roughDrawable._lastStrokeWidth !== shape.strokeWidth ||
-			(shape as any).roughDrawable._lastFillStyle !== fillStyle;
-
-		if (shouldRegenerate) {
+		const keys = [
+			"startX",
+			"startY",
+			"endX",
+			"endY",
+			"strokeColor",
+			"strokeWidth",
+		];
+		const shouldRegen = shouldRegenerateRoughDrawable(shape, keys, fillStyle);
+		if (shouldRegen) {
 			const generator = rough.generator();
 			const roughness = fillStyle === "artist" ? 2 : 3.5;
 			(shape as any).roughDrawable = generator.line(
@@ -34,21 +38,10 @@ export function drawLine(
 					stroke: shape.strokeColor || "#1e1e1e",
 					strokeWidth: shape.strokeWidth || 2,
 					roughness: roughness,
-					seed: shape.id
-						? parseInt(
-								String(shape.id).replace(/\D/g, "").substring(0, 8) || "42",
-								10
-							)
-						: 42,
+					seed: getRoughSeed(shape.id),
 				}
 			);
-			(shape as any).roughDrawable._lastStartX = shape.startX;
-			(shape as any).roughDrawable._lastStartY = shape.startY;
-			(shape as any).roughDrawable._lastEndX = shape.endX;
-			(shape as any).roughDrawable._lastEndY = shape.endY;
-			(shape as any).roughDrawable._lastStrokeColor = shape.strokeColor;
-			(shape as any).roughDrawable._lastStrokeWidth = shape.strokeWidth;
-			(shape as any).roughDrawable._lastFillStyle = fillStyle;
+			cacheRoughDrawable(shape, keys, fillStyle);
 		}
 		rc.draw((shape as any).roughDrawable);
 		ctx.restore();

@@ -1,6 +1,6 @@
 import { CanvasEngine, Shape, Tool } from "./CanvasEngine";
 import { getExistingShapes } from "./http";
-import { getShapeBounds } from "./utils";
+import { getShapeBounds } from "../utils/utils";
 import { drawSelectionFrameAndHandles as drawFrameHandles } from "../canvaFuncationality/FrameHandles";
 import { drawRectangle } from "./canavashape/Rectangle";
 import { drawDiamond } from "./canavashape/Diamond";

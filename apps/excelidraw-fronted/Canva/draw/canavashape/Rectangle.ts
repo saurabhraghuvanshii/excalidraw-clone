@@ -1,5 +1,10 @@
 import { Shape } from "../CanvasEngine";
-import rough from "roughjs/bin/rough";
+import {
+	rough,
+	getRoughSeed,
+	shouldRegenerateRoughDrawable,
+	cacheRoughDrawable,
+} from "../../utils/ShapeDrawUtils";
 
 function drawRoundedRect(
 	ctx: CanvasRenderingContext2D,
@@ -42,41 +47,28 @@ export function drawRectangle(
 		}
 	}
 
-	// Now draw the stroke
 	if (fillStyle === "artist" || fillStyle === "cartoonist") {
 		const rc = rough.canvas(ctx.canvas);
-
-		const shouldRegenerate = !shape.roughDrawable || 
-                            shape.roughDrawable._lastX !== shape.x ||
-                            shape.roughDrawable._lastY !== shape.y ||
-                            shape.roughDrawable._lastWidth !== shape.width ||
-                            shape.roughDrawable._lastHeight !== shape.height ||
-                            shape.roughDrawable._lastStrokeColor !== shape.strokeColor ||
-                            shape.roughDrawable._lastStrokeWidth !== shape.strokeWidth ||
-                            shape.roughDrawable._lastFillStyle !== fillStyle;
-
-		if (shouldRegenerate) {
+		const keys = ["x", "y", "width", "height", "strokeColor", "strokeWidth"];
+		const shouldRegen = shouldRegenerateRoughDrawable(shape, keys, fillStyle);
+		if (shouldRegen) {
 			const generator = rough.generator();
 			const roughness = fillStyle === "artist" ? 2 : 3.5;
-			
-			// Generate and cache the rough drawable
-			shape.roughDrawable = generator.rectangle(shape.x, shape.y, shape.width, shape.height, {
-				stroke: shape.strokeColor || "#1e1e1e",
-				strokeWidth: shape.strokeWidth || 2,
-				fill: undefined,
-				roughness: roughness,
-				seed: shape.id ? parseInt(shape.id.replace(/\D/g, '').substring(0, 8) || '42', 10) : 42, // Use a consistent seed based on shape ID
-			});
-
-			shape.roughDrawable._lastX = shape.x;
-			shape.roughDrawable._lastY = shape.y;
-			shape.roughDrawable._lastWidth = shape.width;
-			shape.roughDrawable._lastHeight = shape. height;
-			shape.roughDrawable._lastStrokeColor = shape.strokeColor;
-			shape.roughDrawable._lastStrokeWidth = shape.strokeWidth;
-			shape.roughDrawable._lastFillStyle = fillStyle;
+			shape.roughDrawable = generator.rectangle(
+				shape.x,
+				shape.y,
+				shape.width,
+				shape.height,
+				{
+					stroke: shape.strokeColor || "#1e1e1e",
+					strokeWidth: shape.strokeWidth || 2,
+					fill: undefined,
+					roughness: roughness,
+					seed: getRoughSeed(shape.id),
+				}
+			);
+			cacheRoughDrawable(shape, keys, fillStyle);
 		}
-
 		rc.draw(shape.roughDrawable);
 		ctx.restore();
 		return;
