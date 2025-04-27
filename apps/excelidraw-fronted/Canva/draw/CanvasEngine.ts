@@ -49,6 +49,7 @@ export type Shape =
 		strokeEdge?: string;
 		strokeStyle?: string;
 		fillColor?: string;
+		fillStyle?: string;
 		id?: string;
 	}
 | {
@@ -59,6 +60,7 @@ export type Shape =
 		strokeEdge?: string;
 		strokeStyle?: string;
 		fillColor?: string;
+		fillStyle?: string;
 		id?: string;
 	}
 | {
@@ -75,6 +77,7 @@ export type Shape =
 		color?: string;
 		strokeWidth?: number;
 		strokeColor?: string;
+		fillStyle?: string;
 		id?: string;
 	}
 | {

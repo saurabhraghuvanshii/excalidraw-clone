@@ -1,8 +1,14 @@
 import { Shape } from "../CanvasEngine";
+import rough from "roughjs/bin/rough";
 
-export function drawCircleOrOVal(ctx: CanvasRenderingContext2D, shape: Shape & { type: 'circleOrOval' }) {
-	if (shape.type !== 'circleOrOval') return;
+export function drawCircleOrOVal(
+	ctx: CanvasRenderingContext2D,
+	shape: Shape & { fillStyle?: string }
+) {
+	if (shape.type !== "circleOrOval") return;
 	ctx.save();
+
+	const fillStyle = shape.fillStyle || "architect";
 
 	// Draw fill if specified
 	if (shape.fillColor && shape.fillColor !== "transparent") {
@@ -20,8 +26,54 @@ export function drawCircleOrOVal(ctx: CanvasRenderingContext2D, shape: Shape & {
 		ctx.fill();
 	}
 
-	// Set stroke style
-	ctx.strokeStyle = shape.strokeColor || '#1e1e1e';
+	if (fillStyle === "artist" || fillStyle === "cartoonist") {
+		const rc = rough.canvas(ctx.canvas);
+		const shouldRegenerate =
+			!(shape as any).roughDrawable ||
+			(shape as any).roughDrawable._lastCenterX !== shape.centerX ||
+			(shape as any).roughDrawable._lastCenterY !== shape.centerY ||
+			(shape as any).roughDrawable._lastRadiusX !== shape.radiusX ||
+			(shape as any).roughDrawable._lastRadiusY !== shape.radiusY ||
+			(shape as any).roughDrawable._lastStrokeColor !== shape.strokeColor ||
+			(shape as any).roughDrawable._lastStrokeWidth !== shape.strokeWidth ||
+			(shape as any).roughDrawable._lastFillStyle !== fillStyle;
+
+		if (shouldRegenerate) {
+			const generator = rough.generator();
+			const roughness = fillStyle === "artist" ? 2 : 3.5;
+			(shape as any).roughDrawable = generator.ellipse(
+				shape.centerX,
+				shape.centerY,
+				Math.abs(shape.radiusX) * 2,
+				Math.abs(shape.radiusY) * 2,
+				{
+					stroke: shape.strokeColor || "#1e1e1e",
+					strokeWidth: shape.strokeWidth || 2,
+					fill: undefined,
+					roughness: roughness,
+					seed: shape.id
+						? parseInt(
+								String(shape.id).replace(/\D/g, "").substring(0, 8) || "42",
+								10
+							)
+						: 42,
+				}
+			);
+			(shape as any).roughDrawable._lastCenterX = shape.centerX;
+			(shape as any).roughDrawable._lastCenterY = shape.centerY;
+			(shape as any).roughDrawable._lastRadiusX = shape.radiusX;
+			(shape as any).roughDrawable._lastRadiusY = shape.radiusY;
+			(shape as any).roughDrawable._lastStrokeColor = shape.strokeColor;
+			(shape as any).roughDrawable._lastStrokeWidth = shape.strokeWidth;
+			(shape as any).roughDrawable._lastFillStyle = fillStyle;
+		}
+		rc.draw((shape as any).roughDrawable);
+		ctx.restore();
+		return;
+	}
+
+	// Default architect style (clean canvas stroke)
+	ctx.strokeStyle = shape.strokeColor || "#1e1e1e";
 	ctx.lineWidth = shape.strokeWidth || 2;
 	if (shape.strokeEdge) {
 		ctx.lineJoin = shape.strokeEdge as CanvasLineJoin;
@@ -35,7 +87,6 @@ export function drawCircleOrOVal(ctx: CanvasRenderingContext2D, shape: Shape & {
 		ctx.setLineDash([]);
 	}
 
-	// Draw stroke
 	ctx.beginPath();
 	ctx.ellipse(
 		shape.centerX,

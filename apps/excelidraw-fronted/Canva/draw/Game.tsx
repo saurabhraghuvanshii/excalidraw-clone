@@ -7,6 +7,8 @@ import { drawDiamond } from "./canavashape/Diamond";
 import { drawCircleOrOVal } from "./canavashape/Circle";
 import { drawLine } from "./canavashape/Line";
 import { drawArrow } from "./canavashape/Arrow";
+import { drawFreehand } from "./canavashape/Freehand";
+import { drawText } from "./canavashape/Text";
 
 export class Game {
 	public canvas: HTMLCanvasElement;
@@ -316,6 +318,7 @@ export class Game {
 						strokeColor: style.strokeFill,
 						strokeEdge: style.strokeEdge,
 						strokeStyle: style.strokeStyle,
+						fillStyle: style.fillStyle,
 					};
 					break;
 				case "arrow":
@@ -329,6 +332,7 @@ export class Game {
 						strokeColor: style.strokeFill,
 						strokeEdge: style.strokeEdge,
 						strokeStyle: style.strokeStyle,
+						fillStyle: style.fillStyle,
 					};
 					break;
 				case "diamond":
@@ -397,6 +401,9 @@ export class Game {
 						strokeColor: style.strokeFill,
 						strokeEdge: style.strokeEdge,
 						strokeStyle: style.strokeStyle,
+						...(typeof (style as any).fillStyle !== "undefined"
+							? { fillStyle: (style as any).fillStyle }
+							: {}),
 					};
 
 					this.engine.addShape(freehandShape);
@@ -471,6 +478,9 @@ export class Game {
 				textAlign: style.textAlign,
 				color: style.strokeFill,
 				strokeColor: style.strokeFill,
+				...(typeof (style as any).fillStyle !== "undefined"
+					? { fillStyle: (style as any).fillStyle }
+					: {}),
 			};
 
 			this.engine.addShape(shape);
@@ -587,17 +597,17 @@ export class Game {
 			const style = this.getDrawingStyle
 				? this.getDrawingStyle()
 				: { strokeFill: "#ffffff", strokeWidth: 2 };
-			this.engine.ctx.strokeStyle = style.strokeFill;
-			this.engine.ctx.lineWidth = style.strokeWidth;
-			this.engine.ctx.beginPath();
-			this.engine.ctx.moveTo(this.freehandPoints[0].x, this.freehandPoints[0].y);
-
-			for (let i = 1; i < this.freehandPoints.length; i++) {
-				this.engine.ctx.lineTo(this.freehandPoints[i].x, this.freehandPoints[i].y);
-			}
-
-			this.engine.ctx.stroke();
-			this.engine.ctx.closePath();
+			drawFreehand(this.engine.ctx, {
+				type: "freehand",
+				points: this.freehandPoints,
+				strokeWidth: style.strokeWidth,
+				strokeColor: style.strokeFill,
+				strokeEdge: (style as any).strokeEdge,
+				strokeStyle: (style as any).strokeStyle,
+				...(typeof (style as any).fillStyle !== "undefined"
+					? { fillStyle: (style as any).fillStyle }
+					: {}),
+			} as any);
 			this.engine.ctx.restore();
 			return;
 		}
@@ -631,9 +641,10 @@ export class Game {
 				strokeWidth: style.strokeWidth,
 				strokeColor: style.strokeFill,
 				fillColor: style.bgFill,
-				strokeEdge: style.strokeEdge,
-				strokeStyle: style.strokeStyle,
-			};
+				strokeEdge: (style as any).strokeEdge,
+				strokeStyle: (style as any).strokeStyle,
+				fillStyle: (style as any).fillStyle,
+			} as any;
 			drawRectangle(this.engine.ctx, tempShape);
 		} else if (this.selectedTool === "circleOrOval") {
 			const tempShape = {
@@ -645,9 +656,10 @@ export class Game {
 				strokeWidth: style.strokeWidth,
 				strokeColor: style.strokeFill,
 				fillColor: style.bgFill,
-				strokeEdge: style.strokeEdge,
-				strokeStyle: style.strokeStyle,
-			};
+				strokeEdge: (style as any).strokeEdge,
+				strokeStyle: (style as any).strokeStyle,
+				fillStyle: (style as any).fillStyle,
+			} as any;
 			drawCircleOrOVal(this.engine.ctx, tempShape);
 		} else if (this.selectedTool === "line") {
 			const tempShape = {
@@ -658,9 +670,10 @@ export class Game {
 				endY,
 				strokeWidth: style.strokeWidth,
 				strokeColor: style.strokeFill,
-				strokeEdge: style.strokeEdge,
-				strokeStyle: style.strokeStyle,
-			};
+				strokeEdge: (style as any).strokeEdge,
+				strokeStyle: (style as any).strokeStyle,
+				fillStyle: (style as any).fillStyle,
+			} as any;
 			drawLine(this.engine.ctx, tempShape);
 		} else if (this.selectedTool === "arrow") {
 			const tempShape = {
@@ -671,10 +684,11 @@ export class Game {
 				endY,
 				strokeWidth: style.strokeWidth,
 				strokeColor: style.strokeFill,
-				strokeEdge: style.strokeEdge,
-				strokeStyle: style.strokeStyle,
+				strokeEdge: (style as any).strokeEdge,
+				strokeStyle: (style as any).strokeStyle,
 				fillColor: style.bgFill,
-			};
+				fillStyle: (style as any).fillStyle,
+			} as any;
 			drawArrow(this.engine.ctx, tempShape);
 		} else if (this.selectedTool === "diamond") {
 			const tempShape = {
@@ -686,9 +700,10 @@ export class Game {
 				strokeWidth: style.strokeWidth,
 				strokeColor: style.strokeFill,
 				fillColor: style.bgFill,
-				strokeEdge: style.strokeEdge,
-				strokeStyle: style.strokeStyle,
-			};
+				strokeEdge: (style as any).strokeEdge,
+				strokeStyle: (style as any).strokeStyle,
+				fillStyle: (style as any).fillStyle,
+			} as any;
 			drawDiamond(this.engine.ctx, tempShape);
 		}
 		this.engine.ctx.restore();
