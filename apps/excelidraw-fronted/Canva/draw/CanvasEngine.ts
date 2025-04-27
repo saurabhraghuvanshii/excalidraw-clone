@@ -21,6 +21,7 @@ export type Shape =
 		strokeStyle?: string;
 		fillColor?: string;
 		fillStyle?: string;
+		roughDrawable?: any;
 		id?: string;
 	}
 | {
@@ -156,8 +157,6 @@ export class CanvasEngine {
 
 	drawShapes() {
 		if (!this.shapes || this.shapes.length === 0) return;
-
-		this.ctx.strokeStyle = "rgba(255, 255, 255, 1)";
 
 		for (const shape of this.shapes) {
 			switch (shape.type) {
@@ -319,6 +318,24 @@ export class CanvasEngine {
 	updateShape(updateShape: Shape) {
 		const idx = this.shapes.findIndex((s) => s.id === updateShape.id);
 		if (idx !== -1) {
+			const prev = this.shapes[idx];
+			// If strokeStyle changes for a rectangle, force fillStyle to architect
+			if (
+				prev.type === "rect" &&
+				updateShape.type === "rect" &&
+				prev.strokeStyle !== updateShape.strokeStyle
+			) {
+				updateShape.fillStyle = "architect";
+				(updateShape as any).roughDrawable = undefined;
+			}
+			// If fillStyle changes, clear roughDrawable for rectangles
+			if (
+				prev.type === "rect" &&
+				updateShape.type === "rect" &&
+				prev.fillStyle !== updateShape.fillStyle
+			) {
+				(updateShape as any).roughDrawable = undefined;
+			}
 			this.shapes[idx] = updateShape;
 			this.clearCanvas();
 		}

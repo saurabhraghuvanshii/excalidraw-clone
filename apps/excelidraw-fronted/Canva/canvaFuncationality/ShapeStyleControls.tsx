@@ -62,6 +62,14 @@ export function StyleConfigurator({
 	const fontSizes = [12, 16, 20, 24, 32, 48];
 	const textAligns = ["left", "center", "right"];
 
+	const handleFillStyleChange = (style: string) => {
+		setFillStyle(style);
+		// If a shape is selected, update its fillStyle
+		if ((window as any).updateSelectedShapeStyle) {
+			(window as any).updateSelectedShapeStyle({ fillStyle: style });
+		}
+	};
+
 	return (
 		<div className="flex flex-col gap-y-3 p-2">
 			<div className="text-lg font-semibold mb-2">Style</div>
@@ -176,7 +184,7 @@ export function StyleConfigurator({
 						<button
 							key={style}
 							className={`p-1 rounded group relative ${fillStyle === style ? "bg-blue-500" : "bg-gray-700"}`}
-							onClick={() => setFillStyle(style)}
+							onClick={() => handleFillStyleChange(style)}
 							title={idx === 0 ? "Architect" : idx === 1 ? "Artist" : "Cartoonist"}
 						>
 							{idx === 0 && (

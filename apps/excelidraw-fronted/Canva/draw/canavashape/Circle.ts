@@ -54,7 +54,7 @@ export function drawCircleOrOVal(ctx: CanvasRenderingContext2D, shape: Shape & {
 export function isPointInCircleOrOval(
 	x: number,
 	y: number,
-	shape: Shape & { type: "circleOrOval" },
+	shape: Shape,
 	buffer: number = 10
 ): boolean {
 	if (shape.type !== "circleOrOval") return false;

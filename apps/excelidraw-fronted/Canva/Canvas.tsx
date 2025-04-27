@@ -467,12 +467,18 @@ export function Canvas({
 	const handleStrokeStyleChange = (style: string) => {
 		setStrokeStyle(style);
 		if (gameRef.current?.engine.selectedShapeId) {
-			gameRef.current.updateSelectedShapeStyle({ strokeStyle: style });
+			gameRef.current.updateSelectedShapeStyle({
+				strokeStyle: style,
+				fillStyle: "architect",
+			});
+			setFillStyle("architect");
 		}
 	};
 	const handleFillStyleChange = (style: string) => {
 		setFillStyle(style);
-		// fillStyle is not a property of Shape, so do not update selected shape
+		if (gameRef.current?.engine.selectedShapeId) {
+			gameRef.current.updateSelectedShapeStyle({ fillStyle: style });
+		}
 	};
 	const handleFontFamilyChange = (family: string) => {
 		setFontFamily(family);

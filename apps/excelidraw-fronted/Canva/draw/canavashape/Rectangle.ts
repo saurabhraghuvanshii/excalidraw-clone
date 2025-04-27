@@ -30,24 +30,59 @@ export function drawRectangle(
 	ctx.save();
 
 	const fillStyle = shape.fillStyle || "architect";
+
+	// Always draw fill first (solid, not roughjs fill)
+	if (shape.fillColor && shape.fillColor !== "transparent") {
+		ctx.fillStyle = shape.fillColor;
+		if (shape.strokeEdge === "round") {
+			drawRoundedRect(ctx, shape.x, shape.y, shape.width, shape.height, 16);
+			ctx.fill();
+		} else {
+			ctx.fillRect(shape.x, shape.y, shape.width, shape.height);
+		}
+	}
+
+	// Now draw the stroke
 	if (fillStyle === "artist" || fillStyle === "cartoonist") {
 		const rc = rough.canvas(ctx.canvas);
-		const options: any = {
-			stroke: shape.strokeColor || "#1e1e1e",
-			strokeWidth: shape.strokeWidth || 2,
-			fill:
-				shape.fillColor && shape.fillColor !== "transparent"
-					? shape.fillColor
-					: undefined,
-			fillStyle: fillStyle === "artist" ? "hachure" : "zigzag",
-			roughness: fillStyle === "artist" ? 2 : 3.5,
-		};
-		rc.rectangle(shape.x, shape.y, shape.width, shape.height, options);
+
+		const shouldRegenerate = !shape.roughDrawable || 
+                            shape.roughDrawable._lastX !== shape.x ||
+                            shape.roughDrawable._lastY !== shape.y ||
+                            shape.roughDrawable._lastWidth !== shape.width ||
+                            shape.roughDrawable._lastHeight !== shape.height ||
+                            shape.roughDrawable._lastStrokeColor !== shape.strokeColor ||
+                            shape.roughDrawable._lastStrokeWidth !== shape.strokeWidth ||
+                            shape.roughDrawable._lastFillStyle !== fillStyle;
+
+		if (shouldRegenerate) {
+			const generator = rough.generator();
+			const roughness = fillStyle === "artist" ? 2 : 3.5;
+			
+			// Generate and cache the rough drawable
+			shape.roughDrawable = generator.rectangle(shape.x, shape.y, shape.width, shape.height, {
+				stroke: shape.strokeColor || "#1e1e1e",
+				strokeWidth: shape.strokeWidth || 2,
+				fill: undefined,
+				roughness: roughness,
+				seed: shape.id ? parseInt(shape.id.replace(/\D/g, '').substring(0, 8) || '42', 10) : 42, // Use a consistent seed based on shape ID
+			});
+
+			shape.roughDrawable._lastX = shape.x;
+			shape.roughDrawable._lastY = shape.y;
+			shape.roughDrawable._lastWidth = shape.width;
+			shape.roughDrawable._lastHeight = shape. height;
+			shape.roughDrawable._lastStrokeColor = shape.strokeColor;
+			shape.roughDrawable._lastStrokeWidth = shape.strokeWidth;
+			shape.roughDrawable._lastFillStyle = fillStyle;
+		}
+
+		rc.draw(shape.roughDrawable);
 		ctx.restore();
 		return;
 	}
 
-	// Set stroke style
+	// Default architect style (clean canvas stroke)
 	ctx.strokeStyle = shape.strokeColor || "#1e1e1e";
 	ctx.lineWidth = shape.strokeWidth || 2;
 	if (shape.strokeEdge === "round") {
@@ -65,19 +100,6 @@ export function drawRectangle(
 		ctx.setLineDash([]);
 	}
 
-	// Draw fill if specified
-	if (shape.fillColor && shape.fillColor !== "transparent") {
-		if (shape.strokeEdge === "round") {
-			drawRoundedRect(ctx, shape.x, shape.y, shape.width, shape.height, 16);
-			ctx.fillStyle = shape.fillColor;
-			ctx.fill();
-		} else {
-			ctx.fillStyle = shape.fillColor;
-			ctx.fillRect(shape.x, shape.y, shape.width, shape.height);
-		}
-	}
-
-	// Draw stroke
 	if (shape.strokeEdge === "round") {
 		drawRoundedRect(ctx, shape.x, shape.y, shape.width, shape.height, 16);
 		ctx.stroke();
@@ -163,4 +185,5 @@ export function resizeRectangle(
 			shape.y = y + (height - minSize);
 		}
 	}
+	shape.roughDrawable = undefined;
 }
