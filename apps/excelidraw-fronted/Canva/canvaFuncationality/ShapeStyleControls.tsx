@@ -70,6 +70,14 @@ export function StyleConfigurator({
 		}
 	};
 
+	const handleSlopinessChange = (style: string) => {
+		setStrokeStyle(style);
+		// If a shape is selected, update its strokeStyle
+		if ((window as any).updateSelectedShapeStyle) {
+			(window as any).updateSelectedShapeStyle({ strokeStyle: style });
+		}
+	};
+
 	return (
 		<div className="flex flex-col gap-y-3 p-2">
 			<div className="text-lg font-semibold mb-2">Style</div>
@@ -99,7 +107,7 @@ export function StyleConfigurator({
 				/>
 			</div>
 
-			{/* Fill Style (Hachure/Zigzag) */}
+			{/* Fill Style (Hachure/Cross-hatch) */}
 			<div className="Fill-Style-Picker mb-2">
 				<div className="text-sm font-medium mb-2">Fill</div>
 				<div className="flex flex-wrap gap-2">
@@ -206,8 +214,8 @@ export function StyleConfigurator({
 					{["architect", "artist", "cartoonist"].map((style, idx) => (
 						<button
 							key={style}
-							className={`p-1 rounded group relative ${fillStyle === style ? "bg-blue-500" : "bg-gray-700"}`}
-							onClick={() => handleFillStyleChange(style)}
+							className={`p-1 rounded group relative ${strokeStyle === style ? "bg-blue-500" : "bg-gray-700"}`}
+							onClick={() => handleSlopinessChange(style)}
 							title={idx === 0 ? "Architect" : idx === 1 ? "Artist" : "Cartoonist"}
 						>
 							{idx === 0 && (

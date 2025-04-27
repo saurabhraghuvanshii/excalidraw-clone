@@ -9,25 +9,27 @@ export function getRoughSeed(id?: string) {
 export function shouldRegenerateRoughDrawable(
 	shape: any,
 	keys: string[],
-	fillStyle: string
+	fillStyle: string,
+	drawableProp: string = "roughDrawable"
 ) {
-	if (!shape.roughDrawable) return true;
+	if (!shape[drawableProp]) return true;
 	for (const key of keys) {
-		if (shape.roughDrawable[`_last${key}`] !== shape[key]) return true;
+		if (shape[drawableProp][`_last${key}`] !== shape[key]) return true;
 	}
-	if (shape.roughDrawable._lastFillStyle !== fillStyle) return true;
+	if (shape[drawableProp]._lastFillStyle !== fillStyle) return true;
 	return false;
 }
 
 export function cacheRoughDrawable(
 	shape: any,
 	keys: string[],
-	fillStyle: string
+	fillStyle: string,
+	drawableProp: string = "roughDrawable"
 ) {
 	for (const key of keys) {
-		shape.roughDrawable[`_last${key}`] = shape[key];
+		shape[drawableProp][`_last${key}`] = shape[key];
 	}
-	shape.roughDrawable._lastFillStyle = fillStyle;
+	shape[drawableProp]._lastFillStyle = fillStyle;
 }
 
 export function getRoughFillOptions(fillStyle: string, shape: any) {
