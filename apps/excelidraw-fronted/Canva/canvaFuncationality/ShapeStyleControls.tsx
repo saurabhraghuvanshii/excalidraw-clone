@@ -25,6 +25,8 @@ interface StyleConfiguratorProps {
 	textAlign: string;
 	setTextAlign: (align: string) => void;
 	isMobile?: boolean;
+	selectedShapeId: string | null;
+	selectedShapeType: string | undefined;
 }
 
 // Helper for tooltip
@@ -46,8 +48,6 @@ export function StyleConfigurator({
 	setStrokeEdge,
 	strokeStyle,
 	setStrokeStyle,
-	roughStyle,
-	setRoughStyle,
 	fillStyle,
 	setFillStyle,
 	fontFamily,
@@ -56,6 +56,8 @@ export function StyleConfigurator({
 	setFontSize,
 	textAlign,
 	setTextAlign,
+	selectedShapeId,
+	selectedShapeType,
 }: StyleConfiguratorProps) {
 	const strokeEdges = ["round", "square"];
 	const fontFamilies = ["Nunito", "Arial", "Times New Roman", "Courier New"];
@@ -84,7 +86,6 @@ export function StyleConfigurator({
 
 			{/* Stroke Color */}
 			<div className="Stroke-Color-Picker mb-2">
-				<div className="text-sm font-medium mb-2">Stroke Color</div>
 				<ColorBoard
 					mode="Shape"
 					strokeFill={strokeFill}
@@ -95,48 +96,64 @@ export function StyleConfigurator({
 				/>
 			</div>
 
-			{/* Background Color */}
-			<div className="Background-Color-Picker mb-2">
-				<ColorBoard
-					mode="CanvasSheet"
-					strokeFill={strokeFill}
-					setStrokeFill={setStrokeFill}
-					bgFill={bgFill}
-					setBgFill={setBgFill}
-					activeTool={activeTool}
-				/>
-			</div>
-
-			{/* Fill Style (Hachure/Cross-hatch) */}
-			<div className="Fill-Style-Picker mb-2">
-				<div className="text-sm font-medium mb-2">Fill</div>
-				<div className="flex flex-wrap gap-2">
-					<button
-						className={`p-1 rounded group relative ${fillStyle === "hachure" ? "bg-blue-500" : "bg-gray-700"}`}
-						onClick={() => handleFillStyleChange("hachure")}
-						title="Hachure"
-					>
-						<Image src="/Hachure.svg" alt="Hachure" width={24} height={24} />
-						<Tooltip label="Hachure" />
-					</button>
-					<button
-						className={`p-1 rounded group relative ${fillStyle === "zigzag" ? "bg-blue-500" : "bg-gray-700"}`}
-						onClick={() => handleFillStyleChange("zigzag")}
-						title="Cross-hatch"
-					>
-						<Image src="/Cross-hatch.svg" alt="Cross-hatch" width={24} height={24} />
-						<Tooltip label="Cross-hatch" />
-					</button>
-					<button
-						className={`p-1 rounded group relative ${fillStyle === "solid" ? "bg-blue-500" : "bg-gray-700"}`}
-						onClick={() => handleFillStyleChange("solid")}
-						title="Solid"
-					>
-						<Image src="/FillSolid.svg" alt="Solid" width={24} height={24} />
-						<Tooltip label="Solid" />
-					</button>
+			{/* Background Color - Only for shapes that support fill */}
+			{(activeTool === "rect" ||
+				activeTool === "diamond" ||
+				activeTool === "circleOrOval" ||
+				(activeTool === "select" &&
+					selectedShapeId &&
+					selectedShapeType &&
+					["rect", "diamond", "circleOrOval"].includes(selectedShapeType))) && (
+				<div className="Background-Color-Picker mb-2">
+					<ColorBoard
+						mode="CanvasSheet"
+						strokeFill={strokeFill}
+						setStrokeFill={setStrokeFill}
+						bgFill={bgFill}
+						setBgFill={setBgFill}
+						activeTool={activeTool}
+					/>
 				</div>
-			</div>
+			)}
+
+			{/* Fill Style (Hachure/Cross-hatch) - Only for shapes that support fill */}
+			{(activeTool === "rect" ||
+				activeTool === "diamond" ||
+				activeTool === "circleOrOval" ||
+				(activeTool === "select" &&
+					selectedShapeId &&
+					selectedShapeType &&
+					["rect", "diamond", "circleOrOval"].includes(selectedShapeType))) && (
+				<div className="Fill-Style-Picker mb-2">
+					<div className="text-sm font-medium mb-2">Fill</div>
+					<div className="flex flex-wrap gap-2">
+						<button
+							className={`p-1 rounded group relative ${fillStyle === "hachure" ? "bg-blue-500" : "bg-gray-700"}`}
+							onClick={() => handleFillStyleChange("hachure")}
+							title="Hachure"
+						>
+							<Image src="/Hachure.svg" alt="Hachure" width={24} height={24} />
+							<Tooltip label="Hachure" />
+						</button>
+						<button
+							className={`p-1 rounded group relative ${fillStyle === "zigzag" ? "bg-blue-500" : "bg-gray-700"}`}
+							onClick={() => handleFillStyleChange("zigzag")}
+							title="Cross-hatch"
+						>
+							<Image src="/Cross-hatch.svg" alt="Cross-hatch" width={24} height={24} />
+							<Tooltip label="Cross-hatch" />
+						</button>
+						<button
+							className={`p-1 rounded group relative ${fillStyle === "solid" ? "bg-blue-500" : "bg-gray-700"}`}
+							onClick={() => handleFillStyleChange("solid")}
+							title="Solid"
+						>
+							<Image src="/FillSolid.svg" alt="Solid" width={24} height={24} />
+							<Tooltip label="Solid" />
+						</button>
+					</div>
+				</div>
+			)}
 
 			{/* Stroke Width */}
 			<div className="Stroke-Width-Picker">
@@ -166,28 +183,36 @@ export function StyleConfigurator({
 				</div>
 			</div>
 
-			{/* Stroke Edge */}
-			<div className="Stroke-Edge-Picker">
-				<div className="text-sm font-medium mb-2">Stroke Edge</div>
-				<div className="flex flex-wrap gap-2">
-					{strokeEdges.map((edge, idx) => (
-						<button
-							key={edge}
-							className={`p-1 rounded flex flex-col items-center group relative ${strokeEdge === edge ? "bg-blue-500" : "bg-gray-700"}`}
-							onClick={() => setStrokeEdge(edge)}
-							title={edge === "round" ? "Rounded" : "Sharp"}
-						>
-							{edge === "round" && (
-								<Image src="/rounded.svg" alt="Rounded" width={24} height={24} />
-							)}
-							{edge === "square" && (
-								<Image src="/sharp.svg" alt="Sharp" width={24} height={24} />
-							)}
-							<Tooltip label={edge === "round" ? "Rounded" : "Sharp"} />
-						</button>
-					))}
+			{/* Stroke Edge - Only for shapes that support fill */}
+			{(activeTool === "rect" ||
+				activeTool === "diamond" ||
+				activeTool === "circleOrOval" ||
+				(activeTool === "select" &&
+					selectedShapeId &&
+					selectedShapeType &&
+					["rect", "diamond", "circleOrOval"].includes(selectedShapeType))) && (
+				<div className="Stroke-Edge-Picker">
+					<div className="text-sm font-medium mb-2">Stroke Edge</div>
+					<div className="flex flex-wrap gap-2">
+						{strokeEdges.map((edge, idx) => (
+							<button
+								key={edge}
+								className={`p-1 rounded flex flex-col items-center group relative ${strokeEdge === edge ? "bg-blue-500" : "bg-gray-700"}`}
+								onClick={() => setStrokeEdge(edge)}
+								title={edge === "round" ? "Rounded" : "Sharp"}
+							>
+								{edge === "round" && (
+									<Image src="/rounded.svg" alt="Rounded" width={24} height={24} />
+								)}
+								{edge === "square" && (
+									<Image src="/sharp.svg" alt="Sharp" width={24} height={24} />
+								)}
+								<Tooltip label={edge === "round" ? "Rounded" : "Sharp"} />
+							</button>
+						))}
+					</div>
 				</div>
-			</div>
+			)}
 
 			{/* Stroke Style */}
 			<div className="Stroke-Style-Picker">

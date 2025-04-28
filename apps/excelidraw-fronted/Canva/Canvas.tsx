@@ -610,6 +610,11 @@ export function Canvas({
 								setFontSize={handleFontSizeChange}
 								textAlign={textAlign}
 								setTextAlign={handleTextAlignChange}
+								selectedShapeId={selectedShapeId}
+								selectedShapeType={
+									gameRef.current?.engine.shapes.find((s) => s.id === selectedShapeId)
+										?.type
+								}
 							/>
 						</div>
 					</div>
