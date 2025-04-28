@@ -25,7 +25,7 @@ export function drawText(
 	// Create font string similar to reference
 	const fontString = `${fontStyle} ${fontSize}px/${getLineHeight(fontSize)} ${fontFamily}`;
 	ctx.font = fontString;
-	ctx.fillStyle = shape.color || "#fff";
+	ctx.fillStyle = shape.strokeColor || "#fff";
 	ctx.textAlign = textAlign as CanvasTextAlign;
 
 	// Split text by line breaks for manual line breaking only

@@ -60,9 +60,6 @@ export function StyleConfigurator({
 	selectedShapeType,
 }: StyleConfiguratorProps) {
 	const strokeEdges = ["round", "square"];
-	const fontFamilies = ["Nunito", "Arial", "Times New Roman", "Courier New"];
-	const fontSizes = [12, 16, 20, 24, 32, 48];
-	const textAligns = ["left", "center", "right"];
 
 	const handleFillStyleChange = (style: string) => {
 		setFillStyle(style);
@@ -84,8 +81,10 @@ export function StyleConfigurator({
 		<div className="flex flex-col gap-y-3 p-2">
 			<div className="text-lg font-semibold mb-2">Style</div>
 
-			{/* Stroke Color */}
 			<div className="Stroke-Color-Picker mb-2">
+				<div className="text-sm font-medium mb-2">
+					{activeTool === "text" ? "Text Color" : "Stroke Color"}
+				</div>
 				<ColorBoard
 					mode="Shape"
 					strokeFill={strokeFill}
@@ -155,33 +154,40 @@ export function StyleConfigurator({
 				</div>
 			)}
 
-			{/* Stroke Width */}
-			<div className="Stroke-Width-Picker">
-				<div className="text-sm font-medium mb-2">Stroke Width</div>
-				<div className="flex flex-wrap gap-2">
-					{[1, 2, 3].map((width, idx) => (
-						<button
-							key={width}
-							className={`p-1 rounded group relative ${strokeWidth === width ? "bg-blue-500" : "bg-gray-700"}`}
-							onClick={() => setStrokeWidth(width)}
-							title={idx === 0 ? "Thin" : idx === 1 ? "Bold" : "Extra Bold"}
-						>
-							{idx === 0 && (
-								<Image src="/Thinline.svg" alt="Thin" width={24} height={24} />
-							)}
-							{idx === 1 && (
-								<Image src="/Boldline.svg" alt="Bold" width={24} height={24} />
-							)}
-							{idx === 2 && (
-								<Image src="/Extrabold.svg" alt="Extra Bold" width={24} height={24} />
-							)}
-							<Tooltip
-								label={idx === 0 ? "Thin" : idx === 1 ? "Bold" : "Extra Bold"}
-							/>
-						</button>
-					))}
-				</div>
-			</div>
+			{/* Stroke Width - Hide for text tool and text shapes */}
+			{activeTool !== "text" &&
+				!(
+					activeTool === "select" &&
+					selectedShapeId &&
+					selectedShapeType === "text"
+				) && (
+					<div className="Stroke-Width-Picker">
+						<div className="text-sm font-medium mb-2">Stroke Width</div>
+						<div className="flex flex-wrap gap-2">
+							{[1, 2, 3].map((width, idx) => (
+								<button
+									key={width}
+									className={`p-1 rounded group relative ${strokeWidth === width ? "bg-blue-500" : "bg-gray-700"}`}
+									onClick={() => setStrokeWidth(width)}
+									title={idx === 0 ? "Thin" : idx === 1 ? "Bold" : "Extra Bold"}
+								>
+									{idx === 0 && (
+										<Image src="/Thinline.svg" alt="Thin" width={24} height={24} />
+									)}
+									{idx === 1 && (
+										<Image src="/Boldline.svg" alt="Bold" width={24} height={24} />
+									)}
+									{idx === 2 && (
+										<Image src="/Extrabold.svg" alt="Extra Bold" width={24} height={24} />
+									)}
+									<Tooltip
+										label={idx === 0 ? "Thin" : idx === 1 ? "Bold" : "Extra Bold"}
+									/>
+								</button>
+							))}
+						</div>
+					</div>
+				)}
 
 			{/* Stroke Edge - Only for shapes that support fill */}
 			{(activeTool === "rect" ||
@@ -214,31 +220,40 @@ export function StyleConfigurator({
 				</div>
 			)}
 
-			{/* Stroke Style */}
-			<div className="Stroke-Style-Picker">
-				<div className="text-sm font-medium mb-2">Stroke Style</div>
-				<div className="flex flex-wrap gap-2">
-					{["solid", "dashed", "dotted"].map((style, idx) => (
-						<button
-							key={style}
-							className={`p-1 rounded group relative ${strokeStyle === style ? "bg-blue-500" : "bg-gray-700"}`}
-							onClick={() => setStrokeStyle(style)}
-							title={idx === 0 ? "Solid" : idx === 1 ? "Dashed" : "Dotted"}
-						>
-							{idx === 0 && (
-								<Image src="/Solid.svg" alt="Solid" width={24} height={24} />
-							)}
-							{idx === 1 && (
-								<Image src="/Dashed.svg" alt="Dashed" width={24} height={24} />
-							)}
-							{idx === 2 && (
-								<Image src="/Dotted.svg" alt="Dotted" width={24} height={24} />
-							)}
-							<Tooltip label={idx === 0 ? "Solid" : idx === 1 ? "Dashed" : "Dotted"} />
-						</button>
-					))}
-				</div>
-			</div>
+			{/* Stroke Style - Hide for text tool and text shapes */}
+			{activeTool !== "text" &&
+				!(
+					activeTool === "select" &&
+					selectedShapeId &&
+					selectedShapeType === "text"
+				) && (
+					<div className="Stroke-Style-Picker">
+						<div className="text-sm font-medium mb-2">Stroke Style</div>
+						<div className="flex flex-wrap gap-2">
+							{["solid", "dashed", "dotted"].map((style, idx) => (
+								<button
+									key={style}
+									className={`p-1 rounded group relative ${strokeStyle === style ? "bg-blue-500" : "bg-gray-700"}`}
+									onClick={() => setStrokeStyle(style)}
+									title={idx === 0 ? "Solid" : idx === 1 ? "Dashed" : "Dotted"}
+								>
+									{idx === 0 && (
+										<Image src="/Solid.svg" alt="Solid" width={24} height={24} />
+									)}
+									{idx === 1 && (
+										<Image src="/Dashed.svg" alt="Dashed" width={24} height={24} />
+									)}
+									{idx === 2 && (
+										<Image src="/Dotted.svg" alt="Dotted" width={24} height={24} />
+									)}
+									<Tooltip
+										label={idx === 0 ? "Solid" : idx === 1 ? "Dashed" : "Dotted"}
+									/>
+								</button>
+							))}
+						</div>
+					</div>
+				)}
 
 			{/* Slopiness - For shapes that support rough drawing */}
 			{(activeTool === "rect" ||
@@ -291,56 +306,107 @@ export function StyleConfigurator({
 				</div>
 			)}
 
-			{/* Font Family - Only for text tool */}
-			{activeTool === "text" && (
+			{(activeTool === "text" ||
+				(activeTool === "select" &&
+					selectedShapeId &&
+					selectedShapeType === "text")) && (
 				<div className="Font-Family-Picker">
 					<div className="text-sm font-medium mb-2">Font Family</div>
 					<div className="flex flex-wrap gap-2">
-						{fontFamilies.map((family) => (
-							<button
-								key={family}
-								className={`px-3 py-1 rounded ${fontFamily === family ? "bg-blue-500 text-white" : "bg-gray-700 text-gray-200"}`}
-								onClick={() => setFontFamily(family)}
-							>
-								{family}
-							</button>
-						))}
+						<button
+							className={`p-1 rounded group relative ${fontFamily === "Nunito" ? "bg-blue-500" : "bg-gray-700"}`}
+							onClick={() => setFontFamily("Nunito")}
+							title="Nunito"
+						>
+							<Image src="/Nunito.svg" alt="Nunito" width={24} height={24} />
+							<Tooltip label="Nunito" />
+						</button>
+						<button
+							className={`p-1 rounded group relative ${fontFamily === "Arial" ? "bg-blue-500" : "bg-gray-700"}`}
+							onClick={() => setFontFamily("Arial")}
+							title="Arial"
+						>
+							<Image src="/Arial.svg" alt="Arial" width={24} height={24} />
+							<Tooltip label="Arial" />
+						</button>
+						<button
+							className={`p-1 rounded group relative ${fontFamily === "Lilita One" ? "bg-blue-500" : "bg-gray-700"}`}
+							onClick={() => setFontFamily("Lilita One")}
+							title="Lilita One"
+						>
+							<Image src="/LalitaOne.svg" alt="Lilita One" width={24} height={24} />
+							<Tooltip label="Lilita One" />
+						</button>
 					</div>
 				</div>
 			)}
 
-			{/* Font Size - Only for text tool */}
-			{activeTool === "text" && (
+			{(activeTool === "text" ||
+				(activeTool === "select" &&
+					selectedShapeId &&
+					selectedShapeType === "text")) && (
 				<div className="Font-Size-Picker">
 					<div className="text-sm font-medium mb-2">Font Size</div>
 					<div className="flex flex-wrap gap-2">
-						{fontSizes.map((size) => (
-							<button
-								key={size}
-								className={`px-3 py-1 rounded ${fontSize === size ? "bg-blue-500 text-white" : "bg-gray-700 text-gray-200"}`}
-								onClick={() => setFontSize(size)}
-							>
-								{size}
-							</button>
-						))}
+						<button
+							className={`p-1 rounded group relative ${fontSize === 12 ? "bg-blue-500" : "bg-gray-700"}`}
+							onClick={() => setFontSize(12)}
+							title="Small"
+						>
+							<Image src="/Smalltext.svg" alt="Small" width={24} height={24} />
+							<Tooltip label="Small" />
+						</button>
+						<button
+							className={`p-1 rounded group relative ${fontSize === 20 ? "bg-blue-500" : "bg-gray-700"}`}
+							onClick={() => setFontSize(20)}
+							title="Medium"
+						>
+							<Image src="/Mediumtext.svg" alt="Medium" width={24} height={24} />
+							<Tooltip label="Medium" />
+						</button>
+						<button
+							className={`p-1 rounded group relative ${fontSize === 32 ? "bg-blue-500" : "bg-gray-700"}`}
+							onClick={() => setFontSize(32)}
+							title="Large"
+						>
+							<Image src="/largetext.svg" alt="Large" width={24} height={24} />
+							<Tooltip label="Large" />
+						</button>
 					</div>
 				</div>
 			)}
 
-			{/* Text Align - Only for text tool */}
-			{activeTool === "text" && (
+			{(activeTool === "text" ||
+				(activeTool === "select" &&
+					selectedShapeId &&
+					selectedShapeType === "text")) && (
 				<div className="Text-Align-Picker">
 					<div className="text-sm font-medium mb-2">Text Align</div>
 					<div className="flex flex-wrap gap-2">
-						{textAligns.map((align) => (
-							<button
-								key={align}
-								className={`px-3 py-1 rounded ${textAlign === align ? "bg-blue-500 text-white" : "bg-gray-700 text-gray-200"}`}
-								onClick={() => setTextAlign(align)}
-							>
-								{align}
-							</button>
-						))}
+						<button
+							className={`p-1 rounded group relative ${textAlign === "left" ? "bg-blue-500" : "bg-gray-700"}`}
+							onClick={() => setTextAlign("left")}
+							title="Left"
+						>
+							<Image src="/lefttext.svg" alt="Left" width={24} height={24} />
+							<Tooltip label="Left" />
+						</button>
+						<button
+							className={`p-1 rounded group relative ${textAlign === "center" ? "bg-blue-500" : "bg-gray-700"}`}
+							onClick={() => setTextAlign("center")}
+							title="Center"
+						>
+							<Image src="/CenterText.svg" alt="Center" width={24} height={24} />
+							<Tooltip label="Center" />
+						</button>
+						<button
+							className={`p-1 rounded group relative ${textAlign === "right" ? "bg-blue-500" : "bg-gray-700"}`}
+							onClick={() => setTextAlign("right")}
+							title="Right"
+						>
+							<Image src="/RightText.svg" alt="Right" width={24} height={24} />
+							<Tooltip label="Right" />
+						</button>
 					</div>
 				</div>
 			)}
