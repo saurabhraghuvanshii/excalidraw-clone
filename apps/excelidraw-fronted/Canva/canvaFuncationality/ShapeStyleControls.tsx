@@ -127,6 +127,14 @@ export function StyleConfigurator({
 						<Image src="/Cross-hatch.svg" alt="Cross-hatch" width={24} height={24} />
 						<Tooltip label="Cross-hatch" />
 					</button>
+					<button
+						className={`p-1 rounded group relative ${fillStyle === "solid" ? "bg-blue-500" : "bg-gray-700"}`}
+						onClick={() => handleFillStyleChange("solid")}
+						title="Solid"
+					>
+						<Image src="/FillSolid.svg" alt="Solid" width={24} height={24} />
+						<Tooltip label="Solid" />
+					</button>
 				</div>
 			</div>
 
