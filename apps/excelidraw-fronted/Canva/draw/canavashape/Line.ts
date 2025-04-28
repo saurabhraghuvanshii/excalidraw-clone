@@ -13,9 +13,7 @@ export function drawLine(
 	if (shape.type !== "line") return;
 	ctx.save();
 
-	const fillStyle = shape.fillStyle || "architect";
-
-	if (fillStyle === "artist" || fillStyle === "cartoonist") {
+	if (shape.strokeStyle === "artist" || shape.strokeStyle === "cartoonist") {
 		const rc = rough.canvas(ctx.canvas);
 		const keys = [
 			"startX",
@@ -24,11 +22,16 @@ export function drawLine(
 			"endY",
 			"strokeColor",
 			"strokeWidth",
+			"strokeStyle",
 		];
-		const shouldRegen = shouldRegenerateRoughDrawable(shape, keys, fillStyle);
+		const shouldRegen = shouldRegenerateRoughDrawable(
+			shape,
+			keys,
+			shape.strokeStyle
+		);
 		if (shouldRegen) {
 			const generator = rough.generator();
-			const roughness = fillStyle === "artist" ? 2 : 3.5;
+			const roughness = shape.strokeStyle === "artist" ? 1 : 2;
 			(shape as any).roughDrawable = generator.line(
 				shape.startX,
 				shape.startY,
@@ -41,7 +44,7 @@ export function drawLine(
 					seed: getRoughSeed(shape.id),
 				}
 			);
-			cacheRoughDrawable(shape, keys, fillStyle);
+			cacheRoughDrawable(shape, keys, shape.strokeStyle);
 		}
 		rc.draw((shape as any).roughDrawable);
 		ctx.restore();

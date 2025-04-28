@@ -9,11 +9,9 @@ export function drawFreehand(
 
 	ctx.save();
 
-	const fillStyle = shape.fillStyle || "architect";
-
-	if (fillStyle === "artist" || fillStyle === "cartoonist") {
+	if (shape.strokeStyle === "artist" || shape.strokeStyle === "cartoonist") {
 		const rc = rough.canvas(ctx.canvas);
-		const keys = ["points", "strokeColor", "strokeWidth"];
+		const keys = ["points", "strokeColor", "strokeWidth", "strokeStyle"];
 		// For points, use a hash (stringify)
 		const pointsHash = JSON.stringify(shape.points);
 		const shouldRegen =
@@ -21,10 +19,10 @@ export function drawFreehand(
 			(shape as any).roughDrawable._lastPointsHash !== pointsHash ||
 			(shape as any).roughDrawable._lastStrokeColor !== shape.strokeColor ||
 			(shape as any).roughDrawable._lastStrokeWidth !== shape.strokeWidth ||
-			(shape as any).roughDrawable._lastFillStyle !== fillStyle;
+			(shape as any).roughDrawable._lastStrokeStyle !== shape.strokeStyle;
 		if (shouldRegen) {
 			const generator = rough.generator();
-			const roughness = fillStyle === "artist" ? 2 : 3.5;
+			const roughness = shape.strokeStyle === "artist" ? 1 : 2;
 			(shape as any).roughDrawable = generator.linearPath(
 				shape.points.map((p: any) => [p.x, p.y]),
 				{
@@ -37,7 +35,7 @@ export function drawFreehand(
 			(shape as any).roughDrawable._lastPointsHash = pointsHash;
 			(shape as any).roughDrawable._lastStrokeColor = shape.strokeColor;
 			(shape as any).roughDrawable._lastStrokeWidth = shape.strokeWidth;
-			(shape as any).roughDrawable._lastFillStyle = fillStyle;
+			(shape as any).roughDrawable._lastStrokeStyle = shape.strokeStyle;
 		}
 		rc.draw((shape as any).roughDrawable);
 		ctx.restore();

@@ -240,43 +240,56 @@ export function StyleConfigurator({
 				</div>
 			</div>
 
-			{/* Slopiness */}
-			<div className="Slopiness-Picker">
-				<div className="text-sm font-medium mb-2">Slopiness</div>
-				<div className="flex flex-wrap gap-2">
-					{["architect", "artist", "cartoonist"].map((style, idx) => (
-						<button
-							key={style}
-							className={`p-1 rounded group relative ${strokeStyle === style ? "bg-blue-500" : "bg-gray-700"}`}
-							onClick={() => handleSlopinessChange(style)}
-							title={idx === 0 ? "Architect" : idx === 1 ? "Artist" : "Cartoonist"}
-						>
-							{idx === 0 && (
-								<Image
-									src="/SlopeArchitect.svg"
-									alt="Architect"
-									width={24}
-									height={24}
+			{/* Slopiness - For shapes that support rough drawing */}
+			{(activeTool === "rect" ||
+				activeTool === "diamond" ||
+				activeTool === "circleOrOval" ||
+				activeTool === "arrow" ||
+				activeTool === "freehand" ||
+				activeTool === "line" ||
+				(activeTool === "select" &&
+					selectedShapeId &&
+					selectedShapeType &&
+					["rect", "diamond", "circleOrOval", "arrow", "freehand", "line"].includes(
+						selectedShapeType
+					))) && (
+				<div className="Slopiness-Picker">
+					<div className="text-sm font-medium mb-2">Slopiness</div>
+					<div className="flex flex-wrap gap-2">
+						{["architect", "artist", "cartoonist"].map((style, idx) => (
+							<button
+								key={style}
+								className={`p-1 rounded group relative ${strokeStyle === style ? "bg-blue-500" : "bg-gray-700"}`}
+								onClick={() => handleSlopinessChange(style)}
+								title={idx === 0 ? "Architect" : idx === 1 ? "Artist" : "Cartoonist"}
+							>
+								{idx === 0 && (
+									<Image
+										src="/SlopeArchitect.svg"
+										alt="Architect"
+										width={24}
+										height={24}
+									/>
+								)}
+								{idx === 1 && (
+									<Image src="/SlopeArtist.svg" alt="Artist" width={24} height={24} />
+								)}
+								{idx === 2 && (
+									<Image
+										src="/SlopeCartoonist.svg"
+										alt="Cartoonist"
+										width={24}
+										height={24}
+									/>
+								)}
+								<Tooltip
+									label={idx === 0 ? "Architect" : idx === 1 ? "Artist" : "Cartoonist"}
 								/>
-							)}
-							{idx === 1 && (
-								<Image src="/SlopeArtist.svg" alt="Artist" width={24} height={24} />
-							)}
-							{idx === 2 && (
-								<Image
-									src="/SlopeCartoonist.svg"
-									alt="Cartoonist"
-									width={24}
-									height={24}
-								/>
-							)}
-							<Tooltip
-								label={idx === 0 ? "Architect" : idx === 1 ? "Artist" : "Cartoonist"}
-							/>
-						</button>
-					))}
+							</button>
+						))}
+					</div>
 				</div>
-			</div>
+			)}
 
 			{/* Font Family - Only for text tool */}
 			{activeTool === "text" && (
