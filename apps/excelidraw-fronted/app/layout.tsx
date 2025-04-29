@@ -19,7 +19,10 @@ const lalitaOne = Lilita_One({
 });
 
 export const metadata: Metadata = {
-  title: "Drawnew",
+	title: "Drawnew",
+	icons: {
+		icon: "/favicon.svg",
+	},
 };
 
 export default function RootLayout({
