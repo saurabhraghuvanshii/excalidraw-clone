@@ -1,11 +1,20 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
+  "globalEnv": [
+    "MY_SECRET_TOKEN",
+    "GOOGLE_CLIENT_ID",
+    "GOOGLE_CLIENT_SECRET",
+    "NEXTAUTH_SECRET",
+    "DATABASE_URL",
+    "JWT_SECRET"
+  ],
+  "globalDependencies": ["**/.env.*local", "**/.env", ".env", ".env.local", "tsconfig.json"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": [".next/**", "!.next/cache/**"]
+      "outputs": [".next/**", "!.next/cache/**", "dist/**" ]
     },
     "lint": {
       "dependsOn": ["^lint"]
