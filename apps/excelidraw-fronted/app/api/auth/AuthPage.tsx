@@ -46,6 +46,7 @@ export function AuthPage({ type }: { type: "signup" | "signin" }) {
     function decodeJwt(token: string): { exp?: number } {
         try {
             const payload = token.split('.')[1];
+            if (!payload) { return {};}
             const decoded = JSON.parse(atob(payload));
             return decoded;
         } catch {
