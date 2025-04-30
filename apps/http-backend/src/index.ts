@@ -2,7 +2,8 @@ import express, { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import cors from "cors";
-import { JWT_SECRET } from "@repo/backend-common/config";
+import { env } from "@repo/backend-common/config"
+const JWT_SECRET = env.JWT_SECRET;
 import { middleware, optionalAuthMiddleware } from "./middleware";
 import {
 	CreateRoomSchema,

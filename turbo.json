@@ -1,20 +1,13 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
-  "globalEnv": [
-    "MY_SECRET_TOKEN",
-    "GOOGLE_CLIENT_ID",
-    "GOOGLE_CLIENT_SECRET",
-    "NEXTAUTH_SECRET",
-    "DATABASE_URL",
-    "JWT_SECRET"
-  ],
-  "globalDependencies": ["**/.env.*local", "**/.env", ".env", ".env.local", "tsconfig.json"],
+  "globalDependencies": ["**/.env"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": [".next/**", "!.next/cache/**", "dist/**" ]
+      "outputs": [".next/**", "!.next/cache/**", "dist/**" ],
+      "env": ["JWT_SECRET", "DATABASE_URL", "GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "NEXTAUTH_SECRET"]
     },
     "lint": {
       "dependsOn": ["^lint"]
@@ -24,7 +17,8 @@
     },
     "dev": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "env": ["JWT_SECRET", "DATABASE_URL", "GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "NEXTAUTH_SECRET"]
     }
   }
 }
