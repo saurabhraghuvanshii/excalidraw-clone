@@ -1,25 +1,29 @@
 {
-  "name": "@repo/db",
-  "version": "1.0.0",
-  "main": "index.js",
-  "exports": {
-    "./client": "./src/index.ts"
-  },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "devDependencies": {
-    "@repo/typescript-config": "workspace:*"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
-  "dependencies": {
-    "@prisma/client": "6.2.1",
-    "@types/bcrypt": "^5.0.2",
-    "bcrypt": "^5.1.1",
-    "client": "link:@types/@prisma/client",
-    "prisma": "^6.2.1"
-  }
+	"name": "@repo/db",
+	"version": "1.0.0",
+	"main": "index.js",
+	"exports": {
+		"./client": "./src/index.ts"
+	},
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"generate": "prisma generate",
+		"migrate": "prisma migrate deploy",
+		"db:push": "prisma db push",
+		"studio": "prisma studio"
+	},
+	"devDependencies": {
+		"@repo/typescript-config": "workspace:*"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"description": "",
+	"dependencies": {
+		"@prisma/client": "6.2.1",
+		"@types/bcrypt": "^5.0.2",
+		"bcrypt": "^5.1.1",
+		"client": "link:@types/@prisma/client",
+		"prisma": "^6.2.1"
+	}
 }

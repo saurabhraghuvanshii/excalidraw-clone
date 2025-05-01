@@ -1,21 +1,23 @@
 {
-  "name": "excalidraw-clone",
-  "private": true,
-  "scripts": {
-    "build": "dotenv -- turbo build",
-    "dev": "dotenv -- turbo dev",
-    "lint": "turbo lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "db:generate": "cd packages/db && prisma generate && cd ../.."
-  },
-  "devDependencies": {
-    "dotenv-cli": "^8.0.0",
-    "prettier": "^3.2.5",
-    "turbo": "^2.3.3",
-    "typescript": "5.5.4"
-  },
-  "packageManager": "pnpm@9.0.0",
-  "engines": {
-    "node": ">=18"
-  }
+	"name": "excalidraw-clone",
+	"private": true,
+	"scripts": {
+		"build": "turbo build",
+		"dev": "turbo dev",
+		"lint": "turbo lint",
+		"format": "prettier --write \"**/*.{ts,tsx,md}\"",
+		"db:generate": "cd packages/db && npx prisma generate && cd ../..",
+		"start:drawnew": "cd apps/drawnew && pnpm run build && pnpm run start",
+		"start:http-backend": "cd apps/http-backend && pnpm run build && pnpm run start",
+		"start:ws-backend": "cd apps/ws-backend && pnpm run build && pnpm run start"
+	},
+	"devDependencies": {
+		"prettier": "^3.2.5",
+		"turbo": "^2.3.3",
+		"typescript": "5.5.4"
+	},
+	"packageManager": "pnpm@9.0.0",
+	"engines": {
+		"node": ">=18"
+	}
 }
