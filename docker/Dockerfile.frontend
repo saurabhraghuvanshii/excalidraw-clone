@@ -4,6 +4,8 @@ RUN npm install -g pnpm
 
 WORKDIR /usr/src/app
 
+ARG DATABASE_URL
+ARG JWT_SECRET
 
 COPY ./packages ./packages
 COPY ./package.json ./package.json
@@ -12,13 +14,16 @@ COPY ./pnpm-workspace.yaml ./pnpm-workspace.yaml
 COPY ./turbo.json ./turbo.json
 COPY ./apps/drawnew ./apps/drawnew
 
-RUN npm install prisma@6.5.0
-
 RUN pnpm install
 RUN pnpm run db:generate
-RUN pnpm run build
 
+ENV DATABASE_URL=${DATABASE_URL}
+ENV JWT_SECRET=${JWT_SECRET}
+
+WORKDIR /usr/src/app
+
+RUN DATABASE_URL=${DATABASE_URL} JWT_SECRET=${JWT_SECRET} pnpm run build
 
 EXPOSE 3000
 
-CMD ["sh", "-c", "pnpm run db:generate && pnpm run start:drawnew"]
+CMD ["pnpm", "run", "start:drawnew"]

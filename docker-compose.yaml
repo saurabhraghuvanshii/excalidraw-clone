@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
  frontend:
   build:
@@ -10,7 +8,7 @@ services:
    - "3000:3000"
   environment:
    - NODE_ENV=production
-   - DATABASE_URL=postgresql://postgres:saurabh@database:5432/drawnew
+   - DATABASE_URL=postgresql://postgres:postgres@database:5432/drawnew
   depends_on:
    - http-backend
    - ws-backend
@@ -21,15 +19,13 @@ services:
    context: ./
    dockerfile: docker/Dockerfile.backend
    args:
-    - DATABASE_URL=postgresql://postgres:saurabh@database:5432/drawnew
+    - DATABASE_URL=postgresql://postgres:postgres@database:5432/drawnew
     - JWT_SECRET=${JWT_SECRET}
-  env_file:
-   - ".env"
   ports:
    - "3001:3001"
   environment:
    - NODE_ENV=production
-   - DATABASE_URL=postgresql://postgres:saurabh@database:5432/drawnew
+   - DATABASE_URL=postgresql://postgres:postgres@database:5432/drawnew
    - JWT_SECRET=${JWT_SECRET}
   depends_on:
    database:
@@ -41,15 +37,13 @@ services:
    context: ./
    dockerfile: docker/Dockerfile.ws
    args:
-    - DATABASE_URL=postgresql://postgres:saurabh@database:5432/drawnew
+    - DATABASE_URL=postgresql://postgres:postgres@database:5432/drawnew
     - JWT_SECRET=${JWT_SECRET}
-  env_file:
-   - ".env"
   ports:
    - "8080:8080"
   environment:
    - NODE_ENV=production
-   - DATABASE_URL=postgresql://postgres:saurabh@database:5432/drawnew
+   - DATABASE_URL=postgresql://postgres:postgres@database:5432/drawnew
   depends_on:
    - http-backend
 
@@ -60,7 +54,7 @@ services:
   environment:
    - POSTGRES_DB=drawnew
    - POSTGRES_USER=postgres
-   - POSTGRES_PASSWORD=saurabh
+   - POSTGRES_PASSWORD=postgres
   volumes:
    - postgres_data:/var/lib/postgresql/data
   ports:

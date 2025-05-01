@@ -10,11 +10,12 @@ RUN pnpm install
 COPY ./packages ./packages
 COPY ./apps/ws-backend ./apps/ws-backend
 
-RUN npm install prisma@6.5.0
-
 RUN pnpm install 
 
 RUN pnpm run db:generate
+
+ARG DATABASE_URL
+ARG JWT_SECRET
 
 ENV DATABASE_URL=${DATABASE_URL}
 ENV JWT_SECRET=${JWT_SECRET}
@@ -25,4 +26,4 @@ RUN DATABASE_URL=${DATABASE_URL} JWT_SECRET=${JWT_SECRET} pnpm run build
 
 EXPOSE 8080
 
-CMD ["sh", "-c", "pnpm run db:generate && pnpm run start:ws-backend"]
+CMD ["pnpm", "run", "start:ws-backend"]
