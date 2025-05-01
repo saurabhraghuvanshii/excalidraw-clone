@@ -24,7 +24,7 @@ export async function POST(req: Request) {
         });
 
         const responseData = await response.json();
-
+        
         if (!response.ok) {
             return NextResponse.json(
                 { message: responseData.message || `${type} failed` },
@@ -33,12 +33,13 @@ export async function POST(req: Request) {
         }
 
         return NextResponse.json(responseData);
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
+        console.error("Error in POST /api/auth:", error);
         return NextResponse.json(
             { message: 'Internal server error' },
             { status: 500 }
         );
     }
+    
 }
  

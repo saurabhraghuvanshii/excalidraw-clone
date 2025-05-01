@@ -20,6 +20,10 @@ RUN pnpm run db:generate
 ENV DATABASE_URL=${DATABASE_URL}
 ENV JWT_SECRET=${JWT_SECRET}
 
+WORKDIR /usr/src/app/apps/drawnew
+RUN echo "JWT_SECRET=$JWT_SECRET" > .env
+RUN echo "DATABASE_URL=$DATABASE_URL" >> .env
+
 WORKDIR /usr/src/app
 
 RUN DATABASE_URL=${DATABASE_URL} JWT_SECRET=${JWT_SECRET} pnpm run build

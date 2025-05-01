@@ -1,13 +1,17 @@
 services:
  frontend:
   build:
-   context: ./
+   context: .
    dockerfile: docker/Dockerfile.frontend
+   args:
+    - DATABASE_URL=postgresql://postgres:postgres@database:5432/drawnew
   container_name: frontend
   ports:
    - "3000:3000"
   environment:
    - NODE_ENV=production
+   - NEXT_PUBLIC_HTTP_BACKEND=http://http-backend:3001
+   - NEXT_PUBLIC_WS_BACKEND=ws://localhost:8080
    - DATABASE_URL=postgresql://postgres:postgres@database:5432/drawnew
   depends_on:
    - http-backend
@@ -16,17 +20,16 @@ services:
  http-backend:
   container_name: http-backend
   build:
-   context: ./
+   context: .
    dockerfile: docker/Dockerfile.backend
    args:
-    - DATABASE_URL=postgresql://postgres:postgres@database:5432/drawnew
     - JWT_SECRET=${JWT_SECRET}
   ports:
    - "3001:3001"
   environment:
    - NODE_ENV=production
-   - DATABASE_URL=postgresql://postgres:postgres@database:5432/drawnew
    - JWT_SECRET=${JWT_SECRET}
+   - DATABASE_URL=postgresql://postgres:postgres@database:5432/drawnew
   depends_on:
    database:
     condition: service_healthy
@@ -34,15 +37,15 @@ services:
  ws-backend:
   container_name: ws-backend
   build:
-   context: ./
+   context: .
    dockerfile: docker/Dockerfile.ws
    args:
-    - DATABASE_URL=postgresql://postgres:postgres@database:5432/drawnew
     - JWT_SECRET=${JWT_SECRET}
   ports:
    - "8080:8080"
   environment:
    - NODE_ENV=production
+   - JWT_SECRET=${JWT_SECRET}
    - DATABASE_URL=postgresql://postgres:postgres@database:5432/drawnew
   depends_on:
    - http-backend
