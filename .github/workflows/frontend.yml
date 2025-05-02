@@ -30,6 +30,9 @@ jobs:
      with:
       context: .
       file: ./docker/Dockerfile.frontend
+       build-args: |
+        DATABASE_URL=${{ secrets.DATABASE_URL }}
+        JWT_SECRET=${{ secrets.JWT_SECRET }}
       push: true
       tags: |
        saurabhraghuvanshii/drawnew:${{ github.sha }}
