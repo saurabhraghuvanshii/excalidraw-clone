@@ -32,4 +32,5 @@ jobs:
       file: ./docker/Dockerfile.ws
       push: true
       tags: |
+       saurabhraghuvanshii/ws-backend:latest
        saurabhraghuvanshii/ws-backend:${{ github.sha }}

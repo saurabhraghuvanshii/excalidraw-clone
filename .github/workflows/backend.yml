@@ -32,4 +32,5 @@ jobs:
       file: ./docker/Dockerfile.backend
       push: true
       tags: |
+       saurabhraghuvanshii/http-backend:latest
        saurabhraghuvanshii/http-backend:${{ github.sha }}
