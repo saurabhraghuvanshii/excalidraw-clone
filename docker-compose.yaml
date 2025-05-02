@@ -13,6 +13,7 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=production
+      - DOCKER_ENV=true
       - DATABASE_URL=postgresql://postgres:postgres@database:5432/drawnew
       - JWT_SECRET=${JWT_SECRET}
       - NEXT_PUBLIC_HTTP_BACKEND=http://localhost:3001
@@ -32,6 +33,7 @@ services:
       - "3001:3001"
     environment:
       - NODE_ENV=production
+      - DOCKER_ENV=true
       - JWT_SECRET=${JWT_SECRET}
       - DATABASE_URL=postgresql://postgres:postgres@database:5432/drawnew
     depends_on:
@@ -49,6 +51,7 @@ services:
       - "8080:8080"
     environment:
       - NODE_ENV=production
+      - DOCKER_ENV=true
       - JWT_SECRET=${JWT_SECRET}
       - DATABASE_URL=postgresql://postgres:postgres@database:5432/drawnew
     depends_on:

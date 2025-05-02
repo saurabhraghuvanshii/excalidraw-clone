@@ -1,7 +1,13 @@
-export const HTTP_BACKEND = typeof window !== 'undefined' 
-  ? (process.env.NEXT_PUBLIC_HTTP_BACKEND || "http://localhost:3001")
-  : "http://http-backend:3001";
+import { env } from "@repo/backend-common/config";
 
-export const WS_URL = typeof window !== 'undefined'
-  ? (process.env.NEXT_PUBLIC_WS_BACKEND || "ws://localhost:8080")
-  : "ws://ws-backend:8080";
+const isServer = typeof window === 'undefined';
+const isDocker = process.env.DOCKER_ENV === 'true';
+
+export const HTTP_BACKEND = isServer
+  ? (isDocker ? "http://http-backend:3001" : "http://localhost:3001")
+  : (env.NEXT_PUBLIC_HTTP_BACKEND || "http://localhost:3001");
+
+export const WS_URL = isServer
+  ? (isDocker ? "ws://ws-backend:8080" : "ws://localhost:8080")
+  : (env.NEXT_PUBLIC_WS_BACKEND || "ws://localhost:8080");
+  
