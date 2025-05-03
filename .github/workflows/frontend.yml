@@ -35,5 +35,4 @@ jobs:
         JWT_SECRET=${{ secrets.JWT_SECRET }}
       push: true
       tags: |
-       saurabhraghuvanshii/drawnew:latest
        saurabhraghuvanshii/drawnew:${{ github.sha }}
