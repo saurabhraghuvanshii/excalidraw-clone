@@ -1,11 +1,11 @@
 name: Deploy the websocket service
 on:
- push:
-  branches: [main]
-  paths:
-   - "apps/ws-backend/**"
-   - "packages/**"
-   - ".github/workflows/ws.yml"
+  push:
+    branches: [main]
+    paths:
+      - "apps/ws-backend/**"
+      - "packages/**"
+      - ".github/workflows/ws.yml"
 
 jobs:
  build:

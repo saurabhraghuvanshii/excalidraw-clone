@@ -1,11 +1,11 @@
 name: Deploy the backend
 on:
- push:
-  branches: [main]
-  paths:
-   - "apps/http-backend/**"
-   - "packages/**"
-   - ".github/workflows/backend.yml"
+  push:
+    branches: [main]
+    paths:
+      - "apps/http-backend/**"
+      - "packages/**"
+      - ".github/workflows/backend.yml"
 
 jobs:
  build:
