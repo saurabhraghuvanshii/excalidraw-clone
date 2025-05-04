@@ -14,9 +14,6 @@ RUN pnpm install
 
 RUN pnpm run db:generate
 
-ARG DATABASE_URL
-ARG JWT_SECRET
-
 WORKDIR /usr/src/app
 
 RUN DATABASE_URL=${DATABASE_URL} JWT_SECRET=${JWT_SECRET} pnpm run build
