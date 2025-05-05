@@ -31,6 +31,8 @@ jobs:
       context: .
       file: ./docker/Dockerfile.frontend
       build-args: |
+        NEXT_PUBLIC_HTTP_BACKEND=${{ secrets.NEXT_PUBLIC_HTTP_BACKEND }}
+        NEXT_PUBLIC_WS_BACKEND=${{ secrets.NEXT_PUBLIC_WS_BACKEND }}
         DATABASE_URL=${{ secrets.DATABASE_URL }}
         JWT_SECRET=${{ secrets.JWT_SECRET }}
       push: true

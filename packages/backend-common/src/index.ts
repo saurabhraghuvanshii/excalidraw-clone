@@ -9,6 +9,7 @@ export const env = {
   GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
   GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
   NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
+  FRONTEND_URL: process.env.FRONTEND_URL,
   NEXT_PUBLIC_HTTP_BACKEND: process.env.NEXT_PUBLIC_HTTP_BACKEND || "http://localhost:3001",
   NEXT_PUBLIC_WS_BACKEND: process.env.NEXT_PUBLIC_WS_BACKEND || "ws://localhost:8080",
 };
