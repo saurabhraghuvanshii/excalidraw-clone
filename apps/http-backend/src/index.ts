@@ -10,7 +10,7 @@ import { prismaClient } from "@repo/db/client";
 const app = express();
 app.use(express.json());
 app.use(cors({
-	origin: process.env.FRONTEND_URL || "http://localhost:3000",
+	origin: env.FRONTEND_URL || "http://localhost:3000",
 	credentials: true
 }));
 const prisma = prismaClient;
