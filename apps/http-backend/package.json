@@ -10,7 +10,6 @@
   "dependencies": {
     "@prisma/client": "6.2.1",
     "@repo/db": "workspace:*",
-    "@types/bcrypt": "^5.0.2",
     "@types/bcryptjs": "^3.0.0",
     "@types/cors": "^2.8.17",
     "@types/jsonwebtoken": "^9.0.7",

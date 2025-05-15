@@ -3,16 +3,16 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import cors from "cors";
 import { env } from "@repo/backend-common/config"
-const JWT_SECRET = env.JWT_SECRET;
 import { middleware, optionalAuthMiddleware } from "./middleware";
 import { CreateRoomSchema, CreateUserSchema, SigninSchema } from "@repo/common/types";
 import { prismaClient } from "@repo/db/client";
 const app = express();
 app.use(express.json());
 app.use(cors({
-	origin: env.FRONTEND_URL || "http://localhost:3000",
+	origin: env.FRONTEND_URL,
 	credentials: true
 }));
+const JWT_SECRET = env.JWT_SECRET;
 const prisma = prismaClient;
 
 app.post("/signup", async (req: Request, res: Response) => {
